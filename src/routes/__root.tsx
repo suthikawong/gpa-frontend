@@ -6,13 +6,13 @@ export const Route = createRootRoute({
     <>
       <div className="p-2 flex gap-2">
         <Link
-          to="/"
+          to={`${import.meta.env.VITE_BASE_PATH}/`}
           className="[&.active]:font-bold"
         >
           Home
         </Link>{' '}
         <Link
-          to="/about"
+          to={`${import.meta.env.VITE_BASE_PATH}/about`}
           className="[&.active]:font-bold"
         >
           About
