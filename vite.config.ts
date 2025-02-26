@@ -1,9 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig, loadEnv } from 'vite'
-
-const env = loadEnv(process.env.NODE_ENV as string, process.cwd(), 'VITE_')
+import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,5 +14,5 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
-  base: env.VITE_BASE_PATH,
+  base: '/',
 })
