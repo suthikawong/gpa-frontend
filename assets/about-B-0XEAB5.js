@@ -1,0 +1,1 @@
+import{j as e}from"./index-B4Qk_o1h.js";import{c as n}from"./compiler-runtime-DZElL40K.js";const c=function(){const t=n.c(1);let o;return t[0]===Symbol.for("react.memo_cache_sentinel")?(o=e.jsx("div",{className:"text-red-800 font-bold",children:'Hello "/about"!'}),t[0]=o):o=t[0],o};export{c as component};
