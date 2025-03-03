@@ -1,5 +1,23 @@
 @import 'tailwindcss';
 
+html,
+body,
+#root {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+  font-size: 16px;
+}
+
+@theme {
+  --color-zircon-50: #f4f7fe;
+  --color-astronaut-900: #2b3674;
+  --color-navy-blue-950: #11047a;
+}
+
 /* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
