@@ -1,0 +1,3 @@
+[submodule "gpa-backend"]
+	path = gpa-backend
+	url = https://github.com/suthikawong/gpa-backend
