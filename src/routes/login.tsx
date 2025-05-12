@@ -10,19 +10,16 @@ import { z } from 'zod'
 
 export const Route = createFileRoute('/login')({
   component: RouteComponent,
-  validateSearch: z.object({
-    redirect: z.string().optional(),
-  }),
-  beforeLoad: ({ context, location }) => {
+  beforeLoad: ({ context }) => {
     if (context.user?.id) {
       throw redirect({
         to: '/',
-        search: {
-          redirect: location.href,
-        },
       })
     }
   },
+  validateSearch: z.object({
+    redirect: z.string().optional(),
+  }),
 })
 
 const formSchema = z.object({

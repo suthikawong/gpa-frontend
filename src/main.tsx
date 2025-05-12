@@ -3,7 +3,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { useAuth } from './hooks/auth'
-import { AuthProvider } from './providers/auth'
+import { AuthProvider } from './providers/auth.tsx'
 import { routeTree } from './routeTree.gen'
 
 const router = createRouter({
