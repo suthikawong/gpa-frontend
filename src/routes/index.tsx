@@ -13,19 +13,19 @@ function RouteComponent() {
   const router = useRouter()
   const { data: res, isLoading, error } = useQuery({ queryKey: ['cats'], queryFn: api.cat.getCats })
 
-  const onClickLogout = async () => {
+  const onClickSignout = async () => {
     await api.auth.logout()
     setUser(undefined)
   }
 
-  const onClickLogin = async () => {
-    router.history.push('/login')
+  const onClickSignin = async () => {
+    router.history.push('/signin')
   }
 
   return (
     <>
       <div>
-        {user ? <Button onClick={onClickLogout}>Logout</Button> : <Button onClick={onClickLogin}>Login</Button>}
+        {user ? <Button onClick={onClickSignout}>Sign Out</Button> : <Button onClick={onClickSignin}>Sign In</Button>}
         <div className="text-lg text-astronaut-900">Content</div>
         {isLoading && <p>Loading...</p>}
         {error && <p>Error occured: {error.message}</p>}

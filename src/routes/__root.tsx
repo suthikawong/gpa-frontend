@@ -10,10 +10,10 @@ interface AppRouterContext {
 export const Route = createRootRouteWithContext<AppRouterContext>()({
   component: () => (
     <div className="flex-grow flex-row flex bg-zircon-50">
-      <Menu />
-      <div className="flex-grow">
-        <Outlet />
-      </div>
+      {/* <Menu /> */}
+      {/* <div className="flex-grow"> */}
+      <Outlet />
+      {/* </div> */}
       <TanStackRouterDevtools />
     </div>
   ),

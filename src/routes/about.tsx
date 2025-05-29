@@ -3,9 +3,9 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 export const Route = createFileRoute('/about')({
   component: RouteComponent,
   beforeLoad: ({ context, location }) => {
-    if (!context.user?.id) {
+    if (!context.user?.userId) {
       throw redirect({
-        to: '/login',
+        to: '/signin',
         search: {
           redirect: location.href,
         },
