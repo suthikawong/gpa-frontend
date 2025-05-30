@@ -1,4 +1,5 @@
 import { api } from '@/api'
+import toast from '@/components/common/toast'
 import AuthenLayout from '@/components/layouts/AuthenLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -34,6 +36,7 @@ function RouteComponent() {
   const router = useRouter()
   const search = Route.useSearch()
   const { setUser } = useAuth()
+  const [loading, setLoading] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,14 +46,21 @@ function RouteComponent() {
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const data = await api.auth.login(values.email, values.password)
-    setUser(data.data)
-    router.history.push(search?.redirect ?? '/')
+    try {
+      setLoading(true)
+      const data = await api.auth.login(values.email, values.password)
+      setUser(data.data)
+      router.history.push(search?.redirect ?? '/')
+    } catch (error) {
+      toast.error('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <AuthenLayout>
-      <Card className="w-full max-w-[400px]">
+      <Card className="w-full max-w-[400px] m-6">
         <CardHeader>
           <CardTitle className="text-3xl m-auto">Sign In</CardTitle>
           <CardDescription className="m-auto text-base">Sign in to your account</CardDescription>
@@ -105,6 +115,7 @@ function RouteComponent() {
                 Forgot password?
               </Link>
               <Button
+                loading={loading}
                 type="submit"
                 className="w-full"
               >
