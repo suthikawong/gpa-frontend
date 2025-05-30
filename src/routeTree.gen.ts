@@ -13,9 +13,11 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as SignupImport } from './routes/signup'
 import { Route as SigninImport } from './routes/signin'
+import { Route as ProfileImport } from './routes/profile'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as InstructorMyClassroomImport } from './routes/instructor/my-classroom'
 
 // Create/Update Routes
 
@@ -28,6 +30,12 @@ const SignupRoute = SignupImport.update({
 const SigninRoute = SigninImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProfileRoute = ProfileImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -46,6 +54,12 @@ const AboutRoute = AboutImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const InstructorMyClassroomRoute = InstructorMyClassroomImport.update({
+  id: '/instructor/my-classroom',
+  path: '/instructor/my-classroom',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -74,6 +88,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordImport
       parentRoute: typeof rootRoute
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileImport
+      parentRoute: typeof rootRoute
+    }
     '/signin': {
       id: '/signin'
       path: '/signin'
@@ -88,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
+    '/instructor/my-classroom': {
+      id: '/instructor/my-classroom'
+      path: '/instructor/my-classroom'
+      fullPath: '/instructor/my-classroom'
+      preLoaderRoute: typeof InstructorMyClassroomImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -97,16 +125,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/instructor/my-classroom': typeof InstructorMyClassroomRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/instructor/my-classroom': typeof InstructorMyClassroomRoute
 }
 
 export interface FileRoutesById {
@@ -114,16 +146,40 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/instructor/my-classroom': typeof InstructorMyClassroomRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/forgot-password' | '/signin' | '/signup'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/forgot-password'
+    | '/profile'
+    | '/signin'
+    | '/signup'
+    | '/instructor/my-classroom'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/forgot-password' | '/signin' | '/signup'
-  id: '__root__' | '/' | '/about' | '/forgot-password' | '/signin' | '/signup'
+  to:
+    | '/'
+    | '/about'
+    | '/forgot-password'
+    | '/profile'
+    | '/signin'
+    | '/signup'
+    | '/instructor/my-classroom'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/forgot-password'
+    | '/profile'
+    | '/signin'
+    | '/signup'
+    | '/instructor/my-classroom'
   fileRoutesById: FileRoutesById
 }
 
@@ -131,16 +187,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  ProfileRoute: typeof ProfileRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  InstructorMyClassroomRoute: typeof InstructorMyClassroomRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  ProfileRoute: ProfileRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  InstructorMyClassroomRoute: InstructorMyClassroomRoute,
 }
 
 export const routeTree = rootRoute
@@ -156,8 +216,10 @@ export const routeTree = rootRoute
         "/",
         "/about",
         "/forgot-password",
+        "/profile",
         "/signin",
-        "/signup"
+        "/signup",
+        "/instructor/my-classroom"
       ]
     },
     "/": {
@@ -169,11 +231,17 @@ export const routeTree = rootRoute
     "/forgot-password": {
       "filePath": "forgot-password.tsx"
     },
+    "/profile": {
+      "filePath": "profile.tsx"
+    },
     "/signin": {
       "filePath": "signin.tsx"
     },
     "/signup": {
       "filePath": "signup.tsx"
+    },
+    "/instructor/my-classroom": {
+      "filePath": "instructor/my-classroom.tsx"
     }
   }
 }
