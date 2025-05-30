@@ -17,7 +17,7 @@ import { Route as ProfileImport } from './routes/profile'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
-import { Route as InstructorMyClassroomImport } from './routes/instructor/my-classroom'
+import { Route as InstructorMyClassroomsImport } from './routes/instructor/my-classrooms'
 
 // Create/Update Routes
 
@@ -57,9 +57,9 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const InstructorMyClassroomRoute = InstructorMyClassroomImport.update({
-  id: '/instructor/my-classroom',
-  path: '/instructor/my-classroom',
+const InstructorMyClassroomsRoute = InstructorMyClassroomsImport.update({
+  id: '/instructor/my-classrooms',
+  path: '/instructor/my-classrooms',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -109,11 +109,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
-    '/instructor/my-classroom': {
-      id: '/instructor/my-classroom'
-      path: '/instructor/my-classroom'
-      fullPath: '/instructor/my-classroom'
-      preLoaderRoute: typeof InstructorMyClassroomImport
+    '/instructor/my-classrooms': {
+      id: '/instructor/my-classrooms'
+      path: '/instructor/my-classrooms'
+      fullPath: '/instructor/my-classrooms'
+      preLoaderRoute: typeof InstructorMyClassroomsImport
       parentRoute: typeof rootRoute
     }
   }
@@ -128,7 +128,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/instructor/my-classroom': typeof InstructorMyClassroomRoute
+  '/instructor/my-classrooms': typeof InstructorMyClassroomsRoute
 }
 
 export interface FileRoutesByTo {
@@ -138,7 +138,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/instructor/my-classroom': typeof InstructorMyClassroomRoute
+  '/instructor/my-classrooms': typeof InstructorMyClassroomsRoute
 }
 
 export interface FileRoutesById {
@@ -149,28 +149,14 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/instructor/my-classroom': typeof InstructorMyClassroomRoute
+  '/instructor/my-classrooms': typeof InstructorMyClassroomsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/about'
-    | '/forgot-password'
-    | '/profile'
-    | '/signin'
-    | '/signup'
-    | '/instructor/my-classroom'
+  fullPaths: '/' | '/about' | '/forgot-password' | '/profile' | '/signin' | '/signup' | '/instructor/my-classrooms'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/about'
-    | '/forgot-password'
-    | '/profile'
-    | '/signin'
-    | '/signup'
-    | '/instructor/my-classroom'
+  to: '/' | '/about' | '/forgot-password' | '/profile' | '/signin' | '/signup' | '/instructor/my-classrooms'
   id:
     | '__root__'
     | '/'
@@ -179,7 +165,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
-    | '/instructor/my-classroom'
+    | '/instructor/my-classrooms'
   fileRoutesById: FileRoutesById
 }
 
@@ -190,7 +176,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
-  InstructorMyClassroomRoute: typeof InstructorMyClassroomRoute
+  InstructorMyClassroomsRoute: typeof InstructorMyClassroomsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -200,12 +186,10 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
-  InstructorMyClassroomRoute: InstructorMyClassroomRoute,
+  InstructorMyClassroomsRoute: InstructorMyClassroomsRoute,
 }
 
-export const routeTree = rootRoute
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+export const routeTree = rootRoute._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -219,7 +203,7 @@ export const routeTree = rootRoute
         "/profile",
         "/signin",
         "/signup",
-        "/instructor/my-classroom"
+        "/instructor/my-classrooms"
       ]
     },
     "/": {
@@ -240,8 +224,8 @@ export const routeTree = rootRoute
     "/signup": {
       "filePath": "signup.tsx"
     },
-    "/instructor/my-classroom": {
-      "filePath": "instructor/my-classroom.tsx"
+    "/instructor/my-classrooms": {
+      "filePath": "instructor/my-classrooms.tsx"
     }
   }
 }

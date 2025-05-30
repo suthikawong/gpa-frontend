@@ -11,7 +11,7 @@ export const Route = createFileRoute('/')({
   beforeLoad: ({ context, location }) => {
     if (context?.user?.roleId === Roles.Instructor) {
       throw redirect({
-        to: '/instructor/my-classroom',
+        to: '/instructor/my-classrooms',
         search: {
           redirect: location.href,
         },

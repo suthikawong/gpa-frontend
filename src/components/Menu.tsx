@@ -1,7 +1,7 @@
 import { api } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { appPaths, menuItems } from '@/config'
+import { appPaths, instructorMenuItems, Roles, studentMenuItems } from '@/config'
 import { useAuth } from '@/hooks/auth'
 import { cn } from '@/lib/utils'
 import { Link, useRouter } from '@tanstack/react-router'
@@ -73,6 +73,8 @@ export default function Menu() {
   const { user, setUser } = useAuth()
   const [open, setOpen] = useState(false)
 
+  const menuItems = user?.roleId === Roles.Instructor ? instructorMenuItems : studentMenuItems
+
   const onClickSignout = async () => {
     await api.auth.logout()
     setUser(undefined)
@@ -87,7 +89,7 @@ export default function Menu() {
   }
 
   return (
-    <header className="w-full border-b shadow-sm px-6 py-2 flex items-center justify-between flex-grow bg-primary-foreground">
+    <header className="w-full border-b shadow-sm px-6 flex items-center justify-between flex-grow bg-primary-foreground max-h-[52px] md:max-h-[68px]">
       <div className="flex items-center gap-2">
         <AppLogo />
       </div>

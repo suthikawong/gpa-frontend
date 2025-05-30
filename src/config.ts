@@ -2,18 +2,31 @@ export const appPaths = {
   signIn: '/signin',
   profile: '/profile',
   instructor: {
-    myClassroom: '/instructor/my-classroom',
+    myClassrooms: '/instructor/my-classrooms',
   },
   student: {
-    myClassroom: '/student/my-classroom',
+    myClassrooms: '/student/my-classrooms',
   },
 }
 
-export const menuItems = [
+export const instructorMenuItems = [
   {
-    name: 'My Classroom',
+    name: 'My Classrooms',
     icon: 'LayoutDashboard',
-    href: appPaths.instructor.myClassroom,
+    href: appPaths.instructor.myClassrooms,
+  },
+  {
+    name: 'Profile',
+    icon: 'UserRound',
+    href: appPaths.profile,
+  },
+]
+
+export const studentMenuItems = [
+  {
+    name: 'My Classrooms',
+    icon: 'LayoutDashboard',
+    href: appPaths.student.myClassrooms,
   },
   {
     name: 'Profile',
