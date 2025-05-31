@@ -17,7 +17,8 @@ import { Route as ProfileImport } from './routes/profile'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
-import { Route as InstructorMyClassroomsImport } from './routes/instructor/my-classrooms'
+import { Route as InstructorMyClassroomsIndexImport } from './routes/instructor/my-classrooms/index'
+import { Route as InstructorMyClassroomsClassroomIdImport } from './routes/instructor/my-classrooms/$classroomId'
 
 // Create/Update Routes
 
@@ -57,11 +58,19 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const InstructorMyClassroomsRoute = InstructorMyClassroomsImport.update({
-  id: '/instructor/my-classrooms',
-  path: '/instructor/my-classrooms',
-  getParentRoute: () => rootRoute,
-} as any)
+const InstructorMyClassroomsIndexRoute =
+  InstructorMyClassroomsIndexImport.update({
+    id: '/instructor/my-classrooms/',
+    path: '/instructor/my-classrooms/',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorMyClassroomsClassroomIdRoute =
+  InstructorMyClassroomsClassroomIdImport.update({
+    id: '/instructor/my-classrooms/$classroomId',
+    path: '/instructor/my-classrooms/$classroomId',
+    getParentRoute: () => rootRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -109,11 +118,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
-    '/instructor/my-classrooms': {
-      id: '/instructor/my-classrooms'
+    '/instructor/my-classrooms/$classroomId': {
+      id: '/instructor/my-classrooms/$classroomId'
+      path: '/instructor/my-classrooms/$classroomId'
+      fullPath: '/instructor/my-classrooms/$classroomId'
+      preLoaderRoute: typeof InstructorMyClassroomsClassroomIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/my-classrooms/': {
+      id: '/instructor/my-classrooms/'
       path: '/instructor/my-classrooms'
       fullPath: '/instructor/my-classrooms'
-      preLoaderRoute: typeof InstructorMyClassroomsImport
+      preLoaderRoute: typeof InstructorMyClassroomsIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -128,7 +144,8 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/instructor/my-classrooms': typeof InstructorMyClassroomsRoute
+  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdRoute
+  '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -138,7 +155,8 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/instructor/my-classrooms': typeof InstructorMyClassroomsRoute
+  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdRoute
+  '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
 }
 
 export interface FileRoutesById {
@@ -149,14 +167,31 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/instructor/my-classrooms': typeof InstructorMyClassroomsRoute
+  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdRoute
+  '/instructor/my-classrooms/': typeof InstructorMyClassroomsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/forgot-password' | '/profile' | '/signin' | '/signup' | '/instructor/my-classrooms'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/forgot-password'
+    | '/profile'
+    | '/signin'
+    | '/signup'
+    | '/instructor/my-classrooms/$classroomId'
+    | '/instructor/my-classrooms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/forgot-password' | '/profile' | '/signin' | '/signup' | '/instructor/my-classrooms'
+  to:
+    | '/'
+    | '/about'
+    | '/forgot-password'
+    | '/profile'
+    | '/signin'
+    | '/signup'
+    | '/instructor/my-classrooms/$classroomId'
+    | '/instructor/my-classrooms'
   id:
     | '__root__'
     | '/'
@@ -165,7 +200,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
-    | '/instructor/my-classrooms'
+    | '/instructor/my-classrooms/$classroomId'
+    | '/instructor/my-classrooms/'
   fileRoutesById: FileRoutesById
 }
 
@@ -176,7 +212,8 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
-  InstructorMyClassroomsRoute: typeof InstructorMyClassroomsRoute
+  InstructorMyClassroomsClassroomIdRoute: typeof InstructorMyClassroomsClassroomIdRoute
+  InstructorMyClassroomsIndexRoute: typeof InstructorMyClassroomsIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -186,10 +223,14 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
-  InstructorMyClassroomsRoute: InstructorMyClassroomsRoute,
+  InstructorMyClassroomsClassroomIdRoute:
+    InstructorMyClassroomsClassroomIdRoute,
+  InstructorMyClassroomsIndexRoute: InstructorMyClassroomsIndexRoute,
 }
 
-export const routeTree = rootRoute._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()
+export const routeTree = rootRoute
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -203,7 +244,8 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)._addFileT
         "/profile",
         "/signin",
         "/signup",
-        "/instructor/my-classrooms"
+        "/instructor/my-classrooms/$classroomId",
+        "/instructor/my-classrooms/"
       ]
     },
     "/": {
@@ -224,8 +266,11 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)._addFileT
     "/signup": {
       "filePath": "signup.tsx"
     },
-    "/instructor/my-classrooms": {
-      "filePath": "instructor/my-classrooms.tsx"
+    "/instructor/my-classrooms/$classroomId": {
+      "filePath": "instructor/my-classrooms/$classroomId.tsx"
+    },
+    "/instructor/my-classrooms/": {
+      "filePath": "instructor/my-classrooms/index.tsx"
     }
   }
 }

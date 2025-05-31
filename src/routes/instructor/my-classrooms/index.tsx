@@ -8,12 +8,13 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { ClassroomWithInstitute } from 'gpa-backend/src/classroom/dto/classroom.response'
+import { Classroom } from 'gpa-backend/src/drizzle/schema'
 import { Landmark, Plus } from 'lucide-react'
 import { useEffect } from 'react'
 
-export const Route = createFileRoute('/instructor/my-classrooms')({
+export const Route = createFileRoute('/instructor/my-classrooms/')({
   component: RouteComponent,
   beforeLoad: ({ context, location }) => {
     if (!context.user?.userId) {
@@ -75,6 +76,12 @@ function RouteComponent() {
 }
 
 const ClassroomCard = ({ data }: { data: ClassroomWithInstitute }) => {
+  const router = useRouter()
+
+  const onClickClassroom = (classroomId: Classroom['classroomId']) => {
+    router.history.push(`/instructor/my-classrooms/${classroomId}`)
+  }
+
   return (
     <Card className="w-full">
       <CardContent className="flex-col">
@@ -90,7 +97,8 @@ const ClassroomCard = ({ data }: { data: ClassroomWithInstitute }) => {
             </div>
           </div>
           <Badge
-            variant="secondary"
+            size="lg"
+            variant={data.isActive ? 'success' : 'destructive'}
             className="h-fit mt-1"
             asChild
           >
@@ -101,15 +109,26 @@ const ClassroomCard = ({ data }: { data: ClassroomWithInstitute }) => {
           <div className="flex gap-x-2">
             <div className="text-muted-foreground text-sm">Class Code:</div>
             <Badge
-              className="bg-muted text-foreground rounded-sm h-fit"
+              variant="secondary"
+              className="rounded-sm h-fit"
               asChild
             >
               <div>{data.classroomCode}</div>
             </Badge>
           </div>
-          <Button className="hidden sm:block">View Details</Button>
+          <Button
+            className="hidden sm:block"
+            onClick={() => onClickClassroom(data.classroomId)}
+          >
+            View Details
+          </Button>
         </div>
-        <Button className="w-full sm:hidden">View Details</Button>
+        <Button
+          className="w-full sm:hidden"
+          onClick={() => onClickClassroom(data.classroomId)}
+        >
+          View Details
+        </Button>
       </CardContent>
     </Card>
   )

@@ -12,12 +12,19 @@ const badgeVariants = cva(
         default: 'border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90',
         secondary: 'border-transparent bg-secondary text-primary [a&]:hover:bg-secondary/90',
         destructive:
-          'border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+          'border-transparent bg-destructive/90 text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
         outline: 'text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
+        success:
+          'border-transparent bg-success/90 text-white [a&]:hover:bg-success/90 focus-visible:ring-success/20 dark:focus-visible:ring-success/40 dark:bg-success/60',
+      },
+      size: {
+        default: 'px-2 py-0.5',
+        lg: 'px-3 py-1',
       },
     },
     defaultVariants: {
       variant: 'default',
+      size: 'default',
     },
   }
 )
@@ -25,6 +32,7 @@ const badgeVariants = cva(
 function Badge({
   className,
   variant,
+  size,
   asChild = false,
   ...props
 }: React.ComponentProps<'span'> & VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
@@ -33,7 +41,7 @@ function Badge({
   return (
     <Comp
       data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
+      className={cn(badgeVariants({ variant, size }), className)}
       {...props}
     />
   )
