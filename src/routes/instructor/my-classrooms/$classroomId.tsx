@@ -220,9 +220,9 @@ const DeleteClassroomDialog = ({
       redirectTo={appPaths.instructor.myClassrooms}
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
-          <p className="mt-1 text-sm">
+          <div className="mt-1 text-sm">
             Deleting this classroom will also remove all associated information, including:
-          </p>
+          </div>
 
           <div className="rounded-xl border border-gray-200 bg-muted p-5">
             <ul className="list-inside list-disc space-y-1 text-sm">
@@ -237,9 +237,9 @@ const DeleteClassroomDialog = ({
               <li>Student marks</li>
             </ul>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
+          <div className="mt-4 text-sm text-muted-foreground">
             This action cannot be undone. Please make sure you've backed up any important data before continuing.
-          </p>
+          </div>
         </div>
       }
     />
