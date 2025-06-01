@@ -12,8 +12,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
 import { appPaths } from '@/config'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
@@ -67,10 +68,15 @@ function RouteComponent() {
               defaultValue="assignments"
               className="flex flex-col flex-grow"
             >
-              <TabsList>
-                <TabsTrigger value="assignments">Assignments</TabsTrigger>
-                <TabsTrigger value="students">Students</TabsTrigger>
-              </TabsList>
+              <ScrollArea>
+                <div className="w-full relative">
+                  <TabsList>
+                    <TabsTrigger value="assignments">Assignments</TabsTrigger>
+                    <TabsTrigger value="students">Students</TabsTrigger>
+                  </TabsList>
+                </div>
+                <TabsScrollBar />
+              </ScrollArea>
               <TabsContent value="assignments">
                 <AssignmentsTab classroomId={classroomId} />
               </TabsContent>

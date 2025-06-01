@@ -2,6 +2,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs'
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import { ScrollBar } from './scroll-area'
 import { Separator } from './separator'
 
 function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Root>) {
@@ -55,4 +56,14 @@ function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPr
   )
 }
 
-export { Tabs, TabsContent, TabsList, TabsTrigger }
+function TabsScrollBar() {
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  return (
+    <ScrollBar
+      orientation="horizontal"
+      className={isMobile ? 'hidden' : ''}
+    />
+  )
+}
+
+export { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger }
