@@ -68,7 +68,7 @@ const ClassroomDialog = ({ triggerButton, data }: ClassroomDialogProps) => {
     onSuccess: () => {
       setOpen(false)
       toast.success('Classroom updated successfully')
-      queryClient.invalidateQueries({ queryKey: [`getClassroomById-${data?.classroomId}`] })
+      queryClient.invalidateQueries({ queryKey: ['getClassroomById', data?.classroomId.toString()] })
       form.reset()
     },
     onError: () => {

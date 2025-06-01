@@ -1,8 +1,9 @@
 import { api } from '@/api'
 import ActionCard from '@/components/common/ActionCard'
+import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
 import ClassroomDialog from '@/components/common/dialog/ClassroomDialog'
-import ConfirmDeleteDialog from '@/components/common/dialog/ConfirmDeleteDialog'
 import EmptyState from '@/components/common/EmptyState'
+import { PaginationControlled } from '@/components/common/PaginationControlled'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
@@ -19,7 +20,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { ClassroomWithInstructor } from 'gpa-backend/src/classroom/dto/classroom.response'
 import { Classroom } from 'gpa-backend/src/drizzle/schema'
 import { Landmark, Pencil, Plus, Trash2, Users } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/instructor/my-classrooms/$classroomId')({
   component: RouteComponent,
@@ -43,7 +44,7 @@ function RouteComponent() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: [`getClassroomById-${classroomId}`],
+    queryKey: ['getClassroomById', classroomId],
     queryFn: async () => await api.classroom.getClassroomById({ classroomId: parseInt(classroomId) }),
   })
 
@@ -59,9 +60,12 @@ function RouteComponent() {
     <DashboardLayout className="gap-4">
       <SuspenseArea loading={isLoading}>
         {data && (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-8 flex-grow">
             <ClassroomCard data={data} />
-            <Tabs defaultValue="assignments">
+            <Tabs
+              defaultValue="assignments"
+              className="flex flex-col flex-grow"
+            >
               <TabsList>
                 <TabsTrigger value="assignments">Assignments</TabsTrigger>
                 <TabsTrigger value="students">Students</TabsTrigger>
@@ -69,8 +73,11 @@ function RouteComponent() {
               <TabsContent value="assignments">
                 <AssignmentsTab classroomId={parseInt(classroomId)} />
               </TabsContent>
-              <TabsContent value="students">
-                <StudentsTab />
+              <TabsContent
+                value="students"
+                className="flex flex-col flex-grow"
+              >
+                <StudentsTab classroomId={parseInt(classroomId)} />
               </TabsContent>
             </Tabs>
           </div>
@@ -238,13 +245,13 @@ const DeleteClassroomDialog = ({
   )
 }
 
-const AssignmentsTab = ({ classroomId }: { classroomId: number }) => {
+const AssignmentsTab = ({ classroomId }: { classroomId: Classroom['classroomId'] }) => {
   const {
     data: res,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['getAssignmentByClassroomId'],
+    queryKey: ['getAssignmentByClassroomId', classroomId],
     queryFn: async () => await api.classroom.getAssignmentByClassroomId({ classroomId }),
   })
 
@@ -265,7 +272,7 @@ const AssignmentsTab = ({ classroomId }: { classroomId: number }) => {
           Create
         </Button>
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 flex-grow">
         <SuspenseArea loading={isLoading}>
           {data.length == 0 ? (
             <EmptyState
@@ -298,6 +305,81 @@ const AssignmentsTab = ({ classroomId }: { classroomId: number }) => {
   )
 }
 
-const StudentsTab = () => {
-  return <div>Change your password here.</div>
+const StudentsTab = ({ classroomId }: { classroomId: Classroom['classroomId'] }) => {
+  const [page, setPage] = useState(1)
+  const pageSize = 4
+
+  const {
+    data: res,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['searchStudentsInClassroom', classroomId, page],
+    queryFn: async () => {
+      return await api.classroom.searchStudentsInClassroom({
+        classroomId,
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+      })
+    },
+  })
+
+  const data = res?.data ?? []
+  const total = res?.total ?? 0
+
+  useEffect(() => {
+    if (error) {
+      toast.error('Something went wrong. Please try again.')
+    }
+  }, [error])
+
+  return (
+    <>
+      <div className="flex justify-between mb-6">
+        <div className="text-2xl font-semibold">Students</div>
+        <Button>
+          <Plus />
+          Create
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-4 flex-grow">
+        <div className="flex flex-col flex-grow gap-4 ">
+          <SuspenseArea loading={isLoading}>
+            {data.length == 0 ? (
+              <EmptyState
+                title="No Classrooms Yet"
+                description1="It looks like you haven't created any classrooms."
+                icon={<NoDocuments className="w-[200px] h-[160px] md:w-[350px] md:h-[280px]" />}
+                action={<Button>Create Assignment</Button>}
+              />
+            ) : (
+              data.map((student, index) => {
+                return (
+                  <ActionCard
+                    key={index}
+                    header={student.name}
+                    actions={[
+                      <Button
+                        variant="outline"
+                        onClick={() => console.log('view')}
+                      >
+                        View <span className="hidden md:block">Details</span>
+                      </Button>,
+                    ]}
+                  />
+                )
+              })
+            )}
+          </SuspenseArea>
+        </div>
+        <PaginationControlled
+          page={page}
+          pageSize={pageSize}
+          totalCount={total}
+          onPageChange={setPage}
+        />
+      </div>
+    </>
+  )
 }
