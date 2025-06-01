@@ -69,10 +69,10 @@ const ConfirmDeleteDialog = <T,>({
           <DialogDescription className="hidden">
             This action cannot be undone. This will permanently delete the selected item.
           </DialogDescription>
-          <div className="text-sm text-muted-foreground">
-            {content ?? 'This action cannot be undone. This will permanently delete the selected item.'}
-          </div>
         </DialogHeader>
+        <div className="text-sm text-muted-foreground">
+          {content ?? 'This action cannot be undone. This will permanently delete the selected item.'}
+        </div>
         <DialogFooter>
           <Button
             variant="destructiveOutline"
