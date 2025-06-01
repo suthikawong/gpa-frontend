@@ -1,11 +1,17 @@
 import {
+  CreateClassroomRequest,
+  DeleteClassroomRequest,
   GetAssignmentsByClassroomIdRequest,
   GetClassroomByIdRequest,
+  UpdateClassroomRequest,
 } from 'gpa-backend/src/classroom/dto/classroom.request'
 import {
+  CreateClassroomResponse,
+  DeleteClassroomResponse,
   GetAssignmentsByClassroomIdResponse,
   GetClassroomByIdResponse,
   GetClassroomsByInstructorResponse,
+  UpdateClassroomResponse,
 } from 'gpa-backend/src/classroom/dto/classroom.response'
 import { AppResponse } from '../../gpa-backend/src/app.response'
 import axios from './axios'
@@ -22,6 +28,23 @@ const getClassroomById = async ({
   return response.data
 }
 
+const createClassroom = async (data: CreateClassroomRequest): Promise<AppResponse<CreateClassroomResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/classroom`, data)
+  return response.data
+}
+
+const updateClassroom = async (data: UpdateClassroomRequest): Promise<AppResponse<UpdateClassroomResponse>> => {
+  const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/classroom`, data)
+  return response.data
+}
+
+const deleteClassroom = async ({
+  classroomId,
+}: DeleteClassroomRequest): Promise<AppResponse<DeleteClassroomResponse>> => {
+  const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/classroom/${classroomId}`)
+  return response.data
+}
+
 const getAssignmentByClassroomId = async ({
   classroomId,
 }: GetAssignmentsByClassroomIdRequest): Promise<AppResponse<GetAssignmentsByClassroomIdResponse>> => {
@@ -32,5 +55,8 @@ const getAssignmentByClassroomId = async ({
 export const classroom = {
   getInstructorClassrooms,
   getClassroomById,
+  createClassroom,
+  updateClassroom,
+  deleteClassroom,
   getAssignmentByClassroomId,
 }

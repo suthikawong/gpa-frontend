@@ -1,6 +1,7 @@
 import { api } from '@/api'
+import ClassroomDialog from '@/components/common/dialog/ClassroomDialog'
 import EmptyState from '@/components/common/EmptyState'
-import SuspenseArea from '@/components/common/LoadingArea'
+import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import NoDocuments from '@/components/svg/NoDocuments'
@@ -47,10 +48,14 @@ function RouteComponent() {
     <DashboardLayout className="gap-4">
       <div className="flex justify-between items-center md:mb-4">
         <div className="text-xl font-bold md:text-3xl">My Classrooms</div>
-        <Button size="lg">
-          <Plus />
-          Create
-        </Button>
+        <ClassroomDialog
+          triggerButton={
+            <Button size="lg">
+              <Plus />
+              Create
+            </Button>
+          }
+        />
       </div>
       <SuspenseArea loading={isLoading}>
         {data.length == 0 ? (

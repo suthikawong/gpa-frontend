@@ -1,4 +1,5 @@
 import { api } from '@/api'
+import SuspenseArea from '@/components/common/SuspenseArea'
 import { useAuth } from '@/hooks/auth'
 import { ReactNode, useState } from 'react'
 
@@ -24,7 +25,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       })
   }
 
-  if (loading) return <div>Loading...</div>
-
-  return children
+  return (
+    <SuspenseArea
+      loading={loading}
+      className="items-center"
+    >
+      {children}
+    </SuspenseArea>
+  )
 }

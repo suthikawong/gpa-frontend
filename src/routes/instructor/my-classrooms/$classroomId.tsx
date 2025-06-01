@@ -1,7 +1,9 @@
 import { api } from '@/api'
 import ActionCard from '@/components/common/ActionCard'
+import ClassroomDialog from '@/components/common/dialog/ClassroomDialog'
+import ConfirmDeleteDialog from '@/components/common/dialog/ConfirmDeleteDialog'
 import EmptyState from '@/components/common/EmptyState'
-import SuspenseArea from '@/components/common/LoadingArea'
+import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import NoDocuments from '@/components/svg/NoDocuments'
@@ -11,9 +13,11 @@ import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/c
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { appPaths } from '@/config'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { ClassroomWithInstructor } from 'gpa-backend/src/classroom/dto/classroom.response'
+import { Classroom } from 'gpa-backend/src/drizzle/schema'
 import { Landmark, Pencil, Plus, Trash2, Users } from 'lucide-react'
 import { useEffect } from 'react'
 
@@ -39,7 +43,7 @@ function RouteComponent() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['getClassroomById'],
+    queryKey: [`getClassroomById-${classroomId}`],
     queryFn: async () => await api.classroom.getClassroomById({ classroomId: parseInt(classroomId) }),
   })
 
@@ -134,38 +138,103 @@ const ClassroomCard = ({ data }: { data: ClassroomWithInstructor }) => {
             </Badge>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="hidden w-22 md:flex"
-            >
-              <Pencil />
-              Edit
-            </Button>
-            <Button
-              variant="destructiveOutline"
-              className="hidden md:flex"
-            >
-              <Trash2 />
-              Delete
-            </Button>
+            <ClassroomDialog
+              data={data}
+              triggerButton={
+                <Button
+                  variant="outline"
+                  className="hidden w-22 md:flex"
+                >
+                  <Pencil />
+                  Edit
+                </Button>
+              }
+            />
+            <DeleteClassroomDialog
+              triggerButton={
+                <Button
+                  variant="destructiveOutline"
+                  className="hidden md:flex"
+                >
+                  <Trash2 />
+                  Delete
+                </Button>
+              }
+              classroomId={data.classroomId}
+            />
           </div>
         </div>
         <Separator className="md:hidden" />
         <div className="mt-4 flex gap-2 justify-end md:hidden">
-          <Button
-            variant="outline"
-            className="w-22"
-          >
-            <Pencil />
-            Edit
-          </Button>
-          <Button variant="destructiveOutline">
-            <Trash2 />
-            Delete
-          </Button>
+          <ClassroomDialog
+            data={data}
+            triggerButton={
+              <Button
+                variant="outline"
+                className="w-22"
+              >
+                <Pencil />
+                Edit
+              </Button>
+            }
+          />
+          <DeleteClassroomDialog
+            triggerButton={
+              <Button variant="destructiveOutline">
+                <Trash2 />
+                Delete
+              </Button>
+            }
+            classroomId={data.classroomId}
+          />
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+const DeleteClassroomDialog = ({
+  triggerButton,
+  classroomId,
+}: {
+  triggerButton: React.ReactNode
+  classroomId: Classroom['classroomId']
+}) => {
+  return (
+    <ConfirmDeleteDialog
+      triggerButton={triggerButton}
+      data={{ classroomId }}
+      api={api.classroom.deleteClassroom}
+      title="Delete Classroom"
+      onSuccessMessage="Classroom deleted successfully."
+      onErrorMessage="Failed to delete classroom."
+      refetchKeys={['getInstructorClassrooms']}
+      redirectTo={appPaths.instructor.myClassrooms}
+      content={
+        <div className="space-y-4 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm">
+            Deleting this classroom will also remove all associated information, including:
+          </p>
+
+          <div className="rounded-xl border border-gray-200 bg-muted p-5">
+            <ul className="list-inside list-disc space-y-1 text-sm">
+              <li>Assignments</li>
+              <li>Students</li>
+              <li>Groups</li>
+              <li>Criteria</li>
+              <li>Model configuration</li>
+              <li>Assessment periods</li>
+              <li>Assessment questions</li>
+              <li>Group marks</li>
+              <li>Student marks</li>
+            </ul>
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            This action cannot be undone. Please make sure you've backed up any important data before continuing.
+          </p>
+        </div>
+      }
+    />
   )
 }
 
