@@ -9,8 +9,8 @@ interface IActionCard {
 
 const ActionCard = ({ header, body, actions }: IActionCard) => {
   return (
-    <Card className="w-full md:py-3">
-      <CardContent className="flex-col md:pl-4 md:pr-3">
+    <Card className="w-full py-3!">
+      <CardContent className="flex-col pl-3 pr-3! md:pl-4">
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
             <CardTitle>{header}</CardTitle>

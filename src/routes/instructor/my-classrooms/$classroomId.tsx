@@ -296,6 +296,7 @@ const AssignmentsTab = ({ classroomId }: { classroomId: Classroom['classroomId']
                   header={assignment.assignmentName}
                   actions={[
                     <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => console.log('view')}
                     >
@@ -368,6 +369,7 @@ const StudentsTab = ({ classroomId }: { classroomId: Classroom['classroomId'] })
                     header={student.name}
                     actions={[
                       <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => console.log('view')}
                       >
