@@ -37,7 +37,8 @@ export const Route = createFileRoute('/instructor/my-classrooms/$classroomId')({
 })
 
 function RouteComponent() {
-  const { classroomId } = Route.useParams()
+  const params = Route.useParams()
+  const classroomId = parseInt(params.classroomId)
 
   const {
     data: res,
@@ -45,7 +46,7 @@ function RouteComponent() {
     error,
   } = useQuery({
     queryKey: ['getClassroomById', classroomId],
-    queryFn: async () => await api.classroom.getClassroomById({ classroomId: parseInt(classroomId) }),
+    queryFn: async () => await api.classroom.getClassroomById({ classroomId }),
   })
 
   const data = res?.data ?? null
@@ -71,13 +72,13 @@ function RouteComponent() {
                 <TabsTrigger value="students">Students</TabsTrigger>
               </TabsList>
               <TabsContent value="assignments">
-                <AssignmentsTab classroomId={parseInt(classroomId)} />
+                <AssignmentsTab classroomId={classroomId} />
               </TabsContent>
               <TabsContent
                 value="students"
                 className="flex flex-col flex-grow"
               >
-                <StudentsTab classroomId={parseInt(classroomId)} />
+                <StudentsTab classroomId={classroomId} />
               </TabsContent>
             </Tabs>
           </div>
