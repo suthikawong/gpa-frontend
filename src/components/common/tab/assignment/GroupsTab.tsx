@@ -2,31 +2,29 @@ import { api } from '@/api'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
-import { Assignment, Classroom } from 'gpa-backend/src/drizzle/schema'
+import { Assignment } from 'gpa-backend/src/drizzle/schema'
 import { Plus } from 'lucide-react'
 import { useEffect } from 'react'
 import ActionCard from '../../ActionCard'
-import AssignmentDialog from '../../dialog/AssignmentDialog'
 import EmptyState from '../../EmptyState'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
 
-const AssignmentsTab = ({ classroomId }: { classroomId: Classroom['classroomId'] }) => {
-  const router = useRouter()
-  const pathname = router.state.location.pathname
+const GroupsTab = ({ assignmentId }: { assignmentId: Assignment['assignmentId'] }) => {
+  // const router = useRouter()
+  // const pathname = router.state.location.pathname
 
-  const onClickAssignment = (assignmentId: Assignment['assignmentId']) => {
-    router.history.push(`${pathname}/assignment/${assignmentId}`)
-  }
+  // const onClickGroup = (groupId: Group['groupId']) => {
+  //   router.history.push(`${pathname}/assignment/${assignmentId}`)
+  // }
 
   const {
     data: res,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['getAssignmentByClassroomId', classroomId],
-    queryFn: async () => await api.classroom.getAssignmentByClassroomId({ classroomId }),
+    queryKey: ['getGroupsByAssignmentId', assignmentId],
+    queryFn: async () => await api.assignment.getGroupsByAssignmentId({ assignmentId }),
   })
 
   const data = res?.data ?? []
@@ -40,15 +38,11 @@ const AssignmentsTab = ({ classroomId }: { classroomId: Classroom['classroomId']
   return (
     <div>
       <div className="flex justify-between mb-6">
-        <div className="text-2xl font-semibold">Assignments</div>
-        <AssignmentDialog
-          triggerButton={
-            <Button>
-              <Plus />
-              Create
-            </Button>
-          }
-        />
+        <div className="text-2xl font-semibold">Groups</div>
+        <Button>
+          <Plus />
+          Create
+        </Button>
       </div>
       <div className="flex flex-col gap-4 flex-grow">
         <SuspenseArea loading={isLoading}>
@@ -57,19 +51,19 @@ const AssignmentsTab = ({ classroomId }: { classroomId: Classroom['classroomId']
               title="No Classrooms Yet"
               description1="It looks like you haven't created any classrooms."
               icon={<NoDocuments className="w-[200px] h-[160px] md:w-[350px] md:h-[280px]" />}
-              action={<Button>Create Assignment</Button>}
+              action={<Button>Create Group</Button>}
             />
           ) : (
-            data.map((assignment, index) => {
+            data.map((group, index) => {
               return (
                 <ActionCard
                   key={index}
-                  header={assignment.assignmentName}
+                  header={group.groupName}
                   actions={[
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => onClickAssignment(assignment.assignmentId)}
+                      // onClick={() => onClickGroup(group.groupId)}
                     >
                       View <span className="hidden md:block">Details</span>
                     </Button>,
@@ -84,4 +78,4 @@ const AssignmentsTab = ({ classroomId }: { classroomId: Classroom['classroomId']
   )
 }
 
-export default AssignmentsTab
+export default GroupsTab
