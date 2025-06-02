@@ -21,7 +21,7 @@ import { Classroom } from 'gpa-backend/src/drizzle/schema'
 import { Landmark, Pencil, Trash2, Users } from 'lucide-react'
 import { useEffect } from 'react'
 
-export const Route = createFileRoute('/instructor/my-classrooms/$classroomId')({
+export const Route = createFileRoute('/instructor/my-classrooms/$classroomId/')({
   component: RouteComponent,
   beforeLoad: ({ context, location }) => {
     if (!context.user?.userId) {

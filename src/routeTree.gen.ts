@@ -18,7 +18,7 @@ import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 import { Route as InstructorMyClassroomsIndexImport } from './routes/instructor/my-classrooms/index'
-import { Route as InstructorMyClassroomsClassroomIdImport } from './routes/instructor/my-classrooms/$classroomId'
+import { Route as InstructorMyClassroomsClassroomIdIndexImport } from './routes/instructor/my-classrooms/$classroomId/index'
 
 // Create/Update Routes
 
@@ -65,10 +65,10 @@ const InstructorMyClassroomsIndexRoute =
     getParentRoute: () => rootRoute,
   } as any)
 
-const InstructorMyClassroomsClassroomIdRoute =
-  InstructorMyClassroomsClassroomIdImport.update({
-    id: '/instructor/my-classrooms/$classroomId',
-    path: '/instructor/my-classrooms/$classroomId',
+const InstructorMyClassroomsClassroomIdIndexRoute =
+  InstructorMyClassroomsClassroomIdIndexImport.update({
+    id: '/instructor/my-classrooms/$classroomId/',
+    path: '/instructor/my-classrooms/$classroomId/',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -118,18 +118,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
-    '/instructor/my-classrooms/$classroomId': {
-      id: '/instructor/my-classrooms/$classroomId'
-      path: '/instructor/my-classrooms/$classroomId'
-      fullPath: '/instructor/my-classrooms/$classroomId'
-      preLoaderRoute: typeof InstructorMyClassroomsClassroomIdImport
-      parentRoute: typeof rootRoute
-    }
     '/instructor/my-classrooms/': {
       id: '/instructor/my-classrooms/'
       path: '/instructor/my-classrooms'
       fullPath: '/instructor/my-classrooms'
       preLoaderRoute: typeof InstructorMyClassroomsIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/my-classrooms/$classroomId/': {
+      id: '/instructor/my-classrooms/$classroomId/'
+      path: '/instructor/my-classrooms/$classroomId'
+      fullPath: '/instructor/my-classrooms/$classroomId'
+      preLoaderRoute: typeof InstructorMyClassroomsClassroomIdIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -144,8 +144,8 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdRoute
   '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
+  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -155,8 +155,8 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdRoute
   '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
+  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdIndexRoute
 }
 
 export interface FileRoutesById {
@@ -167,8 +167,8 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdRoute
   '/instructor/my-classrooms/': typeof InstructorMyClassroomsIndexRoute
+  '/instructor/my-classrooms/$classroomId/': typeof InstructorMyClassroomsClassroomIdIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -180,8 +180,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
-    | '/instructor/my-classrooms/$classroomId'
     | '/instructor/my-classrooms'
+    | '/instructor/my-classrooms/$classroomId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -190,8 +190,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
-    | '/instructor/my-classrooms/$classroomId'
     | '/instructor/my-classrooms'
+    | '/instructor/my-classrooms/$classroomId'
   id:
     | '__root__'
     | '/'
@@ -200,8 +200,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
-    | '/instructor/my-classrooms/$classroomId'
     | '/instructor/my-classrooms/'
+    | '/instructor/my-classrooms/$classroomId/'
   fileRoutesById: FileRoutesById
 }
 
@@ -212,8 +212,8 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
-  InstructorMyClassroomsClassroomIdRoute: typeof InstructorMyClassroomsClassroomIdRoute
   InstructorMyClassroomsIndexRoute: typeof InstructorMyClassroomsIndexRoute
+  InstructorMyClassroomsClassroomIdIndexRoute: typeof InstructorMyClassroomsClassroomIdIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -223,9 +223,9 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
-  InstructorMyClassroomsClassroomIdRoute:
-    InstructorMyClassroomsClassroomIdRoute,
   InstructorMyClassroomsIndexRoute: InstructorMyClassroomsIndexRoute,
+  InstructorMyClassroomsClassroomIdIndexRoute:
+    InstructorMyClassroomsClassroomIdIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -244,8 +244,8 @@ export const routeTree = rootRoute
         "/profile",
         "/signin",
         "/signup",
-        "/instructor/my-classrooms/$classroomId",
-        "/instructor/my-classrooms/"
+        "/instructor/my-classrooms/",
+        "/instructor/my-classrooms/$classroomId/"
       ]
     },
     "/": {
@@ -266,11 +266,11 @@ export const routeTree = rootRoute
     "/signup": {
       "filePath": "signup.tsx"
     },
-    "/instructor/my-classrooms/$classroomId": {
-      "filePath": "instructor/my-classrooms/$classroomId.tsx"
-    },
     "/instructor/my-classrooms/": {
       "filePath": "instructor/my-classrooms/index.tsx"
+    },
+    "/instructor/my-classrooms/$classroomId/": {
+      "filePath": "instructor/my-classrooms/$classroomId/index.tsx"
     }
   }
 }
