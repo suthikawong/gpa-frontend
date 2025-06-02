@@ -1,4 +1,5 @@
 import { api } from '@/api'
+import { Breadcrumbs } from '@/components/common/Breadcrumbs'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
 import AssignmentDialog from '@/components/common/dialog/AssignmentDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
@@ -39,6 +40,7 @@ export const Route = createFileRoute('/instructor/my-classrooms/$classroomId/ass
 
 function RouteComponent() {
   const params = Route.useParams()
+  const classroomId = parseInt(params.classroomId)
   const assignmentId = parseInt(params.assignmentId)
 
   const {
@@ -63,7 +65,19 @@ function RouteComponent() {
       <SuspenseArea loading={isLoading}>
         {data && (
           <div className="flex flex-col gap-8 flex-grow">
-            <AssignmentCard data={data} />
+            <div className="flex flex-col gap-6">
+              <Breadcrumbs
+                items={[
+                  { label: 'Classroom', href: `/instructor/my-classrooms/${classroomId}` },
+                  {
+                    label: 'Assignment',
+                    href: `/instructor/my-classrooms/${classroomId}/assignment/${assignmentId}`,
+                    isCurrentPage: true,
+                  },
+                ]}
+              />
+              <AssignmentCard data={data} />
+            </div>
             <Tabs
               defaultValue="groups"
               className="flex flex-col flex-grow"
