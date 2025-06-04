@@ -222,6 +222,7 @@ const DeleteClassroomDialog = ({
       onErrorMessage="Failed to delete classroom."
       refetchKeys={['getInstructorClassrooms']}
       redirectTo={appPaths.instructor.myClassrooms}
+      className="sm:!max-w-[600px]"
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">
