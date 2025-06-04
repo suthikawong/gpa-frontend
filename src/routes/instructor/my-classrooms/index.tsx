@@ -62,7 +62,7 @@ function RouteComponent() {
           <EmptyState
             title="No Classrooms Yet"
             description1="It looks like you haven't created any classrooms."
-            icon={<NoDocuments className="w-[200px] h-[160px] md:w-[350px] md:h-[280px]" />}
+            icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
             action={<Button>Create Classroom</Button>}
           />
         ) : (
