@@ -15,12 +15,11 @@ import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/c
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
-import { appPaths } from '@/config'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { GetAssignmentByIdResponse } from 'gpa-backend/src/assignment/dto/assignment.response'
-import { Classroom } from 'gpa-backend/src/drizzle/schema'
+import { Assignment, Classroom } from 'gpa-backend/src/drizzle/schema'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useEffect } from 'react'
 
@@ -146,7 +145,7 @@ const AssignmentCard = ({ data }: { data: GetAssignmentByIdResponse }) => {
                 </Button>
               }
             />
-            <DeleteClassroomDialog
+            <DeleteAssignmentDialog
               triggerButton={
                 <Button variant="destructiveOutline">
                   <Trash2 />
@@ -154,6 +153,7 @@ const AssignmentCard = ({ data }: { data: GetAssignmentByIdResponse }) => {
                 </Button>
               }
               classroomId={data.classroomId}
+              assignmentId={data.assignmentId}
             />
           </div>
         </div>
@@ -172,7 +172,7 @@ const AssignmentCard = ({ data }: { data: GetAssignmentByIdResponse }) => {
               </Button>
             }
           />
-          <DeleteClassroomDialog
+          <DeleteAssignmentDialog
             triggerButton={
               <Button variant="destructiveOutline">
                 <Trash2 />
@@ -180,6 +180,7 @@ const AssignmentCard = ({ data }: { data: GetAssignmentByIdResponse }) => {
               </Button>
             }
             classroomId={data.classroomId}
+            assignmentId={data.assignmentId}
           />
         </div>
       </CardContent>
@@ -187,33 +188,34 @@ const AssignmentCard = ({ data }: { data: GetAssignmentByIdResponse }) => {
   )
 }
 
-const DeleteClassroomDialog = ({
+const DeleteAssignmentDialog = ({
   triggerButton,
   classroomId,
+  assignmentId,
 }: {
   triggerButton: React.ReactNode
   classroomId: Classroom['classroomId']
+  assignmentId: Assignment['assignmentId']
 }) => {
   return (
     <ConfirmDeleteDialog
       triggerButton={triggerButton}
-      data={{ classroomId }}
-      api={api.classroom.deleteClassroom}
-      title="Delete Classroom"
-      onSuccessMessage="Classroom deleted successfully."
-      onErrorMessage="Failed to delete classroom."
-      refetchKeys={['getInstructorClassrooms']}
-      redirectTo={appPaths.instructor.myClassrooms}
+      data={{ assignmentId }}
+      api={api.assignment.deleteAssignment}
+      title="Delete Assignment"
+      onSuccessMessage="Assignment deleted successfully."
+      onErrorMessage="Failed to delete assignment."
+      refetchKeys={['getInstructorAssignments']}
+      redirectTo={`/instructor/my-classrooms/${classroomId}`}
+      className="sm:!max-w-[600px]"
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">
-            Deleting this classroom will also remove all associated information, including:
+            Deleting this assignment will also remove all associated information, including:
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-muted p-5">
             <ul className="list-inside list-disc space-y-1 text-sm">
-              <li>Assignments</li>
-              <li>Students</li>
               <li>Groups</li>
               <li>Criteria</li>
               <li>Model configuration</li>
