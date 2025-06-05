@@ -20,6 +20,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as InstructorMyClassroomsIndexImport } from './routes/instructor/my-classrooms/index'
 import { Route as InstructorMyClassroomsClassroomIdIndexImport } from './routes/instructor/my-classrooms/$classroomId/index'
 import { Route as InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexImport } from './routes/instructor/my-classrooms/$classroomId/assignment/$assignmentId/index'
+import { Route as InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdImport } from './routes/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
 
 // Create/Update Routes
 
@@ -79,6 +80,15 @@ const InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute =
     path: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/',
     getParentRoute: () => rootRoute,
   } as any)
+
+const InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute =
+  InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdImport.update(
+    {
+      id: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId',
+      path: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId',
+      getParentRoute: () => rootRoute,
+    } as any,
+  )
 
 // Populate the FileRoutesByPath interface
 
@@ -147,6 +157,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexImport
       parentRoute: typeof rootRoute
     }
+    '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId': {
+      id: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
+      path: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
+      fullPath: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
+      preLoaderRoute: typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -162,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
   '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdIndexRoute
   '/instructor/my-classrooms/$classroomId/assignment/$assignmentId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
+  '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -174,6 +192,7 @@ export interface FileRoutesByTo {
   '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
   '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdIndexRoute
   '/instructor/my-classrooms/$classroomId/assignment/$assignmentId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
+  '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute
 }
 
 export interface FileRoutesById {
@@ -187,6 +206,7 @@ export interface FileRoutesById {
   '/instructor/my-classrooms/': typeof InstructorMyClassroomsIndexRoute
   '/instructor/my-classrooms/$classroomId/': typeof InstructorMyClassroomsClassroomIdIndexRoute
   '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
+  '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute
 }
 
 export interface FileRouteTypes {
@@ -201,6 +221,7 @@ export interface FileRouteTypes {
     | '/instructor/my-classrooms'
     | '/instructor/my-classrooms/$classroomId'
     | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId'
+    | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -212,6 +233,7 @@ export interface FileRouteTypes {
     | '/instructor/my-classrooms'
     | '/instructor/my-classrooms/$classroomId'
     | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId'
+    | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
   id:
     | '__root__'
     | '/'
@@ -223,6 +245,7 @@ export interface FileRouteTypes {
     | '/instructor/my-classrooms/'
     | '/instructor/my-classrooms/$classroomId/'
     | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/'
+    | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
   fileRoutesById: FileRoutesById
 }
 
@@ -236,6 +259,7 @@ export interface RootRouteChildren {
   InstructorMyClassroomsIndexRoute: typeof InstructorMyClassroomsIndexRoute
   InstructorMyClassroomsClassroomIdIndexRoute: typeof InstructorMyClassroomsClassroomIdIndexRoute
   InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute: typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
+  InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute: typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -250,6 +274,8 @@ const rootRouteChildren: RootRouteChildren = {
     InstructorMyClassroomsClassroomIdIndexRoute,
   InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute:
     InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute,
+  InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute:
+    InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -270,7 +296,8 @@ export const routeTree = rootRoute
         "/signup",
         "/instructor/my-classrooms/",
         "/instructor/my-classrooms/$classroomId/",
-        "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/"
+        "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/",
+        "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId"
       ]
     },
     "/": {
@@ -299,6 +326,9 @@ export const routeTree = rootRoute
     },
     "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/": {
       "filePath": "instructor/my-classrooms/$classroomId/assignment/$assignmentId/index.tsx"
+    },
+    "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId": {
+      "filePath": "instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId.tsx"
     }
   }
 }

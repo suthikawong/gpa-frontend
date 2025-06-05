@@ -22,7 +22,7 @@ interface ConfirmDeleteDialogProps<T> {
   content?: React.ReactNode
   onSuccessMessage: string
   onErrorMessage: string
-  refetchKeys?: string[]
+  refetchKeys?: (string | number)[]
   redirectTo?: string
   callback?: () => void
   className?: string

@@ -240,6 +240,7 @@ const DeleteClassroomDialog = ({
               <li>Assessment questions</li>
               <li>Group marks</li>
               <li>Student marks</li>
+              <li>Student's peer ratings</li>
             </ul>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">

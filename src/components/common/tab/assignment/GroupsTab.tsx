@@ -2,7 +2,8 @@ import { api } from '@/api'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
-import { Assignment } from 'gpa-backend/src/drizzle/schema'
+import { useRouter } from '@tanstack/react-router'
+import { Assignment, Group } from 'gpa-backend/src/drizzle/schema'
 import { Plus } from 'lucide-react'
 import { useEffect } from 'react'
 import ActionCard from '../../ActionCard'
@@ -11,12 +12,12 @@ import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
 
 const GroupsTab = ({ assignmentId }: { assignmentId: Assignment['assignmentId'] }) => {
-  // const router = useRouter()
-  // const pathname = router.state.location.pathname
+  const router = useRouter()
+  const pathname = router.state.location.pathname
 
-  // const onClickGroup = (groupId: Group['groupId']) => {
-  //   router.history.push(`${pathname}/assignment/${assignmentId}`)
-  // }
+  const onClickGroup = (groupId: Group['groupId']) => {
+    router.history.push(`${pathname}/group/${groupId}`)
+  }
 
   const {
     data: res,
@@ -63,7 +64,7 @@ const GroupsTab = ({ assignmentId }: { assignmentId: Assignment['assignmentId'] 
                     <Button
                       size="sm"
                       variant="outline"
-                      // onClick={() => onClickGroup(group.groupId)}
+                      onClick={() => onClickGroup(group.groupId)}
                     >
                       View <span className="hidden md:block">Details</span>
                     </Button>,
