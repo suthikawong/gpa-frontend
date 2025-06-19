@@ -98,9 +98,9 @@ export default function Menu() {
                 <Avatar className="size-12">
                   <AvatarImage src="https://github.com/shadcn.png" />
                 </Avatar>
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 min-w-0">
                   <Label className="text-[10px] text-muted-foreground">INSTRUCTOR</Label>
-                  <Label>{user?.name}</Label>
+                  <Label className="block truncate">{user?.name}</Label>
                 </div>
               </div>
             </SheetHeader>
@@ -212,9 +212,9 @@ const ProfilePopover = () => {
           <Avatar className="size-12">
             <AvatarImage src="https://github.com/shadcn.png" />
           </Avatar>
-          <div className="space-y-0.5">
+          <div className="space-y-0.5 min-w-0">
             <Label className="text-[10px] text-muted-foreground">INSTRUCTOR</Label>
-            <Label>{user?.name}</Label>
+            <Label className="block truncate">{user?.name}</Label>
           </div>
         </div>
         <Separator className="mt-4 mb-2" />
