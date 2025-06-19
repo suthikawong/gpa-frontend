@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import React from 'react'
-import Menu from '../Menu'
+import Menu from '../common/Menu'
 
 interface IDashboardLayout extends React.PropsWithChildren {
   className?: string
