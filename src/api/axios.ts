@@ -29,7 +29,9 @@ axiosInstance.interceptors.response.use(
 
     const status = error.response?.status
 
-    if (status === 401 && !originalRequest._retry && window.location.pathname !== '/signin') {
+    const publicPaths = ['/signin', '/signup']
+
+    if (status === 401 && !originalRequest._retry && !publicPaths.includes(window.location.pathname)) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({

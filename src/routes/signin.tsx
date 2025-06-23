@@ -62,8 +62,8 @@ function RouteComponent() {
     <AuthenLayout>
       <Card className="w-full max-w-[400px] m-6">
         <CardHeader>
-          <CardTitle className="text-3xl m-auto">Sign In</CardTitle>
-          <CardDescription className="m-auto text-base">Sign in to your account</CardDescription>
+          <CardTitle className="text-2xl md:text-3xl m-auto">Sign In</CardTitle>
+          <CardDescription className="m-auto md:text-base">Sign in to your account</CardDescription>
         </CardHeader>
         <Form {...form}>
           <form
