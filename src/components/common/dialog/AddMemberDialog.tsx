@@ -1,11 +1,20 @@
 import { api } from '@/api'
 import NoDocuments from '@/components/svg/NoDocuments'
+import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Classroom } from 'gpa-backend/src/drizzle/schema'
+import { Separator } from '@/components/ui/separator'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Assessment, Group, User } from 'gpa-backend/src/drizzle/schema'
 import { GetGroupMembersResponse } from 'gpa-backend/src/group/dto/group.response'
 import { Check, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -17,15 +26,17 @@ import toast from '../toast'
 
 interface AddMemberDialogProps {
   triggerButton: React.ReactNode
-  classroomId: Classroom['classroomId']
+  assessmentId: Assessment['assessmentId']
+  groupId: Group['groupId']
   members: GetGroupMembersResponse
 }
 
-const AddMemberDialog = ({ triggerButton, classroomId, members }: AddMemberDialogProps) => {
+const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members }: AddMemberDialogProps) => {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
   const [keyword, setKeyword] = useState<string | undefined>(undefined)
   const [page, setPage] = useState(1)
+  const [clickedStudentId, setClickedStudentId] = useState<User['userId'] | null>(null)
   const pageSize = 5
   const memberUserIds = members.map((member) => member.userId)
 
@@ -35,11 +46,11 @@ const AddMemberDialog = ({ triggerButton, classroomId, members }: AddMemberDialo
     isFetching,
     error,
   } = useQuery({
-    queryKey: ['searchStudentsInClassroom', classroomId, page],
+    queryKey: ['searchStudentsInAssessment', assessmentId, page],
     queryFn: async () => {
-      return await api.classroom.searchStudentsInClassroom({
-        classroomId,
-        name: keyword,
+      return await api.assessment.searchStudentsInAssessment({
+        assessmentId,
+        keyword,
         limit: pageSize,
         offset: (page - 1) * pageSize,
       })
@@ -48,6 +59,23 @@ const AddMemberDialog = ({ triggerButton, classroomId, members }: AddMemberDialo
 
   const data = res?.data ?? []
   const total = res?.total ?? 0
+
+  const addMemberMutation = useMutation({
+    mutationFn: api.group.addGroupMember,
+    onSuccess: (_, req) => {
+      toast.success('Member added successfully')
+      const user = data.find((item) => item.userId === req.studentUserId)
+      if (user) {
+        const newData = [...members]
+        newData.push(user)
+        queryClient.setQueryData(['getMembersByGroupId', groupId], { data: newData })
+      }
+      setClickedStudentId(null)
+    },
+    onError: () => {
+      toast.error('Failed to add member.')
+    },
+  })
 
   useEffect(() => {
     if (error) {
@@ -60,8 +88,13 @@ const AddMemberDialog = ({ triggerButton, classroomId, members }: AddMemberDialo
   }
 
   const onSearch = () => {
-    queryClient.invalidateQueries({ queryKey: ['searchStudentsInClassroom', classroomId, 1] })
+    queryClient.invalidateQueries({ queryKey: ['searchStudentsInAssessment', assessmentId, 1] })
     setPage(1)
+  }
+
+  const onClickAddMember = (studentUserId: User['userId']) => {
+    setClickedStudentId(studentUserId)
+    addMemberMutation.mutate({ groupId, studentUserId })
   }
 
   return (
@@ -73,66 +106,75 @@ const AddMemberDialog = ({ triggerButton, classroomId, members }: AddMemberDialo
         <div onClick={() => setOpen(true)}>{triggerButton}</div>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="text-2xl">Add members</DialogTitle>
+        <DialogHeader className="space-y-1.5">
+          <DialogTitle className="text-2xl font-semibold">Add Members</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Search and select students to join this group.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-4 mb-4">
-          <Input
-            className="bg-border"
-            placeholder="Search student name"
-            onChange={onKeywordChange}
-            value={keyword}
-          />
-          <Button
-            onClick={onSearch}
-            loading={isFetching}
-          >
-            Search
-          </Button>
+        <div className="flex flex-col gap-2 mt-4">
+          <Label htmlFor="search">Student Name</Label>
+          <div className="flex gap-2">
+            <Input
+              id="search"
+              placeholder="Type to search..."
+              onChange={onKeywordChange}
+              value={keyword}
+              className="h-10"
+            />
+            <Button
+              onClick={onSearch}
+              loading={isFetching}
+              size="lg"
+            >
+              Search
+            </Button>
+          </div>
         </div>
 
+        <Separator className="mt-4" />
+
         <div className="flex flex-col gap-4 flex-grow">
-          <Label className="text-xl">Students</Label>
-          <div className="flex flex-col flex-grow gap-4 ">
+          <div className="flex flex-col flex-grow [&>div]:border-t-1 [&>div:first-child]:border-t-0">
             <SuspenseArea loading={isLoading}>
               {data.length == 0 ? (
                 <EmptyState
-                  title="No Member Yet"
-                  description1="It looks like you haven't added any members."
+                  title="No Matched Student"
+                  description1="It looks like there is no student in this assessment or no matched student."
                   icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
                 />
               ) : (
                 data.map((student, index) => {
                   const isMember = memberUserIds.includes(student.userId)
-                  const actions = []
-                  if (isMember) {
-                    actions.push(
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={true}
-                      >
-                        <Check />
-                        <span className="hidden sm:block">Added</span>
-                      </Button>
-                    )
-                  } else {
-                    actions.push(
-                      <Button
-                        size="sm"
-                        variant="outline"
-                      >
-                        <Plus />
-                        <span className="hidden sm:block">Add</span>
-                      </Button>
-                    )
-                  }
                   return (
                     <ActionCard
                       key={index}
-                      header={student.name}
-                      actions={actions}
+                      header={
+                        <div className="flex gap-3 items-center">
+                          <Avatar className="size-10">
+                            <AvatarImage src="https://github.com/shadcn.png" />
+                          </Avatar>
+                          <div>{student.name}</div>
+                        </div>
+                      }
+                      actions={[
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isMember}
+                          onClick={() => onClickAddMember(student.userId)}
+                          loading={clickedStudentId === student.userId && addMemberMutation.isPending}
+                        >
+                          {isMember ? (
+                            <Check />
+                          ) : clickedStudentId === student.userId && addMemberMutation.isPending ? null : (
+                            <Plus />
+                          )}
+                          <span className="hidden sm:block">{isMember ? 'Added' : 'Add'}</span>
+                        </Button>,
+                      ]}
+                      dialog={true}
                     />
                   )
                 })

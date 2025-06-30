@@ -3,15 +3,16 @@ import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { Assignment, Group } from 'gpa-backend/src/drizzle/schema'
+import { Assessment, Group } from 'gpa-backend/src/drizzle/schema'
 import { Plus } from 'lucide-react'
 import { useEffect } from 'react'
 import ActionCard from '../../ActionCard'
+import GroupDialog from '../../dialog/GroupDialog'
 import EmptyState from '../../EmptyState'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
 
-const GroupsTab = ({ assignmentId }: { assignmentId: Assignment['assignmentId'] }) => {
+const GroupsTab = ({ assessmentId }: { assessmentId: Assessment['assessmentId'] }) => {
   const router = useRouter()
   const pathname = router.state.location.pathname
 
@@ -24,8 +25,8 @@ const GroupsTab = ({ assignmentId }: { assignmentId: Assignment['assignmentId'] 
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['getGroupsByAssignmentId', assignmentId],
-    queryFn: async () => await api.assignment.getGroupsByAssignmentId({ assignmentId }),
+    queryKey: ['getGroupsByAssessmentId', assessmentId],
+    queryFn: async () => await api.assessment.getGroupsByAssessmentId({ assessmentId }),
   })
 
   const data = res?.data ?? []
@@ -40,10 +41,14 @@ const GroupsTab = ({ assignmentId }: { assignmentId: Assignment['assignmentId'] 
     <div>
       <div className="flex justify-between mb-6">
         <div className="text-2xl font-semibold">Groups</div>
-        <Button>
-          <Plus />
-          Create
-        </Button>
+        <GroupDialog
+          triggerButton={
+            <Button>
+              <Plus />
+              Create
+            </Button>
+          }
+        />
       </div>
       <div className="flex flex-col gap-4 flex-grow">
         <SuspenseArea loading={isLoading}>

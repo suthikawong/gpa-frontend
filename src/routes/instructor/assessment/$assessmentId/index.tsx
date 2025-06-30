@@ -1,12 +1,10 @@
 import { api } from '@/api'
 import { Breadcrumbs } from '@/components/common/Breadcrumbs'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
-import AssignmentDialog from '@/components/common/dialog/AssignmentDialog'
+import AssessmentDialog from '@/components/common/dialog/AssessmentDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
-import AssessmentPeriod from '@/components/common/tab/assignment/AssessmentPeriod'
-import CriteriaTab from '@/components/common/tab/assignment/CriteriaTab'
-import GroupsTab from '@/components/common/tab/assignment/GroupsTab'
-import Model from '@/components/common/tab/assignment/Model'
+import GroupsTab from '@/components/common/tab/assessment/GroupsTab'
+import StudentsTab from '@/components/common/tab/assessment/StudentsTab'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { Badge } from '@/components/ui/badge'
@@ -15,15 +13,15 @@ import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/c
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
+import { appPaths } from '@/config'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { GetAssignmentByIdResponse } from 'gpa-backend/src/assignment/dto/assignment.response'
-import { Assignment, Classroom } from 'gpa-backend/src/drizzle/schema'
-import { Pencil, Trash2 } from 'lucide-react'
+import { AssessmentWithInstructor } from 'gpa-backend/src/assessment/dto/assessment.response'
+import { Assessment } from 'gpa-backend/src/drizzle/schema'
+import { Pencil, Trash2, Users } from 'lucide-react'
 import { useEffect } from 'react'
 
-export const Route = createFileRoute('/instructor/my-classrooms/$classroomId/assignment/$assignmentId/')({
+export const Route = createFileRoute('/instructor/assessment/$assessmentId/')({
   component: RouteComponent,
   beforeLoad: ({ context, location }) => {
     if (!context.user?.userId) {
@@ -39,16 +37,15 @@ export const Route = createFileRoute('/instructor/my-classrooms/$classroomId/ass
 
 function RouteComponent() {
   const params = Route.useParams()
-  const classroomId = parseInt(params.classroomId)
-  const assignmentId = parseInt(params.assignmentId)
+  const assessmentId = parseInt(params.assessmentId)
 
   const {
     data: res,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['getAssignmentById', assignmentId],
-    queryFn: async () => await api.assignment.getAssignmentById({ assignmentId }),
+    queryKey: ['getAssessmentById', assessmentId],
+    queryFn: async () => await api.assessment.getAssessmentById({ assessmentId }),
   })
 
   const data = res?.data ?? null
@@ -67,42 +64,45 @@ function RouteComponent() {
             <div className="flex flex-col gap-6">
               <Breadcrumbs
                 items={[
-                  { label: 'Classroom', href: `/instructor/my-classrooms/${classroomId}` },
+                  { label: 'Peer Assessments', href: `/instructor/assessment` },
                   {
-                    label: 'Assignment',
-                    href: `/instructor/my-classrooms/${classroomId}/assignment/${assignmentId}`,
+                    label: 'Assessment',
+                    href: `/instructor/assessment/${assessmentId}`,
                     isCurrentPage: true,
                   },
                 ]}
               />
-              <AssignmentCard data={data} />
+              <AssessmentCard data={data} />
             </div>
             <Tabs
-              defaultValue="groups"
+              defaultValue="students"
               className="flex flex-col flex-grow"
             >
               <ScrollArea>
                 <div className="w-full relative">
                   <TabsList>
+                    <TabsTrigger value="students">Students</TabsTrigger>
                     <TabsTrigger value="groups">Groups</TabsTrigger>
-                    <TabsTrigger value="criteria">Criteria</TabsTrigger>
                     <TabsTrigger value="model">Model</TabsTrigger>
-                    <TabsTrigger value="assessment-period">Assessment Period</TabsTrigger>
+                    <TabsTrigger value="scoring-components">Scoring Components</TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsScrollBar />
               </ScrollArea>
-              <TabsContent value="groups">
-                <GroupsTab assignmentId={assignmentId} />
+              {/* <TabsContent value="assignments">
+                <AssignmentsTab assessmentId={assessmentId} />
+              </TabsContent> */}
+              <TabsContent
+                value="students"
+                className="flex flex-col flex-grow"
+              >
+                <StudentsTab assessmentId={assessmentId} />
               </TabsContent>
-              <TabsContent value="criteria">
-                <CriteriaTab />
-              </TabsContent>
-              <TabsContent value="model">
-                <Model />
-              </TabsContent>
-              <TabsContent value="assessment-period">
-                <AssessmentPeriod />
+              <TabsContent
+                value="groups"
+                className="flex flex-col flex-grow"
+              >
+                <GroupsTab assessmentId={assessmentId} />
               </TabsContent>
             </Tabs>
           </div>
@@ -112,55 +112,71 @@ function RouteComponent() {
   )
 }
 
-const AssignmentCard = ({ data }: { data: GetAssignmentByIdResponse }) => {
+const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
   return (
     <Card className="w-full">
       <CardContent className="flex-col">
         <div className="flex justify-between">
-          <CardTitle className="text-lg md:text-2xl md:mb-1">{data.assignmentName}</CardTitle>
+          <div>
+            <CardTitle className="text-lg md:text-2xl md:mb-1">{data.assessmentName}</CardTitle>
+            <div className="hidden md:flex gap-2 items-center">
+              <Users
+                size={16}
+                className="block text-muted-foreground"
+              />
+              <CardDescription className="text-sm">{data.instructor.name}</CardDescription>
+            </div>
+          </div>
           <Badge
             size="lg"
             variant={data.isPublished ? 'success' : 'destructive'}
             className="h-fit mt-1"
             asChild
           >
-            <div>{data.isPublished ? 'Published' : 'Unpublished'}</div>
+            <div>{data.isPublished ? 'Published' : 'Private'}</div>
           </Badge>
         </div>
-        <div className="flex justify-between my-2 md:mb-0">
-          <div className="flex items-center gap-x-2">
-            <CardDescription className="text-sm">Due date: {format(data.dueDate, 'PPP')}</CardDescription>
+        <div className="flex justify-between my-4 md:mb-0">
+          <div className="flex gap-x-2">
+            <div className="text-muted-foreground text-sm">Assessment Code:</div>
+            <Badge
+              variant="secondary"
+              className="rounded-sm h-fit"
+              asChild
+            >
+              <div>{data.assessmentCode}</div>
+            </Badge>
           </div>
-          <div className="gap-2 hidden md:flex">
-            <Button variant="secondary">End Submission</Button>
-            <AssignmentDialog
+          <div className="flex gap-2">
+            <AssessmentDialog
               data={data}
               triggerButton={
                 <Button
                   variant="outline"
-                  className="w-22"
+                  className="hidden w-22 md:flex"
                 >
                   <Pencil />
                   Edit
                 </Button>
               }
             />
-            <DeleteAssignmentDialog
+            <DeleteAssessmentDialog
               triggerButton={
-                <Button variant="destructiveOutline">
+                <Button
+                  variant="destructiveOutline"
+                  className="hidden md:flex"
+                >
                   <Trash2 />
                   Delete
                 </Button>
               }
-              classroomId={data.classroomId}
-              assignmentId={data.assignmentId}
+              assessmentId={data.assessmentId}
             />
           </div>
         </div>
         <Separator className="md:hidden" />
         <div className="mt-4 flex gap-2 justify-end md:hidden">
-          <Button variant="secondary">End Submission</Button>
-          <AssignmentDialog
+          <AssessmentDialog
             data={data}
             triggerButton={
               <Button
@@ -172,15 +188,14 @@ const AssignmentCard = ({ data }: { data: GetAssignmentByIdResponse }) => {
               </Button>
             }
           />
-          <DeleteAssignmentDialog
+          <DeleteAssessmentDialog
             triggerButton={
               <Button variant="destructiveOutline">
                 <Trash2 />
                 Delete
               </Button>
             }
-            classroomId={data.classroomId}
-            assignmentId={data.assignmentId}
+            assessmentId={data.assessmentId}
           />
         </div>
       </CardContent>
@@ -188,34 +203,34 @@ const AssignmentCard = ({ data }: { data: GetAssignmentByIdResponse }) => {
   )
 }
 
-const DeleteAssignmentDialog = ({
+const DeleteAssessmentDialog = ({
   triggerButton,
-  classroomId,
-  assignmentId,
+  assessmentId,
 }: {
   triggerButton: React.ReactNode
-  classroomId: Classroom['classroomId']
-  assignmentId: Assignment['assignmentId']
+  assessmentId: Assessment['assessmentId']
 }) => {
   return (
     <ConfirmDeleteDialog
       triggerButton={triggerButton}
-      data={{ assignmentId }}
-      api={api.assignment.deleteAssignment}
-      title="Delete Assignment"
-      onSuccessMessage="Assignment deleted successfully."
-      onErrorMessage="Failed to delete assignment."
-      refetchKeys={['getInstructorAssignments']}
-      redirectTo={`/instructor/my-classrooms/${classroomId}`}
+      data={{ assessmentId }}
+      api={api.assessment.deleteAssessment}
+      title="Delete Assessment"
+      onSuccessMessage="Assessment deleted successfully."
+      onErrorMessage="Failed to delete classroom."
+      refetchKeys={['getAssessmentsByInstructor']}
+      redirectTo={appPaths.instructor.assessment}
       className="sm:!max-w-[600px]"
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">
-            Deleting this assignment will also remove all associated information, including:
+            Deleting this classroom will also remove all associated information, including:
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-muted p-5">
             <ul className="list-inside list-disc space-y-1 text-sm">
+              <li>Assignments</li>
+              <li>Students</li>
               <li>Groups</li>
               <li>Criteria</li>
               <li>Model configuration</li>

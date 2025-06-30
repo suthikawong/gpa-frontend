@@ -1,42 +1,33 @@
 import { api } from '@/api'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
-import { GetGroupByIdResponse } from 'gpa-backend/src/group/dto/group.response'
+import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import toast from '../toast'
 
-interface GroupDialogProps {
+interface AssessmentDialogProps {
   triggerButton: React.ReactNode
-  data?: GetGroupByIdResponse
+  data?: Omit<Assessment, 'modelId' | 'modelConfig'>
 }
 
 const formSchema = z.object({
-  groupName: z.string().min(1, { message: 'Please enter the group name.' }),
+  assessmentName: z.string().min(1, { message: 'Please enter the assessment name.' }),
+  isPublished: z.boolean().optional(),
 })
 
-const GroupDialog = ({ triggerButton, data }: GroupDialogProps) => {
+const AssessmentDialog = ({ triggerButton, data }: AssessmentDialogProps) => {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
-  const route = useRouter()
-  const params: any = route.routeTree.useParams()
-  const assessmentId = parseInt(params?.assessmentId!)
   const defaultValues = {
-    groupName: data?.groupName ?? '',
+    assessmentName: data?.assessmentName ?? '',
+    isPublished: data?.isPublished,
   }
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,42 +35,40 @@ const GroupDialog = ({ triggerButton, data }: GroupDialogProps) => {
   })
 
   const createMutation = useMutation({
-    mutationFn: api.group.createGroup,
+    mutationFn: api.assessment.createAssessment,
     onSuccess: () => {
       setOpen(false)
-      toast.success('Group created successfully')
-      queryClient.invalidateQueries({ queryKey: ['getGroupsByAssessmentId'] })
+      toast.success('Assessment created successfully')
+      queryClient.invalidateQueries({ queryKey: ['getAssessmentsByInstructor'] })
       form.reset()
     },
     onError: () => {
-      toast.error('Failed to create group.')
+      toast.error('Failed to create assessment.')
     },
   })
 
   const updateMutation = useMutation({
-    mutationFn: api.group.updateGroup,
+    mutationFn: api.assessment.updateAssessment,
     onSuccess: () => {
       setOpen(false)
-      toast.success('Group updated successfully')
-      queryClient.invalidateQueries({ queryKey: ['getGroupById', data?.groupId] })
+      toast.success('Assessment updated successfully')
+      queryClient.invalidateQueries({ queryKey: ['getAssessmentById', data?.assessmentId] })
       form.reset()
     },
     onError: () => {
-      toast.error('Failed to update group.')
+      toast.error('Failed to update assessment.')
     },
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (data?.groupId) {
+    if (data?.assessmentId) {
       updateMutation.mutate({
-        groupId: data.groupId,
-        groupName: values.groupName,
+        assessmentId: data.assessmentId,
+        assessmentName: values.assessmentName,
+        isPublished: values?.isPublished ?? false,
       })
     } else {
-      createMutation.mutate({
-        assessmentId: assessmentId,
-        groupName: values.groupName,
-      })
+      createMutation.mutate(values)
     }
   }
 
@@ -102,29 +91,46 @@ const GroupDialog = ({ triggerButton, data }: GroupDialogProps) => {
             className="space-y-4"
           >
             <DialogHeader>
-              <DialogTitle className="text-2xl">{data ? 'Edit ' : 'Create '}group</DialogTitle>
-              <DialogDescription>
-                Enter group details. Click {data ? 'save' : 'create'} when you're done.
-              </DialogDescription>
+              <DialogTitle className="text-2xl">{data ? 'Edit ' : 'Create '}assessment</DialogTitle>
             </DialogHeader>
 
             <div className="grid w-full items-center gap-4">
               <FormField
                 control={form.control}
-                name="groupName"
+                name="assessmentName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Group Name</FormLabel>
+                    <FormLabel>Assessment Name</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Enter group name"
+                        placeholder="Enter assessment name"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              {data && (
+                <FormField
+                  control={form.control}
+                  name="isPublished"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Published</FormLabel>
+                        <FormDescription>Enable this assessment for student access.</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value ?? false}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
             <DialogFooter>
@@ -149,4 +155,4 @@ const GroupDialog = ({ triggerButton, data }: GroupDialogProps) => {
   )
 }
 
-export default GroupDialog
+export default AssessmentDialog

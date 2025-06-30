@@ -1,5 +1,5 @@
 import { api } from '@/api'
-import ClassroomDialog from '@/components/common/dialog/ClassroomDialog'
+import AssessmentDialog from '@/components/common/dialog/AssessmentDialog'
 import EmptyState from '@/components/common/EmptyState'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
@@ -7,15 +7,14 @@ import DashboardLayout from '@/components/layouts/DashboardLayout'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
-import { ClassroomWithInstitute } from 'gpa-backend/src/classroom/dto/classroom.response'
-import { Classroom } from 'gpa-backend/src/drizzle/schema'
-import { Landmark, Plus } from 'lucide-react'
+import { Assessment } from 'gpa-backend/src/drizzle/schema'
+import { Plus } from 'lucide-react'
 import { useEffect } from 'react'
 
-export const Route = createFileRoute('/instructor/my-classrooms/')({
+export const Route = createFileRoute('/instructor/assessment/')({
   component: RouteComponent,
   beforeLoad: ({ context, location }) => {
     if (!context.user?.userId) {
@@ -34,7 +33,7 @@ function RouteComponent() {
     data: res,
     isLoading,
     error,
-  } = useQuery({ queryKey: ['getInstructorClassrooms'], queryFn: api.classroom.getInstructorClassrooms })
+  } = useQuery({ queryKey: ['getAssessmentsByInstructor'], queryFn: api.assessment.getAssessmentsByInstructor })
 
   const data = res?.data ?? []
 
@@ -47,8 +46,8 @@ function RouteComponent() {
   return (
     <DashboardLayout className="gap-4">
       <div className="flex justify-between items-center md:mb-4">
-        <div className="text-xl font-bold md:text-3xl">My Classrooms</div>
-        <ClassroomDialog
+        <div className="text-xl font-bold md:text-3xl">My Assessments</div>
+        <AssessmentDialog
           triggerButton={
             <Button size="lg">
               <Plus />
@@ -60,17 +59,17 @@ function RouteComponent() {
       <SuspenseArea loading={isLoading}>
         {data.length == 0 ? (
           <EmptyState
-            title="No Classrooms Yet"
-            description1="It looks like you haven't created any classrooms."
+            title="No Assessments Yet"
+            description1="It looks like you haven't created any assessments."
             icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
-            action={<Button>Create Classroom</Button>}
+            action={<Button>Create Assessment</Button>}
           />
         ) : (
-          data.map((classroom, index) => {
+          data.map((assessment, index) => {
             return (
-              <ClassroomCard
+              <AssessmentCard
                 key={index}
-                data={classroom}
+                data={assessment}
               />
             )
           })
@@ -80,34 +79,25 @@ function RouteComponent() {
   )
 }
 
-const ClassroomCard = ({ data }: { data: ClassroomWithInstitute }) => {
+const AssessmentCard = ({ data }: { data: Omit<Assessment, 'modelId' | 'modelConfig'> }) => {
   const router = useRouter()
 
-  const onClickClassroom = (classroomId: Classroom['classroomId']) => {
-    router.history.push(`/instructor/my-classrooms/${classroomId}`)
+  const onClickAssessment = (assessmentId: Assessment['assessmentId']) => {
+    router.history.push(`/instructor/assessment/${assessmentId}`)
   }
 
   return (
     <Card className="w-full">
       <CardContent className="flex-col">
         <div className="flex justify-between">
-          <div>
-            <CardTitle className="text-lg md:text-2xl md:mb-1">{data.classroomName}</CardTitle>
-            <div className="flex gap-2 items-center">
-              <Landmark
-                size={16}
-                className="hidden md:block text-muted-foreground"
-              />
-              <CardDescription className="text-sm">{data.institute.instituteName}</CardDescription>
-            </div>
-          </div>
+          <CardTitle className="text-lg md:text-xl md:mb-1">{data.assessmentName}</CardTitle>
           <Badge
             size="lg"
-            variant={data.isActive ? 'success' : 'destructive'}
+            variant={data.isPublished ? 'success' : 'destructive'}
             className="h-fit mt-1"
             asChild
           >
-            <div>{data.isActive ? 'Acitve' : 'Inactive'}</div>
+            <div>{data.isPublished ? 'Acitve' : 'Inactive'}</div>
           </Badge>
         </div>
         <div className="flex justify-between my-4 sm:mb-0">
@@ -118,19 +108,19 @@ const ClassroomCard = ({ data }: { data: ClassroomWithInstitute }) => {
               className="rounded-sm h-fit"
               asChild
             >
-              <div>{data.classroomCode}</div>
+              <div>{data.assessmentCode}</div>
             </Badge>
           </div>
           <Button
             className="hidden sm:block"
-            onClick={() => onClickClassroom(data.classroomId)}
+            onClick={() => onClickAssessment(data.assessmentId)}
           >
             View Details
           </Button>
         </div>
         <Button
           className="w-full sm:hidden"
-          onClick={() => onClickClassroom(data.classroomId)}
+          onClick={() => onClickAssessment(data.assessmentId)}
         >
           View Details
         </Button>

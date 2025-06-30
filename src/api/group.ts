@@ -39,14 +39,14 @@ const deleteGroup = async ({ groupId }: DeleteGroupRequest): Promise<AppResponse
   return response.data
 }
 
-const getMemberByGroupId = async ({
+const getMembersByGroupId = async ({
   groupId,
 }: GetGroupMembersRequest): Promise<AppResponse<GetGroupMembersResponse>> => {
   const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/group/${groupId}/member`)
   return response.data
 }
 
-const addMember = async ({
+const addGroupMember = async ({
   groupId,
   studentUserId,
 }: AddGroupMemberRequest): Promise<AppResponse<AddGroupMemberResponse>> => {
@@ -54,7 +54,7 @@ const addMember = async ({
   return response.data
 }
 
-const removeMember = async ({
+const deleteGroupMember = async ({
   groupId,
   studentUserId,
 }: DeleteGroupMemberRequest): Promise<AppResponse<DeleteGroupMemberResponse>> => {
@@ -67,7 +67,7 @@ export const group = {
   createGroup,
   updateGroup,
   deleteGroup,
-  getMemberByGroupId,
-  addMember,
-  removeMember,
+  getMembersByGroupId,
+  addGroupMember,
+  deleteGroupMember,
 }

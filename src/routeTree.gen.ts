@@ -18,10 +18,10 @@ import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 import { Route as StudentIndexImport } from './routes/student/index'
-import { Route as InstructorMyClassroomsIndexImport } from './routes/instructor/my-classrooms/index'
-import { Route as InstructorMyClassroomsClassroomIdIndexImport } from './routes/instructor/my-classrooms/$classroomId/index'
-import { Route as InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexImport } from './routes/instructor/my-classrooms/$classroomId/assignment/$assignmentId/index'
-import { Route as InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdImport } from './routes/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
+import { Route as InstructorAssessmentIndexImport } from './routes/instructor/assessment/index'
+import { Route as InstructorAssessmentAssessmentIdIndexImport } from './routes/instructor/assessment/$assessmentId/index'
+import { Route as InstructorAssessmentAssessmentIdGroupGroupIdIndexImport } from './routes/instructor/assessment/$assessmentId/group/$groupId/index'
+import { Route as InstructorAssessmentAssessmentIdGroupGroupIdMemberImport } from './routes/instructor/assessment/$assessmentId/group/$groupId/member'
 
 // Create/Update Routes
 
@@ -67,35 +67,32 @@ const StudentIndexRoute = StudentIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const InstructorMyClassroomsIndexRoute =
-  InstructorMyClassroomsIndexImport.update({
-    id: '/instructor/my-classrooms/',
-    path: '/instructor/my-classrooms/',
+const InstructorAssessmentIndexRoute = InstructorAssessmentIndexImport.update({
+  id: '/instructor/assessment/',
+  path: '/instructor/assessment/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const InstructorAssessmentAssessmentIdIndexRoute =
+  InstructorAssessmentAssessmentIdIndexImport.update({
+    id: '/instructor/assessment/$assessmentId/',
+    path: '/instructor/assessment/$assessmentId/',
     getParentRoute: () => rootRoute,
   } as any)
 
-const InstructorMyClassroomsClassroomIdIndexRoute =
-  InstructorMyClassroomsClassroomIdIndexImport.update({
-    id: '/instructor/my-classrooms/$classroomId/',
-    path: '/instructor/my-classrooms/$classroomId/',
+const InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute =
+  InstructorAssessmentAssessmentIdGroupGroupIdIndexImport.update({
+    id: '/instructor/assessment/$assessmentId/group/$groupId/',
+    path: '/instructor/assessment/$assessmentId/group/$groupId/',
     getParentRoute: () => rootRoute,
   } as any)
 
-const InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute =
-  InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexImport.update({
-    id: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/',
-    path: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/',
+const InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute =
+  InstructorAssessmentAssessmentIdGroupGroupIdMemberImport.update({
+    id: '/instructor/assessment/$assessmentId/group/$groupId/member',
+    path: '/instructor/assessment/$assessmentId/group/$groupId/member',
     getParentRoute: () => rootRoute,
   } as any)
-
-const InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute =
-  InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdImport.update(
-    {
-      id: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId',
-      path: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId',
-      getParentRoute: () => rootRoute,
-    } as any,
-  )
 
 // Populate the FileRoutesByPath interface
 
@@ -150,32 +147,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentIndexImport
       parentRoute: typeof rootRoute
     }
-    '/instructor/my-classrooms/': {
-      id: '/instructor/my-classrooms/'
-      path: '/instructor/my-classrooms'
-      fullPath: '/instructor/my-classrooms'
-      preLoaderRoute: typeof InstructorMyClassroomsIndexImport
+    '/instructor/assessment/': {
+      id: '/instructor/assessment/'
+      path: '/instructor/assessment'
+      fullPath: '/instructor/assessment'
+      preLoaderRoute: typeof InstructorAssessmentIndexImport
       parentRoute: typeof rootRoute
     }
-    '/instructor/my-classrooms/$classroomId/': {
-      id: '/instructor/my-classrooms/$classroomId/'
-      path: '/instructor/my-classrooms/$classroomId'
-      fullPath: '/instructor/my-classrooms/$classroomId'
-      preLoaderRoute: typeof InstructorMyClassroomsClassroomIdIndexImport
+    '/instructor/assessment/$assessmentId/': {
+      id: '/instructor/assessment/$assessmentId/'
+      path: '/instructor/assessment/$assessmentId'
+      fullPath: '/instructor/assessment/$assessmentId'
+      preLoaderRoute: typeof InstructorAssessmentAssessmentIdIndexImport
       parentRoute: typeof rootRoute
     }
-    '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/': {
-      id: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/'
-      path: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId'
-      fullPath: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId'
-      preLoaderRoute: typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexImport
+    '/instructor/assessment/$assessmentId/group/$groupId/member': {
+      id: '/instructor/assessment/$assessmentId/group/$groupId/member'
+      path: '/instructor/assessment/$assessmentId/group/$groupId/member'
+      fullPath: '/instructor/assessment/$assessmentId/group/$groupId/member'
+      preLoaderRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberImport
       parentRoute: typeof rootRoute
     }
-    '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId': {
-      id: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
-      path: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
-      fullPath: '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
-      preLoaderRoute: typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdImport
+    '/instructor/assessment/$assessmentId/group/$groupId/': {
+      id: '/instructor/assessment/$assessmentId/group/$groupId/'
+      path: '/instructor/assessment/$assessmentId/group/$groupId'
+      fullPath: '/instructor/assessment/$assessmentId/group/$groupId'
+      preLoaderRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -191,10 +188,10 @@ export interface FileRoutesByFullPath {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/student': typeof StudentIndexRoute
-  '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
-  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdIndexRoute
-  '/instructor/my-classrooms/$classroomId/assignment/$assignmentId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
-  '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute
+  '/instructor/assessment': typeof InstructorAssessmentIndexRoute
+  '/instructor/assessment/$assessmentId': typeof InstructorAssessmentAssessmentIdIndexRoute
+  '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
+  '/instructor/assessment/$assessmentId/group/$groupId': typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -205,10 +202,10 @@ export interface FileRoutesByTo {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/student': typeof StudentIndexRoute
-  '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
-  '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdIndexRoute
-  '/instructor/my-classrooms/$classroomId/assignment/$assignmentId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
-  '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute
+  '/instructor/assessment': typeof InstructorAssessmentIndexRoute
+  '/instructor/assessment/$assessmentId': typeof InstructorAssessmentAssessmentIdIndexRoute
+  '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
+  '/instructor/assessment/$assessmentId/group/$groupId': typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
 }
 
 export interface FileRoutesById {
@@ -220,10 +217,10 @@ export interface FileRoutesById {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/student/': typeof StudentIndexRoute
-  '/instructor/my-classrooms/': typeof InstructorMyClassroomsIndexRoute
-  '/instructor/my-classrooms/$classroomId/': typeof InstructorMyClassroomsClassroomIdIndexRoute
-  '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
-  '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute
+  '/instructor/assessment/': typeof InstructorAssessmentIndexRoute
+  '/instructor/assessment/$assessmentId/': typeof InstructorAssessmentAssessmentIdIndexRoute
+  '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
+  '/instructor/assessment/$assessmentId/group/$groupId/': typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -236,10 +233,10 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/student'
-    | '/instructor/my-classrooms'
-    | '/instructor/my-classrooms/$classroomId'
-    | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId'
-    | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
+    | '/instructor/assessment'
+    | '/instructor/assessment/$assessmentId'
+    | '/instructor/assessment/$assessmentId/group/$groupId/member'
+    | '/instructor/assessment/$assessmentId/group/$groupId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -249,10 +246,10 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/student'
-    | '/instructor/my-classrooms'
-    | '/instructor/my-classrooms/$classroomId'
-    | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId'
-    | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
+    | '/instructor/assessment'
+    | '/instructor/assessment/$assessmentId'
+    | '/instructor/assessment/$assessmentId/group/$groupId/member'
+    | '/instructor/assessment/$assessmentId/group/$groupId'
   id:
     | '__root__'
     | '/'
@@ -262,10 +259,10 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/student/'
-    | '/instructor/my-classrooms/'
-    | '/instructor/my-classrooms/$classroomId/'
-    | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/'
-    | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId'
+    | '/instructor/assessment/'
+    | '/instructor/assessment/$assessmentId/'
+    | '/instructor/assessment/$assessmentId/group/$groupId/member'
+    | '/instructor/assessment/$assessmentId/group/$groupId/'
   fileRoutesById: FileRoutesById
 }
 
@@ -277,10 +274,10 @@ export interface RootRouteChildren {
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   StudentIndexRoute: typeof StudentIndexRoute
-  InstructorMyClassroomsIndexRoute: typeof InstructorMyClassroomsIndexRoute
-  InstructorMyClassroomsClassroomIdIndexRoute: typeof InstructorMyClassroomsClassroomIdIndexRoute
-  InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute: typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
-  InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute: typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute
+  InstructorAssessmentIndexRoute: typeof InstructorAssessmentIndexRoute
+  InstructorAssessmentAssessmentIdIndexRoute: typeof InstructorAssessmentAssessmentIdIndexRoute
+  InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
+  InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -291,13 +288,13 @@ const rootRouteChildren: RootRouteChildren = {
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   StudentIndexRoute: StudentIndexRoute,
-  InstructorMyClassroomsIndexRoute: InstructorMyClassroomsIndexRoute,
-  InstructorMyClassroomsClassroomIdIndexRoute:
-    InstructorMyClassroomsClassroomIdIndexRoute,
-  InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute:
-    InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute,
-  InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute:
-    InstructorMyClassroomsClassroomIdAssignmentAssignmentIdGroupGroupIdRoute,
+  InstructorAssessmentIndexRoute: InstructorAssessmentIndexRoute,
+  InstructorAssessmentAssessmentIdIndexRoute:
+    InstructorAssessmentAssessmentIdIndexRoute,
+  InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute:
+    InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute,
+  InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute:
+    InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -317,10 +314,10 @@ export const routeTree = rootRoute
         "/signin",
         "/signup",
         "/student/",
-        "/instructor/my-classrooms/",
-        "/instructor/my-classrooms/$classroomId/",
-        "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/",
-        "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId"
+        "/instructor/assessment/",
+        "/instructor/assessment/$assessmentId/",
+        "/instructor/assessment/$assessmentId/group/$groupId/member",
+        "/instructor/assessment/$assessmentId/group/$groupId/"
       ]
     },
     "/": {
@@ -344,17 +341,17 @@ export const routeTree = rootRoute
     "/student/": {
       "filePath": "student/index.tsx"
     },
-    "/instructor/my-classrooms/": {
-      "filePath": "instructor/my-classrooms/index.tsx"
+    "/instructor/assessment/": {
+      "filePath": "instructor/assessment/index.tsx"
     },
-    "/instructor/my-classrooms/$classroomId/": {
-      "filePath": "instructor/my-classrooms/$classroomId/index.tsx"
+    "/instructor/assessment/$assessmentId/": {
+      "filePath": "instructor/assessment/$assessmentId/index.tsx"
     },
-    "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/": {
-      "filePath": "instructor/my-classrooms/$classroomId/assignment/$assignmentId/index.tsx"
+    "/instructor/assessment/$assessmentId/group/$groupId/member": {
+      "filePath": "instructor/assessment/$assessmentId/group/$groupId/member.tsx"
     },
-    "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId": {
-      "filePath": "instructor/my-classrooms/$classroomId/assignment/$assignmentId/group/$groupId.tsx"
+    "/instructor/assessment/$assessmentId/group/$groupId/": {
+      "filePath": "instructor/assessment/$assessmentId/group/$groupId/index.tsx"
     }
   }
 }

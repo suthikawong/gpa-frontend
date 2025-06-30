@@ -1,3 +1,4 @@
+import { assessment } from './assessment'
 import { assignment } from './assignment'
 import { auth } from './auth'
 import { cat } from './cat'
@@ -10,6 +11,7 @@ export const api = {
   cat,
   auth,
   user,
+  assessment,
   classroom,
   assignment,
   group,

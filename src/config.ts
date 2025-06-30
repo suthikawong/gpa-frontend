@@ -2,10 +2,10 @@ export const appPaths = {
   signIn: '/signin',
   profile: '/profile',
   instructor: {
-    myClassrooms: '/instructor/my-classrooms',
+    assessment: '/instructor/assessment',
   },
   student: {
-    myClassrooms: '/student/my-classrooms',
+    assessment: '/student/assessment',
   },
 }
 
@@ -17,25 +17,25 @@ export const profileMenuItem = {
 
 export const instructorMenuItems = [
   {
-    name: 'My Classrooms',
+    name: 'Peer Assessments',
     icon: 'LayoutDashboard',
-    href: appPaths.instructor.myClassrooms,
+    href: appPaths.instructor.assessment,
   },
   profileMenuItem,
 ]
 
 export const studentMenuItems = [
   {
-    name: 'My Classrooms',
+    name: 'Peer Assessments',
     icon: 'LayoutDashboard',
-    href: appPaths.student.myClassrooms,
+    href: appPaths.student.assessment,
   },
   profileMenuItem,
 ]
 
 export enum Roles {
-  Instructor = 1,
-  Student = 2,
+  Student = 1,
+  Instructor = 2,
 }
 
 export enum QASSMode {
