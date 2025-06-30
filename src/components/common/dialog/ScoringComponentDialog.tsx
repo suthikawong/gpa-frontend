@@ -10,42 +10,42 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { GetAssignmentByIdResponse } from 'gpa-backend/src/assignment/dto/assignment.response'
+import { GetScoringComponentByIdResponse } from 'gpa-backend/src/scoring-component/dto/scoring-component.response'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import toast from '../toast'
 
-interface AssignmentDialogProps {
+interface ScoringComponentDialogProps {
   triggerButton: React.ReactNode
-  data?: GetAssignmentByIdResponse
+  data?: GetScoringComponentByIdResponse
 }
 
 const formSchema = z.object({
-  assignmentName: z.string().min(1, { message: 'Please enter the assignment name.' }),
-  dueDate: z.date({
-    required_error: 'Please select a due date.',
+  startDate: z.date({
+    required_error: 'Please select a start date.',
   }),
-  isPublished: z.boolean().optional(),
+  endDate: z.date({
+    required_error: 'Please select a end date.',
+  }),
+  weight: z.coerce.number(),
 })
 
-const AssignmentDialog = ({ triggerButton, data }: AssignmentDialogProps) => {
+const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogProps) => {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
   const route = useRouter()
   const params: any = route.routeTree.useParams()
-  const classroomId = parseInt(params?.classroomId!)
-
+  const assessmentId = parseInt(params?.assessmentId!)
   const defaultValues = {
-    assignmentName: data?.assignmentName ?? '',
-    dueDate: data?.dueDate ? new Date(data.dueDate) : undefined,
-    isPublished: data?.isPublished,
+    startDate: data?.startDate ? new Date(data.startDate) : undefined,
+    endDate: data?.endDate ? new Date(data.endDate) : undefined,
+    weight: data?.weight ?? 1,
   }
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,46 +53,46 @@ const AssignmentDialog = ({ triggerButton, data }: AssignmentDialogProps) => {
   })
 
   const createMutation = useMutation({
-    mutationFn: api.assignment.createAssignment,
+    mutationFn: api.scoringComponent.createScoringComponent,
     onSuccess: () => {
       setOpen(false)
-      toast.success('Assignment created successfully')
-      queryClient.invalidateQueries({ queryKey: ['getAssignmentByClassroomId', classroomId] })
+      toast.success('Scoring component created successfully')
+      queryClient.invalidateQueries({ queryKey: ['getScoringComponentsByAssessmentId', assessmentId] })
       form.reset()
     },
     onError: () => {
-      toast.error('Failed to create assignment.')
+      toast.error('Failed to create scoring component.')
     },
   })
 
   const updateMutation = useMutation({
-    mutationFn: api.assignment.updateAssignment,
+    mutationFn: api.scoringComponent.updateScoringComponent,
     onSuccess: () => {
       setOpen(false)
-      toast.success('Assignment updated successfully')
-      queryClient.invalidateQueries({ queryKey: ['getAssignmentById', data?.assignmentId] })
+      toast.success('Scoring component updated successfully')
+      queryClient.invalidateQueries({ queryKey: ['getScoringComponentsByAssessmentId', assessmentId] })
       form.reset()
     },
-    onError: (error: any) => {
-      if (error?.status == 400) {
-        toast.error(error.response?.data?.message)
-      } else {
-        toast.error('Failed to update assignment.')
-      }
+    onError: () => {
+      toast.error('Failed to update scoring component.')
     },
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (data?.assignmentId) {
+    if (data?.scoringComponentId) {
       updateMutation.mutate({
-        assignmentId: data.assignmentId,
-        assignmentName: values.assignmentName,
-        dueDate: values.dueDate.toISOString(),
-        isPublished: values.isPublished ?? false,
-        classroomId: data.classroomId,
+        scoringComponentId: data.scoringComponentId,
+        startDate: values.startDate,
+        endDate: values.endDate,
+        weight: values.weight,
       })
     } else {
-      createMutation.mutate({ ...values, dueDate: values.dueDate.toISOString(), classroomId })
+      createMutation.mutate({
+        assessmentId: assessmentId,
+        startDate: values.startDate,
+        endDate: values.endDate,
+        weight: values.weight,
+      })
     }
   }
 
@@ -115,35 +115,19 @@ const AssignmentDialog = ({ triggerButton, data }: AssignmentDialogProps) => {
             className="space-y-4"
           >
             <DialogHeader>
-              <DialogTitle className="text-2xl">{data ? 'Edit ' : 'Create '}assignment</DialogTitle>
+              <DialogTitle className="text-2xl">{data ? 'Edit ' : 'Create '}scoring component</DialogTitle>
               <DialogDescription>
-                Enter classroom details. Click {data ? 'save' : 'create'} when you're done.
+                Enter scoring component details. Click {data ? 'save' : 'create'} when you're done.
               </DialogDescription>
             </DialogHeader>
 
             <div className="grid w-full items-center gap-4">
               <FormField
                 control={form.control}
-                name="assignmentName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Assignment Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Enter assignment name"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="dueDate"
+                name="startDate"
                 render={({ field, fieldState }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Due Date</FormLabel>
+                    <FormLabel>Start Date</FormLabel>
                     <FormControl>
                       <DatePicker
                         field={field}
@@ -154,26 +138,38 @@ const AssignmentDialog = ({ triggerButton, data }: AssignmentDialogProps) => {
                   </FormItem>
                 )}
               />
-              {data && (
-                <FormField
-                  control={form.control}
-                  name="isPublished"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Publish</FormLabel>
-                        <FormDescription>Publish this assignment for student access.</FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value ?? false}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              )}
+              <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field, fieldState }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>End Date</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        field={field}
+                        isInvalid={fieldState.invalid}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weight</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Enter scoring component weight"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <DialogFooter>
@@ -198,4 +194,4 @@ const AssignmentDialog = ({ triggerButton, data }: AssignmentDialogProps) => {
   )
 }
 
-export default AssignmentDialog
+export default ScoringComponentDialog
