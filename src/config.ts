@@ -37,3 +37,9 @@ export enum Roles {
   Instructor = 1,
   Student = 2,
 }
+
+export enum QASSMode {
+  B = 'Bijunction',
+  C = 'Conjunction',
+  D = 'Disjunction',
+}

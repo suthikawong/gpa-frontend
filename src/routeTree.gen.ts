@@ -17,6 +17,7 @@ import { Route as ProfileImport } from './routes/profile'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as StudentIndexImport } from './routes/student/index'
 import { Route as InstructorMyClassroomsIndexImport } from './routes/instructor/my-classrooms/index'
 import { Route as InstructorMyClassroomsClassroomIdIndexImport } from './routes/instructor/my-classrooms/$classroomId/index'
 import { Route as InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexImport } from './routes/instructor/my-classrooms/$classroomId/assignment/$assignmentId/index'
@@ -57,6 +58,12 @@ const AboutRoute = AboutImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const StudentIndexRoute = StudentIndexImport.update({
+  id: '/student/',
+  path: '/student/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -136,6 +143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
+    '/student/': {
+      id: '/student/'
+      path: '/student'
+      fullPath: '/student'
+      preLoaderRoute: typeof StudentIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/instructor/my-classrooms/': {
       id: '/instructor/my-classrooms/'
       path: '/instructor/my-classrooms'
@@ -176,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/student': typeof StudentIndexRoute
   '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
   '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdIndexRoute
   '/instructor/my-classrooms/$classroomId/assignment/$assignmentId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
@@ -189,6 +204,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/student': typeof StudentIndexRoute
   '/instructor/my-classrooms': typeof InstructorMyClassroomsIndexRoute
   '/instructor/my-classrooms/$classroomId': typeof InstructorMyClassroomsClassroomIdIndexRoute
   '/instructor/my-classrooms/$classroomId/assignment/$assignmentId': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
@@ -203,6 +219,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/student/': typeof StudentIndexRoute
   '/instructor/my-classrooms/': typeof InstructorMyClassroomsIndexRoute
   '/instructor/my-classrooms/$classroomId/': typeof InstructorMyClassroomsClassroomIdIndexRoute
   '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/': typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
@@ -218,6 +235,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
+    | '/student'
     | '/instructor/my-classrooms'
     | '/instructor/my-classrooms/$classroomId'
     | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId'
@@ -230,6 +248,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
+    | '/student'
     | '/instructor/my-classrooms'
     | '/instructor/my-classrooms/$classroomId'
     | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId'
@@ -242,6 +261,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
+    | '/student/'
     | '/instructor/my-classrooms/'
     | '/instructor/my-classrooms/$classroomId/'
     | '/instructor/my-classrooms/$classroomId/assignment/$assignmentId/'
@@ -256,6 +276,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  StudentIndexRoute: typeof StudentIndexRoute
   InstructorMyClassroomsIndexRoute: typeof InstructorMyClassroomsIndexRoute
   InstructorMyClassroomsClassroomIdIndexRoute: typeof InstructorMyClassroomsClassroomIdIndexRoute
   InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute: typeof InstructorMyClassroomsClassroomIdAssignmentAssignmentIdIndexRoute
@@ -269,6 +290,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  StudentIndexRoute: StudentIndexRoute,
   InstructorMyClassroomsIndexRoute: InstructorMyClassroomsIndexRoute,
   InstructorMyClassroomsClassroomIdIndexRoute:
     InstructorMyClassroomsClassroomIdIndexRoute,
@@ -294,6 +316,7 @@ export const routeTree = rootRoute
         "/profile",
         "/signin",
         "/signup",
+        "/student/",
         "/instructor/my-classrooms/",
         "/instructor/my-classrooms/$classroomId/",
         "/instructor/my-classrooms/$classroomId/assignment/$assignmentId/",
@@ -317,6 +340,9 @@ export const routeTree = rootRoute
     },
     "/signup": {
       "filePath": "signup.tsx"
+    },
+    "/student/": {
+      "filePath": "student/index.tsx"
     },
     "/instructor/my-classrooms/": {
       "filePath": "instructor/my-classrooms/index.tsx"
