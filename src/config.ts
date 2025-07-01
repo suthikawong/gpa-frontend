@@ -43,3 +43,8 @@ export enum QASSMode {
   C = 'Conjunction',
   D = 'Disjunction',
 }
+
+export enum AssessmentModel {
+  QASS = '1',
+  WebAVALIA = '2',
+}

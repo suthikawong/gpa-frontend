@@ -4,6 +4,7 @@ import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
 import AssessmentDialog from '@/components/common/dialog/AssessmentDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import GroupsTab from '@/components/common/tab/assessment/GroupsTab'
+import ModelTab from '@/components/common/tab/assessment/ModelTab'
 import ScoringComponentsTab from '@/components/common/tab/assessment/ScoringComponentsTab'
 import StudentsTab from '@/components/common/tab/assessment/StudentsTab'
 import toast from '@/components/common/toast'
@@ -104,6 +105,16 @@ function RouteComponent() {
                 className="flex flex-col flex-grow"
               >
                 <GroupsTab assessmentId={assessmentId} />
+              </TabsContent>
+              <TabsContent
+                value="model"
+                className="flex flex-col flex-grow"
+              >
+                <ModelTab
+                  assessmentId={assessmentId}
+                  data={data}
+                  isLoading={isLoading}
+                />
               </TabsContent>
               <TabsContent
                 value="scoring-components"
