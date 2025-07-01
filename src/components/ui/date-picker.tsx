@@ -38,7 +38,6 @@ export function DatePicker<T extends FieldValues>({ field, disabled, isInvalid }
           mode="single"
           selected={field.value}
           onSelect={field.onChange}
-          initialFocus
         />
       </PopoverContent>
     </Popover>
