@@ -3,6 +3,7 @@ import { Breadcrumbs } from '@/components/common/Breadcrumbs'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
 import GroupDialog from '@/components/common/dialog/GroupDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
+import ScoresTab from '@/components/common/tab/group/ScoresTab'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { Badge } from '@/components/ui/badge'
@@ -83,7 +84,7 @@ function RouteComponent() {
                 value="scores"
                 className="flex flex-col flex-grow"
               >
-                {/* <StudentsTab assessmentId={assessmentId} /> */}
+                <ScoresTab groupId={groupId} />
               </TabsContent>
               <TabsContent
                 value="peer-ratings"

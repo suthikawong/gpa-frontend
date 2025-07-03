@@ -7,6 +7,7 @@ import {
   GetScoringComponentsByAssessmentIdRequest,
   RemoveStudentFromAssessmentRequest,
   SearchStudentsInAssessmentRequest,
+  StudentJoinAssessmentRequest,
   UpdateAssessmentRequest,
 } from 'gpa-backend/src/assessment/dto/assessment.request'
 import {
@@ -15,10 +16,12 @@ import {
   DeleteAssessmentResponse,
   GetAssessmentByIdResponse,
   GetAssessmentsByInstructorResponse,
+  GetAssessmentsByStudentResponse,
   GetGroupsByAssessmentIdResponse,
   GetScoringComponentsByAssessmentIdResponse,
   RemoveStudentFromAssessmentResponse,
   SearchStudentsInAssessmentResponse,
+  StudentJoinAssessmentResponse,
   UpdateAssessmentResponse,
 } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { AppResponse } from '../../gpa-backend/src/app.response'
@@ -26,6 +29,11 @@ import axios from './axios'
 
 const getAssessmentsByInstructor = async (): Promise<AppResponse<GetAssessmentsByInstructorResponse>> => {
   const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/assessment/instructor`)
+  return response.data
+}
+
+const getAssessmentsByStudent = async (): Promise<AppResponse<GetAssessmentsByStudentResponse>> => {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/assessment/student`)
   return response.data
 }
 
@@ -91,8 +99,16 @@ const getScoringComponentsByAssessmentId = async ({
   return response.data
 }
 
+const studentJoinAssessment = async (
+  data: StudentJoinAssessmentRequest
+): Promise<AppResponse<StudentJoinAssessmentResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/assessment/join`, data)
+  return response.data
+}
+
 export const assessment = {
   getAssessmentsByInstructor,
+  getAssessmentsByStudent,
   getAssessmentById,
   createAssessment,
   updateAssessment,
@@ -102,4 +118,5 @@ export const assessment = {
   removeStudentFromAssessment,
   getGroupsByAssessmentId,
   getScoringComponentsByAssessmentId,
+  studentJoinAssessment,
 }
