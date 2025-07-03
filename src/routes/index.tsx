@@ -13,7 +13,7 @@ export const Route = createFileRoute('/')({
       })
     } else if (context?.user?.roleId === Roles.Student) {
       throw redirect({
-        to: '/student',
+        to: '/student/assessment',
         search: {
           redirect: location.href,
         },
