@@ -21,6 +21,7 @@ import {
   AssessmentWithInstructor,
   CheckScoringComponentActiveResponse,
   GetAssessmentByIdResponse,
+  GetMyScoreResponse,
   GroupWithGroupMembers,
 } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { ScoringComponent } from 'gpa-backend/src/drizzle/schema'
@@ -96,15 +97,26 @@ function RouteComponent() {
 
   const scoringComponentId = checkScoringRes?.data?.scoringComponentId ?? null
 
+  const {
+    data: myScoreRes,
+    isLoading: isLoadingMyScore,
+    error: errorMyScore,
+  } = useQuery({
+    queryKey: ['getMyScore', assessmentId],
+    queryFn: async () => await api.assessment.getMyScore({ assessmentId }),
+  })
+
+  const myScoreData = myScoreRes?.data ?? null
+
   useEffect(() => {
-    if (errorAssessment || errorGroup || errorCheckScoring) {
+    if (errorAssessment || errorGroup || errorCheckScoring || errorMyScore) {
       toast.error('Something went wrong. Please try again.')
     }
-  }, [errorAssessment, errorGroup, errorCheckScoring])
+  }, [errorAssessment, errorGroup, errorCheckScoring, errorMyScore])
 
   return (
     <DashboardLayout className="gap-4">
-      <SuspenseArea loading={isLoadingAssessment || isLoadingGroup || isLoadingCheckScoring}>
+      <SuspenseArea loading={isLoadingAssessment || isLoadingGroup || isLoadingCheckScoring || isLoadingMyScore}>
         {pageState === State.PeerRating && scoringComponentId ? (
           <PeerRatingPage
             assessmentData={assessmentData}
@@ -116,6 +128,7 @@ function RouteComponent() {
           <AssessmentDetailPage
             assessmentData={assessmentData}
             groupData={groupData}
+            myScoreData={myScoreData}
             checkScoringData={checkScoringRes?.data ?? null}
             setPageState={setPageState}
           />
@@ -128,11 +141,13 @@ function RouteComponent() {
 const AssessmentDetailPage = ({
   assessmentData,
   groupData,
+  myScoreData,
   checkScoringData,
   setPageState,
 }: {
   assessmentData: GetAssessmentByIdResponse | null
   groupData: GroupWithGroupMembers | null
+  myScoreData: GetMyScoreResponse | null
   checkScoringData: CheckScoringComponentActiveResponse | null
   setPageState: React.Dispatch<React.SetStateAction<State>>
 }) => {
@@ -153,6 +168,7 @@ const AssessmentDetailPage = ({
         </Button>
         {assessmentData && <AssessmentCard data={assessmentData} />}
       </div>
+      <MyScoreCard myScoreData={myScoreData} />
       <MyGroupCard
         data={groupData}
         checkScoringData={checkScoringData}
@@ -189,6 +205,19 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
               <div>{data.assessmentCode}</div>
             </Badge>
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+const MyScoreCard = ({ myScoreData }: { myScoreData: GetMyScoreResponse | null }) => {
+  return (
+    <Card className="w-full py-4!">
+      <CardContent className="flex-col">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg md:text-xl md:mb-1">My Score</CardTitle>
+          <CardTitle className="text-lg md:text-xl md:mb-1">{myScoreData?.score ?? '-'}/100</CardTitle>
         </div>
       </CardContent>
     </Card>

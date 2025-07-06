@@ -5,6 +5,7 @@ import {
   DeleteAssessmentRequest,
   GetAssessmentByIdRequest,
   GetGroupsByAssessmentIdRequest,
+  GetMyScoreRequest,
   GetScoringComponentsByAssessmentIdRequest,
   GetStudentJoinedGroupRequest,
   RemoveStudentFromAssessmentRequest,
@@ -21,6 +22,7 @@ import {
   GetAssessmentsByInstructorResponse,
   GetAssessmentsByStudentResponse,
   GetGroupsByAssessmentIdResponse,
+  GetMyScoreResponse,
   GetScoringComponentsByAssessmentIdResponse,
   GetStudentJoinedGroupResponse,
   RemoveStudentFromAssessmentResponse,
@@ -126,6 +128,11 @@ const checkScoringComponentActive = async ({
   return response.data
 }
 
+const getMyScore = async ({ assessmentId }: GetMyScoreRequest): Promise<AppResponse<GetMyScoreResponse>> => {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/assessment/${assessmentId}/my-score`)
+  return response.data
+}
+
 export const assessment = {
   getAssessmentsByInstructor,
   getAssessmentsByStudent,
@@ -141,4 +148,5 @@ export const assessment = {
   studentJoinAssessment,
   getJoinedGroup,
   checkScoringComponentActive,
+  getMyScore,
 }
