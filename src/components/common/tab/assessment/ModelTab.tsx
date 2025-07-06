@@ -13,6 +13,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const model = {
   QASS: '1',
@@ -25,6 +26,7 @@ const baseSchema = z.object({
 
 const qassSchema = z.object({
   modelId: z.literal(model.QASS),
+  selfRating: z.boolean(),
   tuningFactor: z
     .string()
     .min(1, { message: 'Please enter a turing factor.' })
@@ -35,6 +37,7 @@ const qassSchema = z.object({
 
 const webavaliaSchema = z.object({
   modelId: z.literal(model.WebAVALIA),
+  selfRating: z.boolean(),
   selfAssessmentWeight: z
     .string()
     .min(1, { message: 'Please enter a self assessment weight.' })
@@ -83,7 +86,7 @@ const ModelTab = ({
         return { ...modelConfigWeb, modelId: model.WebAVALIA }
       // select none
       default:
-        return { modelId: '0' }
+        return { modelId: '0', selfRating: false }
     }
   }
 
@@ -110,6 +113,7 @@ const ModelTab = ({
   })
 
   const onSubmit = async (values: ModelFormSchema) => {
+    console.log('TLOG ~ values:', values)
     const { modelId, ...modelConfig } = values
     const payload = {
       ...data,
@@ -218,6 +222,26 @@ const ModelTab = ({
                             )}
                           />
                         </>
+                      )}
+
+                      {selectedModel !== '0' && (
+                        <FormField
+                          control={form.control}
+                          name="selfRating"
+                          render={({ field }) => {
+                            return (
+                              <FormItem className="flex flex-row items-center gap-2">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={(checked) => field.onChange(checked)}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-sm font-normal">Allow self rating</FormLabel>
+                              </FormItem>
+                            )
+                          }}
+                        />
                       )}
                     </div>
                   </div>
