@@ -85,17 +85,23 @@ const AssessmentCard = ({ data }: { data: Omit<Assessment, 'modelId' | 'modelCon
   }
 
   return (
-    <Card className="w-full">
-      <CardContent className="flex-col">
-        <div className="flex justify-between">
-          <CardTitle className="text-lg md:text-xl md:mb-1">{data.assessmentName}</CardTitle>
+    <Card className="w-full sm:py-4!">
+      <CardContent className="flex-col sm:px-4!">
+        <div className="flex justify-between items-center sm:mb-0">
+          <CardTitle className="text-lg">{data.assessmentName}</CardTitle>
           <Button
-            className="w-full sm:hidden"
+            className="hidden sm:block"
             onClick={() => onClickAssessment(data.assessmentId)}
           >
             View Details
           </Button>
         </div>
+        <Button
+          className="w-full mt-4 sm:hidden"
+          onClick={() => onClickAssessment(data.assessmentId)}
+        >
+          View Details
+        </Button>
       </CardContent>
     </Card>
   )

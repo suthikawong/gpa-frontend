@@ -7,6 +7,7 @@ import {
   GetGroupMembersRequest,
   GetScoresRequest,
   JoinGroupRequest,
+  LeaveGroupRequest,
   UpdateGroupRequest,
   UpsertScoresRequest,
 } from 'gpa-backend/src/group/dto/group.request'
@@ -19,16 +20,12 @@ import {
   GetGroupMembersResponse,
   GetScoresResponse,
   JoinGroupResponse,
+  LeaveGroupResponse,
   UpdateGroupResponse,
   UpsertScoresResponse,
 } from 'gpa-backend/src/group/dto/group.response'
 import { AppResponse } from '../../gpa-backend/src/app.response'
 import axios from './axios'
-import {
-  GetStudentJoinedGroupRequest,
-  StudentJoinAssessmentRequest,
-} from 'gpa-backend/src/assessment/dto/assessment.request'
-import { StudentJoinAssessmentResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
 
 const getGroupById = async ({ groupId }: GetGroupByIdRequest): Promise<AppResponse<GetGroupByIdResponse>> => {
   const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/group/${groupId}`)
@@ -83,13 +80,13 @@ const upsertScore = async (data: UpsertScoresRequest): Promise<AppResponse<Upser
   return response.data
 }
 
-const getJoinedGroup = async (): Promise<AppResponse<GetStudentJoinedGroupRequest>> => {
-  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/group/joined`)
+const joinGroup = async (data: JoinGroupRequest): Promise<AppResponse<JoinGroupResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/join`, data)
   return response.data
 }
 
-const joinGroup = async (data: JoinGroupRequest): Promise<AppResponse<JoinGroupResponse>> => {
-  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/join`, data)
+const leaveGroup = async (data: LeaveGroupRequest): Promise<AppResponse<LeaveGroupResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/leave`, data)
   return response.data
 }
 
@@ -103,6 +100,6 @@ export const group = {
   deleteGroupMember,
   getScores,
   upsertScore,
-  getJoinedGroup,
   joinGroup,
+  leaveGroup,
 }

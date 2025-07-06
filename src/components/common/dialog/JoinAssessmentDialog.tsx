@@ -5,6 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -37,8 +38,15 @@ const JoinAssessmentDialog = ({ triggerButton }: JoinAssessmentDialogProps) => {
       queryClient.invalidateQueries({ queryKey: ['getAssessmentsByStudent'] })
       form.reset()
     },
-    onError: () => {
-      toast.error('Failed to join assessment.')
+    onError: (error: AxiosError) => {
+      if (error.response?.status === 400) {
+        form.setError('assessmentCode', {
+          type: 'manual',
+          message: 'No assessment code found.',
+        })
+      } else {
+        toast.error('Failed to join assessment. Please try again.')
+      }
     },
   })
 

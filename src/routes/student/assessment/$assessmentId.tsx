@@ -1,27 +1,33 @@
 import { api } from '@/api'
-import { Breadcrumbs } from '@/components/common/Breadcrumbs'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
-import AssessmentDialog from '@/components/common/dialog/AssessmentDialog'
+import JoinGroupDialog from '@/components/common/dialog/JoinGroupDialog'
+import LeaveGroupDialog from '@/components/common/dialog/LeaveGroupDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
-import GroupsTab from '@/components/common/tab/assessment/GroupsTab'
-import ModelTab from '@/components/common/tab/assessment/ModelTab'
-import ScoringComponentsTab from '@/components/common/tab/assessment/ScoringComponentsTab'
-import StudentsTab from '@/components/common/tab/assessment/StudentsTab'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
+import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
-import { appPaths } from '@/config'
-import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { AssessmentWithInstructor } from 'gpa-backend/src/assessment/dto/assessment.response'
-import { Assessment } from 'gpa-backend/src/drizzle/schema'
-import { Pencil, Trash2, Users } from 'lucide-react'
-import { useEffect } from 'react'
+import { Slider } from '@/components/ui/slider'
+import { useAuth } from '@/hooks/auth'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import {
+  AssessmentWithInstructor,
+  CheckScoringComponentActiveResponse,
+  GetAssessmentByIdResponse,
+  GroupWithGroupMembers,
+} from 'gpa-backend/src/assessment/dto/assessment.response'
+import { ScoringComponent } from 'gpa-backend/src/drizzle/schema'
+import { ChevronLeft, Users } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
 export const Route = createFileRoute('/student/assessment/$assessmentId')({
   component: RouteComponent,
@@ -37,9 +43,25 @@ export const Route = createFileRoute('/student/assessment/$assessmentId')({
   },
 })
 
+enum State {
+  Assessment = 1,
+  PeerRating,
+}
+
+const studentScore = z.object({
+  score: z.number().max(100).min(0),
+  comment: z.string().optional(),
+  rateeStudentUserId: z.number(),
+})
+
+const formSchema = z.object({
+  studentScores: z.array(studentScore),
+})
+
 function RouteComponent() {
   const params = Route.useParams()
   const assessmentId = parseInt(params.assessmentId)
+  const [pageState, setPageState] = useState<State>(State.Assessment)
 
   const {
     data: assessmentRes,
@@ -58,50 +80,85 @@ function RouteComponent() {
     error: errorGroup,
   } = useQuery({
     queryKey: ['getJoinedGroup', assessmentId],
-    queryFn: api.group.getJoinedGroup,
+    queryFn: async () => await api.assessment.getJoinedGroup({ assessmentId }),
   })
 
   const groupData = groupRes?.data ?? null
 
+  const {
+    data: checkScoringRes,
+    isLoading: isLoadingCheckScoring,
+    error: errorCheckScoring,
+  } = useQuery({
+    queryKey: ['checkScoringComponentActive', assessmentId],
+    queryFn: async () => await api.assessment.checkScoringComponentActive({ assessmentId }),
+  })
+
+  const scoringComponentId = checkScoringRes?.data?.scoringComponentId ?? null
+
   useEffect(() => {
-    if (errorAssessment || errorGroup) {
+    if (errorAssessment || errorGroup || errorCheckScoring) {
       toast.error('Something went wrong. Please try again.')
     }
-  }, [errorAssessment, errorGroup])
+  }, [errorAssessment, errorGroup, errorCheckScoring])
 
   return (
     <DashboardLayout className="gap-4">
-      <SuspenseArea loading={isLoadingAssessment || isLoadingGroup}>
-        <div className="flex flex-col gap-8 flex-grow">
-          <div className="flex flex-col gap-6">
-            {/* <Breadcrumbs
-                items={[
-                  { label: 'Peer Assessments', href: `/instructor/assessment` },
-                  {
-                    label: 'Assessment',
-                    href: `/instructor/assessment/${assessmentId}`,
-                    isCurrentPage: true,
-                  },
-                ]}
-              /> */}
-            {assessmentData && <AssessmentCard data={assessmentData} />}
-          </div>
-          <Card className="w-full">
-            <CardContent className="flex-col">
-              <div className="flex justify-between">
-                <CardTitle className="text-lg md:text-xl md:mb-1">My Group</CardTitle>
-                <Button
-                  className="w-full sm:hidden"
-                  // onClick={() => onClickAssessment(data.assessmentId)}
-                >
-                  Join Group
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <SuspenseArea loading={isLoadingAssessment || isLoadingGroup || isLoadingCheckScoring}>
+        {pageState === State.PeerRating && scoringComponentId ? (
+          <PeerRatingPage
+            assessmentData={assessmentData}
+            groupData={groupData}
+            scoringComponentId={scoringComponentId}
+            setPageState={setPageState}
+          />
+        ) : (
+          <AssessmentDetailPage
+            assessmentData={assessmentData}
+            groupData={groupData}
+            checkScoringData={checkScoringRes?.data ?? null}
+            setPageState={setPageState}
+          />
+        )}
       </SuspenseArea>
     </DashboardLayout>
+  )
+}
+
+const AssessmentDetailPage = ({
+  assessmentData,
+  groupData,
+  checkScoringData,
+  setPageState,
+}: {
+  assessmentData: GetAssessmentByIdResponse | null
+  groupData: GroupWithGroupMembers | null
+  checkScoringData: CheckScoringComponentActiveResponse | null
+  setPageState: React.Dispatch<React.SetStateAction<State>>
+}) => {
+  const router = useRouter()
+  const onClickBack = () => {
+    router.history.push(`/student/assessment`)
+  }
+
+  return (
+    <div className="flex flex-col gap-8 flex-grow">
+      <div className="flex flex-col gap-6">
+        <Button
+          className="w-fit"
+          onClick={onClickBack}
+        >
+          <ChevronLeft />
+          Back
+        </Button>
+        {assessmentData && <AssessmentCard data={assessmentData} />}
+      </div>
+      <MyGroupCard
+        data={groupData}
+        checkScoringData={checkScoringData}
+        setPageState={setPageState}
+      />
+    </div>
   )
 }
 
@@ -120,14 +177,6 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
               <CardDescription className="text-sm">{data.instructor.name}</CardDescription>
             </div>
           </div>
-          <Badge
-            size="lg"
-            variant={data.isPublished ? 'success' : 'destructive'}
-            className="h-fit mt-1"
-            asChild
-          >
-            <div>{data.isPublished ? 'Published' : 'Private'}</div>
-          </Badge>
         </div>
         <div className="flex justify-between my-4 md:mb-0">
           <div className="flex gap-x-2">
@@ -140,105 +189,237 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
               <div>{data.assessmentCode}</div>
             </Badge>
           </div>
-          <div className="flex gap-2">
-            <AssessmentDialog
-              data={data}
-              triggerButton={
-                <Button
-                  variant="outline"
-                  className="hidden w-22 md:flex"
-                >
-                  <Pencil />
-                  Edit
-                </Button>
-              }
-            />
-            <DeleteAssessmentDialog
-              triggerButton={
-                <Button
-                  variant="destructiveOutline"
-                  className="hidden md:flex"
-                >
-                  <Trash2 />
-                  Delete
-                </Button>
-              }
-              assessmentId={data.assessmentId}
-            />
-          </div>
-        </div>
-        <Separator className="md:hidden" />
-        <div className="mt-4 flex gap-2 justify-end md:hidden">
-          <AssessmentDialog
-            data={data}
-            triggerButton={
-              <Button
-                variant="outline"
-                className="w-22"
-              >
-                <Pencil />
-                Edit
-              </Button>
-            }
-          />
-          <DeleteAssessmentDialog
-            triggerButton={
-              <Button variant="destructiveOutline">
-                <Trash2 />
-                Delete
-              </Button>
-            }
-            assessmentId={data.assessmentId}
-          />
         </div>
       </CardContent>
     </Card>
   )
 }
 
-const DeleteAssessmentDialog = ({
-  triggerButton,
-  assessmentId,
+const MyGroupCard = ({
+  data,
+  checkScoringData,
+  setPageState,
 }: {
-  triggerButton: React.ReactNode
-  assessmentId: Assessment['assessmentId']
+  data: GroupWithGroupMembers | null
+  checkScoringData: CheckScoringComponentActiveResponse | null
+  setPageState: React.Dispatch<React.SetStateAction<State>>
 }) => {
-  return (
-    <ConfirmDeleteDialog
-      triggerButton={triggerButton}
-      data={{ assessmentId }}
-      api={api.assessment.deleteAssessment}
-      title="Delete Assessment"
-      onSuccessMessage="Assessment deleted successfully."
-      onErrorMessage="Failed to delete classroom."
-      refetchKeys={['getAssessmentsByInstructor']}
-      redirectTo={appPaths.instructor.assessment}
-      className="sm:!max-w-[600px]"
-      content={
-        <div className="space-y-4 text-sm text-muted-foreground">
-          <div className="mt-1 text-sm">
-            Deleting this classroom will also remove all associated information, including:
-          </div>
+  const onClickRate = () => {
+    setPageState(State.PeerRating)
+  }
 
-          <div className="rounded-xl border border-gray-200 bg-muted p-5">
-            <ul className="list-inside list-disc space-y-1 text-sm">
-              <li>Assignments</li>
-              <li>Students</li>
-              <li>Groups</li>
-              <li>Criteria</li>
-              <li>Model configuration</li>
-              <li>Assessment periods</li>
-              <li>Assessment questions</li>
-              <li>Group marks</li>
-              <li>Student marks</li>
-              <li>Student's peer ratings</li>
-            </ul>
-          </div>
-          <div className="mt-4 text-sm text-muted-foreground">
-            This action cannot be undone. Please make sure you've backed up any important data before continuing.
+  return (
+    <Card className="w-full">
+      <CardContent className="flex-col">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg md:text-xl md:mb-1">
+            {data?.groupId ? (data?.groupName ?? '-') : 'My Group'}
+          </CardTitle>
+          <div className="hidden md:flex">
+            {data?.groupId ? (
+              <div className="flex gap-2">
+                {checkScoringData?.scoringComponentId && (
+                  <Button
+                    onClick={onClickRate}
+                    disabled={checkScoringData?.rated}
+                  >
+                    Rate
+                  </Button>
+                )}
+                <LeaveGroupDialog
+                  groupId={data?.groupId}
+                  triggerButton={<Button variant="destructiveOutline">Leave Group</Button>}
+                />
+              </div>
+            ) : (
+              <JoinGroupDialog triggerButton={<Button>Join Group</Button>} />
+            )}
           </div>
         </div>
-      }
-    />
+        {data?.groupId && (
+          <div className="flex gap-x-2">
+            <div className="text-muted-foreground text-sm">Group Code:</div>
+            <Badge
+              variant="secondary"
+              className="rounded-sm h-fit"
+              asChild
+            >
+              <div>{data?.groupCode ?? '-'}</div>
+            </Badge>
+          </div>
+        )}
+        <Separator className="my-4" />
+        <div className="flex flex-col gap-1.5">
+          {data?.members?.map((member) => (
+            <div
+              key={member.userId}
+              className="flex justify-between items-center border-2 border-primary/60 p-3 rounded-xl bg-secondary/20"
+            >
+              <div className="text-black/70 font-semibold">{member.name}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex md:hidden mt-4 justify-end">
+          {data?.groupId ? (
+            <div className="flex gap-2">
+              {checkScoringData?.scoringComponentId && (
+                <Button
+                  onClick={onClickRate}
+                  disabled={checkScoringData?.rated}
+                >
+                  Rate
+                </Button>
+              )}
+              <LeaveGroupDialog
+                groupId={data?.groupId}
+                triggerButton={<Button variant="destructiveOutline">Leave Group</Button>}
+              />
+            </div>
+          ) : (
+            <JoinGroupDialog triggerButton={<Button>Join Group</Button>} />
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+const PeerRatingPage = ({
+  assessmentData,
+  groupData,
+  scoringComponentId,
+  setPageState,
+}: {
+  assessmentData: GetAssessmentByIdResponse | null
+  groupData: GroupWithGroupMembers | null
+  scoringComponentId: ScoringComponent['scoringComponentId']
+  setPageState: React.Dispatch<React.SetStateAction<State>>
+}) => {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const modelConfig = assessmentData?.modelConfig as { selfRating: boolean }
+  const selfRating = modelConfig?.selfRating ?? false
+  const ratees = groupData?.members?.filter((member) => user?.userId !== member.userId || selfRating) ?? []
+  const defaultValues = {
+    studentScores: ratees.map((ratee) => ({ rateeStudentUserId: ratee.userId, score: 50, comment: '' })),
+  }
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues,
+  })
+
+  const onClickBack = () => {
+    setPageState(State.Assessment)
+  }
+
+  return (
+    <>
+      <div className="flex flex-col gap-8 flex-grow">
+        <div className="flex flex-col gap-6 flex-grow">
+          <Button
+            className="w-fit"
+            onClick={onClickBack}
+          >
+            <ChevronLeft />
+            Back
+          </Button>
+
+          <Form {...form}>
+            <form className="space-y-6 flex flex-col">
+              <div className="grid w-full items-center gap-8">
+                {ratees.map((ratee, index) => (
+                  <Card
+                    key={index}
+                    className="w-full"
+                  >
+                    <CardContent className="flex flex-col">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 w-full gap-4">
+                        <div className="flex gap-4 items-center lg:items-start">
+                          <Avatar className="size-12">
+                            <AvatarImage src="https://github.com/shadcn.png" />
+                          </Avatar>
+                          <div>
+                            <div className="text-2xl font-semibold">{ratee.name}</div>
+                            <div className="text-muted-foreground">{ratee.email}</div>
+                          </div>
+                        </div>
+                        <div>
+                          <FormField
+                            control={form.control}
+                            name={`studentScores.${index}.score`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Score</FormLabel>
+                                <FormControl>
+                                  <div className="flex gap-4">
+                                    <Slider
+                                      max={100}
+                                      step={1}
+                                      value={[field.value]}
+                                      onValueChange={(value) => field.onChange(value[0])}
+                                    />
+                                    <div>{field.value}</div>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`studentScores.${index}.comment`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Comment</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </form>
+          </Form>
+          <ConfirmDeleteDialog
+            dialogType="info"
+            triggerButton={
+              <Button
+                size="lg"
+                className="w-fit ml-auto"
+              >
+                Submit
+              </Button>
+            }
+            data={{
+              scoringComponentId,
+              studentScores: form.getValues().studentScores,
+            }}
+            api={async (data) => {
+              const isValid = await form.trigger()
+              if (isValid) {
+                await api.peerRating.ratePeer(data)
+              }
+            }}
+            title="Confirm submit ratings"
+            content="Are you sure you want to submit this? You can't submit this again."
+            onSuccessMessage="Student was rated successfully."
+            onErrorMessage="Peer rating failed. Please try again."
+            callback={() => {
+              queryClient.setQueryData(['checkScoringComponentActive', assessmentData?.assessmentId], {
+                data: { scoringComponentId, rated: true },
+              })
+              onClickBack()
+            }}
+          />
+        </div>
+      </div>
+    </>
   )
 }

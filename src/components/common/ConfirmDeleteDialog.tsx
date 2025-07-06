@@ -15,6 +15,7 @@ import { useState } from 'react'
 import toast from './toast'
 
 interface ConfirmDeleteDialogProps<T> {
+  dialogType?: 'delete' | 'info'
   triggerButton: React.ReactNode
   data: T
   api: (data: T) => Promise<any>
@@ -29,6 +30,7 @@ interface ConfirmDeleteDialogProps<T> {
 }
 
 const ConfirmDeleteDialog = <T,>({
+  dialogType = 'delete',
   triggerButton,
   data,
   api,
@@ -67,32 +69,35 @@ const ConfirmDeleteDialog = <T,>({
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>
-        <div onClick={() => setOpen(true)}>{triggerButton}</div>
+        <div
+          className="flex"
+          onClick={() => setOpen(true)}
+        >
+          {triggerButton}
+        </div>
       </DialogTrigger>
       <DialogContent className={cn('sm:!max-w-[500px]', className)}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{title}</DialogTitle>
-          <DialogDescription className="hidden">
-            Are you sure you want to delete this? This action cannot be undone.
-          </DialogDescription>
+          <DialogDescription className="hidden">Description</DialogDescription>
         </DialogHeader>
         <div className="text-sm text-muted-foreground">
           {content ?? 'Are you sure you want to delete this? This action cannot be undone.'}
         </div>
         <DialogFooter>
           <Button
-            variant="destructiveOutline"
+            variant={dialogType === 'delete' ? 'destructiveOutline' : 'outline'}
             onClick={() => setOpen(false)}
             disabled={mutation.isPending}
           >
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            variant={dialogType === 'delete' ? 'destructive' : 'default'}
             onClick={() => mutation.mutate()}
             loading={mutation.isPending}
           >
-            Delete
+            {dialogType === 'delete' ? 'Delete' : 'Continue'}
           </Button>
         </DialogFooter>
       </DialogContent>
