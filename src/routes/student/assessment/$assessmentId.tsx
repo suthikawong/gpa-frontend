@@ -168,7 +168,7 @@ const AssessmentDetailPage = ({
         </Button>
         {assessmentData && <AssessmentCard data={assessmentData} />}
       </div>
-      <MyScoreCard myScoreData={myScoreData} />
+      {myScoreData && <MyScoreCard myScoreData={myScoreData} />}
       <MyGroupCard
         data={groupData}
         checkScoringData={checkScoringData}
@@ -211,7 +211,7 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
   )
 }
 
-const MyScoreCard = ({ myScoreData }: { myScoreData: GetMyScoreResponse | null }) => {
+const MyScoreCard = ({ myScoreData }: { myScoreData: GetMyScoreResponse }) => {
   return (
     <Card className="w-full py-4!">
       <CardContent className="flex-col">
