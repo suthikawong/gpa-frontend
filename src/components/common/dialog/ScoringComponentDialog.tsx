@@ -138,6 +138,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
                     <FormLabel>Start Date</FormLabel>
                     <FormControl>
                       <DatePicker
+                        type="datetime"
                         field={field}
                         isInvalid={fieldState.invalid}
                       />
@@ -154,6 +155,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
                     <FormLabel>End Date</FormLabel>
                     <FormControl>
                       <DatePicker
+                        type="datetime"
                         field={field}
                         isInvalid={fieldState.invalid}
                       />
