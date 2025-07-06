@@ -27,6 +27,7 @@ interface ConfirmDeleteDialogProps<T> {
   redirectTo?: string
   callback?: () => void
   className?: string
+  confirmButtonText?: string
 }
 
 const ConfirmDeleteDialog = <T,>({
@@ -42,6 +43,7 @@ const ConfirmDeleteDialog = <T,>({
   redirectTo,
   callback,
   className,
+  confirmButtonText,
 }: ConfirmDeleteDialogProps<T>) => {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
@@ -97,7 +99,7 @@ const ConfirmDeleteDialog = <T,>({
             onClick={() => mutation.mutate()}
             loading={mutation.isPending}
           >
-            {dialogType === 'delete' ? 'Delete' : 'Continue'}
+            {(confirmButtonText ?? dialogType === 'delete') ? 'Delete' : 'Continue'}
           </Button>
         </DialogFooter>
       </DialogContent>

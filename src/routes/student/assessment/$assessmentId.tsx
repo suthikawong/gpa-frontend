@@ -1,7 +1,6 @@
 import { api } from '@/api'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
 import JoinGroupDialog from '@/components/common/dialog/JoinGroupDialog'
-import LeaveGroupDialog from '@/components/common/dialog/LeaveGroupDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
@@ -24,7 +23,7 @@ import {
   GetMyScoreResponse,
   GroupWithGroupMembers,
 } from 'gpa-backend/src/assessment/dto/assessment.response'
-import { ScoringComponent } from 'gpa-backend/src/drizzle/schema'
+import { Assessment, Group, ScoringComponent } from 'gpa-backend/src/drizzle/schema'
 import { ChevronLeft, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -169,11 +168,14 @@ const AssessmentDetailPage = ({
         {assessmentData && <AssessmentCard data={assessmentData} />}
       </div>
       {myScoreData && <MyScoreCard myScoreData={myScoreData} />}
-      <MyGroupCard
-        data={groupData}
-        checkScoringData={checkScoringData}
-        setPageState={setPageState}
-      />
+      {assessmentData && (
+        <MyGroupCard
+          groupData={groupData}
+          checkScoringData={checkScoringData}
+          assessmentData={assessmentData}
+          setPageState={setPageState}
+        />
+      )}
     </div>
   )
 }
@@ -225,12 +227,14 @@ const MyScoreCard = ({ myScoreData }: { myScoreData: GetMyScoreResponse }) => {
 }
 
 const MyGroupCard = ({
-  data,
+  groupData,
   checkScoringData,
+  assessmentData,
   setPageState,
 }: {
-  data: GroupWithGroupMembers | null
+  groupData: GroupWithGroupMembers | null
   checkScoringData: CheckScoringComponentActiveResponse | null
+  assessmentData: GetAssessmentByIdResponse | null
   setPageState: React.Dispatch<React.SetStateAction<State>>
 }) => {
   const onClickRate = () => {
@@ -242,10 +246,10 @@ const MyGroupCard = ({
       <CardContent className="flex-col">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg md:text-xl md:mb-1">
-            {data?.groupId ? (data?.groupName ?? '-') : 'My Group'}
+            {groupData?.groupId ? (groupData?.groupName ?? '-') : 'My Group'}
           </CardTitle>
           <div className="hidden md:flex">
-            {data?.groupId ? (
+            {groupData?.groupId ? (
               <div className="flex gap-2">
                 {checkScoringData?.scoringComponentId && (
                   <Button
@@ -255,17 +259,23 @@ const MyGroupCard = ({
                     Rate
                   </Button>
                 )}
-                <LeaveGroupDialog
-                  groupId={data?.groupId}
-                  triggerButton={<Button variant="destructiveOutline">Leave Group</Button>}
-                />
+                {assessmentData?.canEdit && (
+                  <LeaveGroupDialog
+                    assessmentId={assessmentData?.assessmentId!}
+                    groupId={groupData?.groupId}
+                    triggerButton={<Button variant="destructiveOutline">Leave Group</Button>}
+                  />
+                )}
               </div>
             ) : (
-              <JoinGroupDialog triggerButton={<Button>Join Group</Button>} />
+              <JoinGroupDialog
+                assessmentId={assessmentData?.assessmentId!}
+                triggerButton={<Button>Join Group</Button>}
+              />
             )}
           </div>
         </div>
-        {data?.groupId && (
+        {groupData?.groupId && (
           <div className="flex gap-x-2">
             <div className="text-muted-foreground text-sm">Group Code:</div>
             <Badge
@@ -273,13 +283,13 @@ const MyGroupCard = ({
               className="rounded-sm h-fit"
               asChild
             >
-              <div>{data?.groupCode ?? '-'}</div>
+              <div>{groupData?.groupCode ?? '-'}</div>
             </Badge>
           </div>
         )}
         <Separator className="my-4" />
         <div className="flex flex-col gap-1.5">
-          {data?.members?.map((member) => (
+          {groupData?.members?.map((member) => (
             <div
               key={member.userId}
               className="flex justify-between items-center border-2 border-primary/60 p-3 rounded-xl bg-secondary/20"
@@ -289,7 +299,7 @@ const MyGroupCard = ({
           ))}
         </div>
         <div className="flex md:hidden mt-4 justify-end">
-          {data?.groupId ? (
+          {groupData?.groupId ? (
             <div className="flex gap-2">
               {checkScoringData?.scoringComponentId && (
                 <Button
@@ -299,17 +309,47 @@ const MyGroupCard = ({
                   Rate
                 </Button>
               )}
-              <LeaveGroupDialog
-                groupId={data?.groupId}
-                triggerButton={<Button variant="destructiveOutline">Leave Group</Button>}
-              />
+              {assessmentData?.canEdit && (
+                <LeaveGroupDialog
+                  assessmentId={assessmentData?.assessmentId!}
+                  groupId={groupData?.groupId}
+                  triggerButton={<Button variant="destructiveOutline">Leave Group</Button>}
+                />
+              )}
             </div>
           ) : (
-            <JoinGroupDialog triggerButton={<Button>Join Group</Button>} />
+            <JoinGroupDialog
+              assessmentId={assessmentData?.assessmentId!}
+              triggerButton={<Button>Join Group</Button>}
+            />
           )}
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+const LeaveGroupDialog = ({
+  triggerButton,
+  groupId,
+  assessmentId,
+}: {
+  triggerButton: React.ReactNode
+  groupId: Group['groupId']
+  assessmentId: Assessment['assessmentId']
+}) => {
+  return (
+    <ConfirmDeleteDialog
+      triggerButton={triggerButton}
+      data={{ groupId }}
+      api={api.group.leaveGroup}
+      title="Leave group"
+      content="Are you sure you want to leave this group?"
+      confirmButtonText="Leave"
+      onSuccessMessage="Leave group successfully."
+      onErrorMessage="Failed to leave group. Please try again."
+      refetchKeys={['getJoinedGroup', assessmentId]}
+    />
   )
 }
 

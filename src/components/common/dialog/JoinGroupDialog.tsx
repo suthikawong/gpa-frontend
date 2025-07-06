@@ -5,21 +5,23 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
+import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import toast from '../toast'
-import { AxiosError } from 'axios'
 
 interface JoinGroupDialogProps {
   triggerButton: React.ReactNode
+  assessmentId: Assessment['assessmentId']
 }
 
 const formSchema = z.object({
   groupCode: z.string().min(1, { message: 'Please enter the group code.' }),
 })
 
-const JoinGroupDialog = ({ triggerButton }: JoinGroupDialogProps) => {
+const JoinGroupDialog = ({ triggerButton, assessmentId }: JoinGroupDialogProps) => {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
   const defaultValues = {
@@ -35,7 +37,7 @@ const JoinGroupDialog = ({ triggerButton }: JoinGroupDialogProps) => {
     onSuccess: () => {
       setOpen(false)
       toast.success('Join group successfully')
-      queryClient.invalidateQueries({ queryKey: ['getJoinedGroup'] })
+      queryClient.invalidateQueries({ queryKey: ['getJoinedGroup', assessmentId] })
       form.reset()
     },
     onError: (error: AxiosError) => {

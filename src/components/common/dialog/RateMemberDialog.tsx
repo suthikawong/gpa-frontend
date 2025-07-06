@@ -43,7 +43,7 @@ const RateMemberDialog = ({ triggerButton, data, scoringComponentId, model }: Ra
     onSuccess: () => {
       setOpen(false)
       toast.success('Student was rated successfully')
-      // queryClient.invalidateQueries({ queryKey: ['getJoinedGroup'] })
+      // queryClient.invalidateQueries({ queryKey: ['getJoinedGroup', assessmentId] })
       form.reset()
     },
     onError: (error: AxiosError) => {
