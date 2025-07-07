@@ -1,37 +1,19 @@
 import { api } from '@/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
-import { Assessment, Group } from 'gpa-backend/src/drizzle/schema'
-import { SettingsIcon, TrendingUp } from 'lucide-react'
-import { useForm, useWatch } from 'react-hook-form'
-import { z } from 'zod'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ChartContainer } from '@/components/ui/chart'
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useQuery } from '@tanstack/react-query'
+import { Group } from 'gpa-backend/src/drizzle/schema'
+import { StudentScoreItem } from 'gpa-backend/src/group/dto/group.response'
+import { Pencil } from 'lucide-react'
+import { useEffect } from 'react'
+import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from 'recharts'
+import EditScoreDialog from '../../dialog/EditScoreDialog'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
-import { useEffect } from 'react'
-import { ChartConfig, ChartContainer } from '@/components/ui/chart'
-import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from 'recharts'
-
-const formSchema = z.object({
-  groupScore: z
-    .string()
-    .min(1, { message: 'Please enter a group score.' })
-    .refine((val) => /^[0-9]*\.?[0-9]+$/.test(val), {
-      message: 'Weight must be a number.',
-    })
-    .refine((val) => Number(val) > 0, {
-      message: 'Weight must be greater than zero.',
-    }),
-})
 
 const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
-  const queryClient = useQueryClient()
-
   const {
     data: res,
     isLoading,
@@ -43,173 +25,139 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
 
   const data = res?.data
 
-  const defaultValues = {
-    groupScore: data?.groupScore?.toString() ?? '',
-  }
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues,
-  })
-
   useEffect(() => {
     if (error) {
       toast.error('Something went wrong. Please try again.')
     }
   }, [error])
 
-  const updateMutation = useMutation({
-    mutationFn: api.group.upsertScore,
-    onSuccess: () => {
-      toast.success('Scoring component updated successfully')
-      queryClient.invalidateQueries({ queryKey: ['upsertScore', groupId] })
+  const chartData = [{ groupScore: data?.groupScore?.score ?? '-', fill: 'var(--chart-2)' }]
+  const chartConfig = {
+    groupScore: {
+      label: 'Group Score',
     },
-    onError: () => {
-      toast.error('Failed to update scoring component.')
-    },
-  })
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log('TLOG ~ values:', values)
-    // updateMutation.mutate(payload)
   }
 
-  const chartData = [{ browser: 'safari', visitors: 200, fill: 'var(--color-safari)' }]
-  const chartConfig = {
-    visitors: {
-      label: 'Visitors',
-    },
-    safari: {
-      label: 'Safari',
-      color: 'var(--chart-2)',
-    },
-  } satisfies ChartConfig
+  const degree = ((data?.groupScore?.score ?? 0) / 100) * 360
+  const offset = (360 - degree) / 2
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="items-center pb-0">
-        <CardTitle>Radial Chart - Text</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
-        >
-          <RadialBarChart
-            data={chartData}
-            startAngle={240} // 270
-            endAngle={-60} // -90
-            innerRadius={80}
-            outerRadius={96}
-          >
-            <PolarGrid
-              gridType="circle"
-              radialLines={false}
-              stroke="none"
-              className="first:fill-muted last:fill-white"
-              polarRadius={[86, 74]}
-            />
-            <RadialBar
-              dataKey="visitors"
-              background
-              cornerRadius={10}
-            />
-            <PolarRadiusAxis
-              tick={false}
-              tickLine={false}
-              axisLine={false}
-            >
-              <Label
-                content={({ viewBox }) => {
-                  if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                    return (
-                      <text
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        <tspan
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          className="fill-foreground text-4xl font-bold"
-                        >
-                          {chartData[0].visitors.toLocaleString()}
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground"
-                        >
-                          Visitors
-                        </tspan>
-                      </text>
-                    )
-                  }
-                }}
-              />
-            </PolarRadiusAxis>
-          </RadialBarChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+    <SuspenseArea loading={isLoading}>
+      <div className="flex flex-col flex-grow gap-4">
+        <EditScoreDialog
+          groupId={groupId}
+          data={data}
+          triggerButton={
+            <Button>
+              <Pencil />
+              Edit Scores
+            </Button>
+          }
+        />
+        <div className="flex flex-col md:flex-row gap-4">
+          <Card className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8 h-fit md:w-fit">
+            <CardContent className="gap-0 px-4! sm:pl-8! md:pl-6! sm:pr-0!">
+              <CardTitle className="text-xl">Group score</CardTitle>
+              <CardDescription>January - June 2024</CardDescription>
+            </CardContent>
+            <CardContent className="pl-4! sm:pr-8! md:pr-6! sm:pl-0!">
+              <ChartContainer
+                config={chartConfig}
+                className="w-[150px] h-[150px]"
+              >
+                <RadialBarChart
+                  data={chartData}
+                  startAngle={270 - offset} // max 270
+                  endAngle={-90 + offset} // max -90
+                  innerRadius={64}
+                  outerRadius={80}
+                >
+                  <PolarGrid
+                    gridType="circle"
+                    radialLines={false}
+                    stroke="none"
+                    className="first:fill-muted last:fill-white"
+                    polarRadius={[69, 57]}
+                  />
+                  <RadialBar
+                    dataKey="groupScore"
+                    background
+                    cornerRadius={10}
+                  />
+                  <PolarRadiusAxis
+                    tick={false}
+                    tickLine={false}
+                    axisLine={false}
+                  >
+                    <Label
+                      content={({ viewBox }) => {
+                        if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                          return (
+                            <text
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                            >
+                              <tspan
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                className="fill-foreground text-3xl font-bold"
+                              >
+                                {chartData[0].groupScore}
+                              </tspan>
+                              <tspan
+                                x={viewBox.cx}
+                                y={(viewBox.cy || 0) + 24}
+                                className="fill-muted-foreground"
+                              >
+                                Group Score
+                              </tspan>
+                            </text>
+                          )
+                        }
+                      }}
+                    />
+                  </PolarRadiusAxis>
+                </RadialBarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="gap-2 flex-grow">
+            <CardHeader>
+              <CardTitle className="text-2xl">Student scores</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StudentTable studentScores={data?.studentScores ?? []} />
+            </CardContent>
+          </Card>
         </div>
-        <div className="text-muted-foreground leading-none">Showing total visitors for the last 6 months</div>
-      </CardFooter>
-    </Card>
-    // <SuspenseArea loading={isLoading}>
-    //   <div className="flex flex-row h-full">
-    //     <Card className="flex-grow flex gap-4 max-w-[50%]">
-    //       <CardHeader>
-    //         <CardTitle className="text-xl flex gap-2 items-center">
-    //           {/* <SettingsIcon className="w-6 h-6 text-primary" /> */}
-    //           Group Score
-    //         </CardTitle>
-    //       </CardHeader>
-    //       <CardContent className="h-full">
-    //         <Form {...form}>
-    //           <form
-    //             onSubmit={form.handleSubmit(onSubmit)}
-    //             className="space-y-4 h-full flex flex-col"
-    //           >
-    //             <div className="flex-grow">
-    //               <div className="grid w-full items-center gap-4">
-    //                 <FormField
-    //                   control={form.control}
-    //                   name="groupScore"
-    //                   render={({ field }) => (
-    //                     <FormItem>
-    //                       <FormLabel>Weight</FormLabel>
-    //                       <FormControl>
-    //                         <Input
-    //                           {...field}
-    //                           placeholder="Enter scoring component groupScore"
-    //                         />
-    //                       </FormControl>
-    //                       <FormMessage />
-    //                     </FormItem>
-    //                   )}
-    //                 />
-    //               </div>
-    //             </div>
-    //             <Button
-    //               type="submit"
-    //               loading={updateMutation.isPending}
-    //               // className="ml-auto"
-    //             >
-    //               Save
-    //             </Button>
-    //           </form>
-    //         </Form>
-    //       </CardContent>
-    //     </Card>
-    //     <div className="flex-grow max-w-[50%] p-4">Questionnaire & Model detail</div>
-    //   </div>
-    // </SuspenseArea>
+      </div>
+    </SuspenseArea>
   )
 }
 
 export default ScoresTab
+
+const StudentTable = ({ studentScores }: { studentScores: Array<StudentScoreItem> }) => {
+  return (
+    <Table className="flex-grow">
+      <TableCaption>A list of student scores in this group.</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Student Name</TableHead>
+          <TableHead className="text-right">Score</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {studentScores.map((item) => (
+          <TableRow key={item.userId}>
+            <TableCell>{item?.name ?? '-'}</TableCell>
+            <TableCell className="text-right">{item?.studentScore?.score ?? '-'}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+}
