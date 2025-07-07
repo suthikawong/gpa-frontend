@@ -24,6 +24,7 @@ import { Route as StudentAssessmentAssessmentIdImport } from './routes/student/a
 import { Route as InstructorAssessmentAssessmentIdIndexImport } from './routes/instructor/assessment/$assessmentId/index'
 import { Route as InstructorAssessmentAssessmentIdGroupGroupIdIndexImport } from './routes/instructor/assessment/$assessmentId/group/$groupId/index'
 import { Route as InstructorAssessmentAssessmentIdGroupGroupIdMemberImport } from './routes/instructor/assessment/$assessmentId/group/$groupId/member'
+import { Route as InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdImport } from './routes/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId'
 
 // Create/Update Routes
 
@@ -108,6 +109,15 @@ const InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute =
     path: '/instructor/assessment/$assessmentId/group/$groupId/member',
     getParentRoute: () => rootRoute,
   } as any)
+
+const InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdRoute =
+  InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdImport.update(
+    {
+      id: '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId',
+      path: '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId',
+      getParentRoute: () => rootRoute,
+    } as any,
+  )
 
 // Populate the FileRoutesByPath interface
 
@@ -204,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexImport
       parentRoute: typeof rootRoute
     }
+    '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId': {
+      id: '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId'
+      path: '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId'
+      fullPath: '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId'
+      preLoaderRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -223,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/instructor/assessment/$assessmentId': typeof InstructorAssessmentAssessmentIdIndexRoute
   '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
   '/instructor/assessment/$assessmentId/group/$groupId': typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
+  '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId': typeof InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -239,6 +257,7 @@ export interface FileRoutesByTo {
   '/instructor/assessment/$assessmentId': typeof InstructorAssessmentAssessmentIdIndexRoute
   '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
   '/instructor/assessment/$assessmentId/group/$groupId': typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
+  '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId': typeof InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdRoute
 }
 
 export interface FileRoutesById {
@@ -256,6 +275,7 @@ export interface FileRoutesById {
   '/instructor/assessment/$assessmentId/': typeof InstructorAssessmentAssessmentIdIndexRoute
   '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
   '/instructor/assessment/$assessmentId/group/$groupId/': typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
+  '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId': typeof InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdRoute
 }
 
 export interface FileRouteTypes {
@@ -274,6 +294,7 @@ export interface FileRouteTypes {
     | '/instructor/assessment/$assessmentId'
     | '/instructor/assessment/$assessmentId/group/$groupId/member'
     | '/instructor/assessment/$assessmentId/group/$groupId'
+    | '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -289,6 +310,7 @@ export interface FileRouteTypes {
     | '/instructor/assessment/$assessmentId'
     | '/instructor/assessment/$assessmentId/group/$groupId/member'
     | '/instructor/assessment/$assessmentId/group/$groupId'
+    | '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId'
   id:
     | '__root__'
     | '/'
@@ -304,6 +326,7 @@ export interface FileRouteTypes {
     | '/instructor/assessment/$assessmentId/'
     | '/instructor/assessment/$assessmentId/group/$groupId/member'
     | '/instructor/assessment/$assessmentId/group/$groupId/'
+    | '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId'
   fileRoutesById: FileRoutesById
 }
 
@@ -321,6 +344,7 @@ export interface RootRouteChildren {
   InstructorAssessmentAssessmentIdIndexRoute: typeof InstructorAssessmentAssessmentIdIndexRoute
   InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
   InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
+  InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -340,6 +364,8 @@ const rootRouteChildren: RootRouteChildren = {
     InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute,
   InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute:
     InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute,
+  InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdRoute:
+    InstructorAssessmentAssessmentIdGroupGroupIdPeerRatingScoringComponentScoringComponentIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -364,7 +390,8 @@ export const routeTree = rootRoute
         "/student/assessment/",
         "/instructor/assessment/$assessmentId/",
         "/instructor/assessment/$assessmentId/group/$groupId/member",
-        "/instructor/assessment/$assessmentId/group/$groupId/"
+        "/instructor/assessment/$assessmentId/group/$groupId/",
+        "/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId"
       ]
     },
     "/": {
@@ -405,6 +432,9 @@ export const routeTree = rootRoute
     },
     "/instructor/assessment/$assessmentId/group/$groupId/": {
       "filePath": "instructor/assessment/$assessmentId/group/$groupId/index.tsx"
+    },
+    "/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId": {
+      "filePath": "instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId.tsx"
     }
   }
 }
