@@ -10,6 +10,7 @@ import { useEffect } from 'react'
 import EmptyState from '../../EmptyState'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
+import ActionCard from '../../ActionCard'
 
 const PeerRatingsTab = ({
   assessmentId,
@@ -60,30 +61,19 @@ const PeerRatingsTab = ({
           ) : (
             data.map((scoringComponent) => {
               return (
-                <Card
+                <ActionCard
                   key={scoringComponent.scoringComponentId}
-                  className="w-full sm:py-4!"
-                >
-                  <CardContent className="flex-col sm:px-4!">
-                    <div className="flex justify-between items-center sm:mb-0">
-                      <CardTitle className="text-lg">{`${format(scoringComponent.startDate, 'dd/MM/y')} - ${format(scoringComponent.endDate, 'dd/MM/y')}`}</CardTitle>
-                      <Button
-                        variant="outline"
-                        className="hidden sm:block"
-                        onClick={() => onClickScoringComponent(scoringComponent.scoringComponentId)}
-                      >
-                        View Details
-                      </Button>
-                    </div>
+                  header={`${format(scoringComponent.startDate, 'dd/MM/y')} - ${format(scoringComponent.endDate, 'dd/MM/y')}`}
+                  actions={[
                     <Button
+                      size="sm"
                       variant="outline"
-                      className="w-full mt-4 sm:hidden"
                       onClick={() => onClickScoringComponent(scoringComponent.scoringComponentId)}
                     >
-                      View Details
-                    </Button>
-                  </CardContent>
-                </Card>
+                      View <span className="hidden md:block">Details</span>
+                    </Button>,
+                  ]}
+                />
               )
             })
           )}
