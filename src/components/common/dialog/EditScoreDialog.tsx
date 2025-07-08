@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -156,17 +155,15 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
                   <div className="hidden sm:block">Auto Calculate</div>
                 </Button>
               </div>
-              <ScrollArea className="h-full max-h-72 w-full">
-                <div className="flex flex-col gap-4">
-                  {data?.studentScores?.map((studentScore, index) => (
-                    <StudentScoreCollapsible
-                      index={index}
-                      form={form}
-                      studentScore={studentScore}
-                    />
-                  ))}
-                </div>
-              </ScrollArea>
+              <div className="flex flex-col gap-4">
+                {data?.studentScores?.map((studentScore, index) => (
+                  <StudentScoreCollapsible
+                    index={index}
+                    form={form}
+                    studentScore={studentScore}
+                  />
+                ))}
+              </div>
             </div>
 
             <DialogFooter>
