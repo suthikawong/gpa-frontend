@@ -1,7 +1,7 @@
 import { api } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { appPaths, instructorMenuItems, profileMenuItem, Roles, studentMenuItems } from '@/config'
+import { appPaths, instructorMenuItems, profileMenuItem, Roles, studentMenuItems } from '@/config/app'
 import { useAuth } from '@/hooks/auth'
 import { cn } from '@/lib/utils'
 import { Link, useRouter } from '@tanstack/react-router'

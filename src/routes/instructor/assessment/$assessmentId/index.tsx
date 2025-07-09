@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/c
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
-import { appPaths } from '@/config'
+import { appPaths } from '@/config/app'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { AssessmentWithInstructor } from 'gpa-backend/src/assessment/dto/assessment.response'

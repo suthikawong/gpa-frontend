@@ -1,6 +1,7 @@
 import { api } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -11,9 +12,9 @@ import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { SettingsIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
+import QuestionnaireDialog from '../../dialog/QuestionnaireDialog'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
-import { Checkbox } from '@/components/ui/checkbox'
 
 const model = {
   QASS: '1',
@@ -27,29 +28,41 @@ const baseSchema = z.object({
 const qassSchema = z.object({
   modelId: z.literal(model.QASS),
   selfRating: z.boolean(),
-  tuningFactor: z
-    .string()
-    .min(1, { message: 'Please enter a turing factor.' })
-    .refine((val) => /^[0-9]*\.?[0-9]+$/.test(val), {
-      message: 'Turing factor must be a number.',
-    }),
+  tuningFactor: z.union([
+    z
+      .number({ required_error: 'Please enter a turing factor', invalid_type_error: 'Turing factor must be a number' })
+      .finite()
+      .gt(0, { message: 'Tuning factor must be greater than 0' })
+      .lt(0.5, { message: 'Tuning factor must be less than 0.5' }),
+    z.nan(),
+  ]),
 })
 
 const webavaliaSchema = z.object({
   modelId: z.literal(model.WebAVALIA),
   selfRating: z.boolean(),
-  selfAssessmentWeight: z
-    .string()
-    .min(1, { message: 'Please enter a self assessment weight.' })
-    .refine((val) => /^[0-9]*\.?[0-9]+$/.test(val), {
-      message: 'Self assessment weight must be a number.',
-    }),
-  peerAssessmentWeight: z
-    .string()
-    .min(1, { message: 'Please enter a peer assessment weight.' })
-    .refine((val) => /^[0-9]*\.?[0-9]+$/.test(val), {
-      message: 'Peer assessment weight must be a number.',
-    }),
+  selfAssessmentWeight: z.union([
+    z
+      .number({
+        required_error: 'Please enter a self assessment weight',
+        invalid_type_error: 'Self assessment weight must be a number',
+      })
+      .finite()
+      .min(0, { message: 'Self assessment weight must be greater than or equal to 0' })
+      .max(1, { message: 'Self assessment weight must be less than or equal to 1' }),
+    z.nan(),
+  ]),
+  peerAssessmentWeight: z.union([
+    z
+      .number({
+        required_error: 'Please enter a peer assessment weight',
+        invalid_type_error: 'Peer assessment weight must be a number',
+      })
+      .finite()
+      .min(0, { message: 'Peer assessment weight must be greater than or equal to 0' })
+      .max(1, { message: 'Peer assessment weight must be less than or equal to 1' }),
+    z.nan(),
+  ]),
 })
 
 const formSchema = z.discriminatedUnion('modelId', [baseSchema, qassSchema, webavaliaSchema])
@@ -73,14 +86,14 @@ const ModelTab = ({
       // generate default value for QASS
       case model.QASS:
         if (data?.modelId?.toString() !== model.QASS) {
-          return { modelId: model.QASS, tuningFactor: '' }
+          return { modelId: model.QASS, tuningFactor: 1 }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
         return { ...modelConfigQASS, modelId: model.QASS }
       //generate default value for WebAVALIA
       case model.WebAVALIA:
         if (data?.modelId?.toString() !== model.WebAVALIA) {
-          return { modelId: model.WebAVALIA, selfAssessmentWeight: '', peerAssessmentWeight: '' }
+          return { modelId: model.WebAVALIA, selfAssessmentWeight: 0, peerAssessmentWeight: 1 }
         }
         const modelConfigWeb = webavaliaSchema.omit({ modelId: true }).parse(data.modelConfig)
         return { ...modelConfigWeb, modelId: model.WebAVALIA }
@@ -113,7 +126,7 @@ const ModelTab = ({
   })
 
   const onSubmit = async (values: ModelFormSchema) => {
-    console.log('TLOG ~ values:', values)
+    // console.log('TLOG ~ values:', values)
     const { modelId, ...modelConfig } = values
     const payload = {
       ...data,
@@ -125,8 +138,8 @@ const ModelTab = ({
 
   return (
     <>
-      <div className="flex flex-row h-full">
-        <Card className="flex-grow flex gap-4 max-w-[50%]">
+      <div className="flex flex-col-reverse md:grid md:grid-cols-2 lg:grid-cols-[3fr_2fr] gap-8 h-full">
+        <Card className="flex gap-4">
           <CardHeader>
             <CardTitle className="text-xl flex gap-2 items-center">
               <SettingsIcon className="w-6 h-6 text-primary" />
@@ -178,7 +191,10 @@ const ModelTab = ({
                               <FormControl>
                                 <Input
                                   {...field}
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                  type="number"
                                   placeholder="Enter tuning factor"
+                                  step="0.1"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -198,7 +214,10 @@ const ModelTab = ({
                                 <FormControl>
                                   <Input
                                     {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    type="number"
                                     placeholder="Enter self assessment weight"
+                                    step="0.1"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -214,7 +233,10 @@ const ModelTab = ({
                                 <FormControl>
                                   <Input
                                     {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    type="number"
                                     placeholder="Enter peer assessment weight"
+                                    step="0.1"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -258,7 +280,21 @@ const ModelTab = ({
             </SuspenseArea>
           </CardContent>
         </Card>
-        <div className="flex-grow max-w-[50%] p-4">Questionnaire & Model detail</div>
+        <div>
+          <div className="bg-white p-4 flex flex-col gap-4 rounded-xl border-primary/70 border-3">
+            <div className="flex gap-3">
+              <h4 className="font-semibold text-xl">Are you new to this?</h4>
+            </div>
+            <div>Don't worry, this questionnarie will help you find the right model for you!</div>
+            <QuestionnaireDialog
+              triggerButton={
+                <Button className="w-full bg-linear-65 from-purple-500 to-pink-500 sm:max-w-50 md:max-w-full xl:max-w-50">
+                  Start Questionnaire!
+                </Button>
+              }
+            />
+          </div>
+        </div>
       </div>
     </>
   )

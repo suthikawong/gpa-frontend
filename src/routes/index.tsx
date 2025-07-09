@@ -1,4 +1,4 @@
-import { Roles } from '@/config'
+import { Roles } from '@/config/app'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
