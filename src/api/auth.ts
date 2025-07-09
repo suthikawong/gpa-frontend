@@ -3,8 +3,8 @@ import { RegisterRequest } from '../../gpa-backend/src/auth/dto/auth.request'
 import { LoginResponse, RegisterResponse } from '../../gpa-backend/src/auth/dto/auth.response'
 import axios from './axios'
 
-const login = async (email: string, password: string): Promise<AppResponse<LoginResponse>> => {
-  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { email, password })
+const login = async (data: { email: string; password: string }): Promise<AppResponse<LoginResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, data)
   return response.data
 }
 

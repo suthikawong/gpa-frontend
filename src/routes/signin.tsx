@@ -8,7 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router'
+import { AxiosError } from 'axios'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -28,15 +30,15 @@ export const Route = createFileRoute('/signin')({
 })
 
 const formSchema = z.object({
-  email: z.string().min(1, { message: 'Please enter your email address.' }).email('This is not a valid email.'),
-  password: z.string().min(1, { message: 'Please enter your password.' }),
+  email: z.string().email('This is not a valid email.'),
+  password: z.string(),
 })
 
 function RouteComponent() {
   const router = useRouter()
   const search = Route.useSearch()
   const { setUser } = useAuth()
-  const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,17 +47,24 @@ function RouteComponent() {
     },
   })
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      setLoading(true)
-      const data = await api.auth.login(values.email, values.password)
-      setUser(data.data)
+  const mutation = useMutation({
+    mutationFn: api.auth.login,
+    onSuccess: (res) => {
+      setUser(res.data)
       router.history.push(search?.redirect ?? '/')
-    } catch (error) {
-      toast.error('Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+    },
+    onError: (error: AxiosError) => {
+      if (error.response?.status === 401) {
+        setErrorMessage('Incorrect email or password')
+      } else {
+        toast.error('Something went wrong. Please try again.')
+      }
+    },
+  })
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setErrorMessage(null)
+    mutation.mutate(values)
   }
 
   return (
@@ -101,6 +110,7 @@ function RouteComponent() {
                           />
                         </FormControl>
                         <FormMessage />
+                        {errorMessage && <FormMessage>{errorMessage}</FormMessage>}
                       </FormItem>
                     )}
                   />
@@ -115,7 +125,7 @@ function RouteComponent() {
                 Forgot password?
               </Link>
               <Button
-                loading={loading}
+                loading={mutation.isPending}
                 type="submit"
                 className="w-full"
               >
