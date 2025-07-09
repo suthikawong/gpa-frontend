@@ -70,14 +70,7 @@ const ConfirmDeleteDialog = <T,>({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <div
-          className="flex"
-          onClick={() => setOpen(true)}
-        >
-          {triggerButton}
-        </div>
-      </DialogTrigger>
+      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
       <DialogContent className={cn('sm:!max-w-[500px]', className)}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{title}</DialogTitle>

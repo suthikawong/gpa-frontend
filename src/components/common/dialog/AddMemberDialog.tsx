@@ -29,9 +29,10 @@ interface AddMemberDialogProps {
   assessmentId: Assessment['assessmentId']
   groupId: Group['groupId']
   members: GetGroupMembersResponse
+  canEdit: boolean
 }
 
-const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members }: AddMemberDialogProps) => {
+const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdit }: AddMemberDialogProps) => {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
   const [keyword, setKeyword] = useState<string | undefined>(undefined)
@@ -131,6 +132,11 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members }: AddM
               Search
             </Button>
           </div>
+          {!canEdit && (
+            <div className="text-destructive text-sm">
+              Some assessments already started. You can't add students to the group anymore.
+            </div>
+          )}
         </div>
 
         <Separator className="mt-4" />
@@ -162,7 +168,7 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members }: AddM
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={isMember}
+                          disabled={isMember || !canEdit}
                           onClick={() => onClickAddMember(student.userId)}
                           loading={clickedStudentId === student.userId && addMemberMutation.isPending}
                         >

@@ -103,6 +103,7 @@ function RouteComponent() {
   } = useQuery({
     queryKey: ['getMyScore', assessmentId],
     queryFn: async () => await api.assessment.getMyScore({ assessmentId }),
+    enabled: !!groupData,
   })
 
   const myScoreData = myScoreRes?.data ?? null
@@ -248,7 +249,7 @@ const MyGroupCard = ({
           <CardTitle className="text-lg md:text-xl md:mb-1">
             {groupData?.groupId ? (groupData?.groupName ?? '-') : 'My Group'}
           </CardTitle>
-          <div className="hidden md:flex">
+          <div className="flex">
             {groupData?.groupId ? (
               <div className="flex gap-2">
                 {checkScoringData?.scoringComponentId && (
@@ -270,7 +271,7 @@ const MyGroupCard = ({
             ) : (
               <JoinGroupDialog
                 assessmentId={assessmentData?.assessmentId!}
-                triggerButton={<Button>Join Group</Button>}
+                triggerButton={<Button disabled={assessmentData?.canEdit ? true : false}>Join Group</Button>}
               />
             )}
           </div>
@@ -287,7 +288,7 @@ const MyGroupCard = ({
             </Badge>
           </div>
         )}
-        <Separator className="my-4" />
+        {groupData && <Separator className="my-4" />}
         <div className="flex flex-col gap-1.5">
           {groupData?.members?.map((member) => (
             <div
@@ -297,32 +298,6 @@ const MyGroupCard = ({
               <div className="text-black/70 font-semibold">{member.name}</div>
             </div>
           ))}
-        </div>
-        <div className="flex md:hidden mt-4 justify-end">
-          {groupData?.groupId ? (
-            <div className="flex gap-2">
-              {checkScoringData?.scoringComponentId && (
-                <Button
-                  onClick={onClickRate}
-                  disabled={checkScoringData?.rated}
-                >
-                  Rate
-                </Button>
-              )}
-              {assessmentData?.canEdit && (
-                <LeaveGroupDialog
-                  assessmentId={assessmentData?.assessmentId!}
-                  groupId={groupData?.groupId}
-                  triggerButton={<Button variant="destructiveOutline">Leave Group</Button>}
-                />
-              )}
-            </div>
-          ) : (
-            <JoinGroupDialog
-              assessmentId={assessmentData?.assessmentId!}
-              triggerButton={<Button>Join Group</Button>}
-            />
-          )}
         </div>
       </CardContent>
     </Card>

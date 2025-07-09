@@ -25,21 +25,32 @@ function RouteComponent() {
   const groupId = parseInt(params.groupId)
 
   const {
-    data: res,
-    isLoading,
-    error,
+    data: memeberRes,
+    isLoading: isLoadingMember,
+    error: errorMember,
   } = useQuery({
     queryKey: ['getMembersByGroupId', groupId],
     queryFn: async () => await api.group.getMembersByGroupId({ groupId }),
   })
 
-  const data = res?.data ?? []
+  const memberData = memeberRes?.data ?? []
+
+  const {
+    data: assessmentRes,
+    isLoading: isLoadingAssessment,
+    error: errorAssessment,
+  } = useQuery({
+    queryKey: ['getAssessmentById', assessmentId],
+    queryFn: async () => await api.assessment.getAssessmentById({ assessmentId }),
+  })
+
+  const assessmentData = assessmentRes?.data ?? null
 
   useEffect(() => {
-    if (error) {
+    if (errorMember || errorAssessment) {
       toast.error('Something went wrong. Please try again.')
     }
-  }, [error])
+  }, [errorMember, errorAssessment])
 
   return (
     <DashboardLayout className="gap-8">
@@ -73,18 +84,19 @@ function RouteComponent() {
             }
             assessmentId={assessmentId}
             groupId={groupId}
-            members={data}
+            members={memberData}
+            canEdit={assessmentData?.canEdit ?? false}
           />
         </div>
-        <SuspenseArea loading={isLoading}>
-          {data.length == 0 ? (
+        <SuspenseArea loading={isLoadingMember || isLoadingAssessment}>
+          {memberData.length == 0 ? (
             <EmptyState
               title="No Member Yet"
               description1="It looks like you haven't added any members."
               icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
             />
           ) : (
-            data.map((student, index) => {
+            memberData.map((student, index) => {
               return (
                 <ActionCard
                   key={index}
@@ -95,6 +107,7 @@ function RouteComponent() {
                         <Button
                           size="sm"
                           variant="destructiveOutline"
+                          disabled={assessmentData?.canEdit ? false : true}
                         >
                           <Trash2 className="sm:hidden" />
                           <span className="hidden sm:block">Remove</span>

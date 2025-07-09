@@ -65,9 +65,7 @@ const JoinGroupDialog = ({ triggerButton, assessmentId }: JoinGroupDialogProps) 
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <div onClick={() => setOpen(true)}>{triggerButton}</div>
-      </DialogTrigger>
+      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
       <DialogContent>
         <Form {...form}>
           <form
