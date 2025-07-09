@@ -271,7 +271,7 @@ const MyGroupCard = ({
             ) : (
               <JoinGroupDialog
                 assessmentId={assessmentData?.assessmentId!}
-                triggerButton={<Button disabled={assessmentData?.canEdit ? true : false}>Join Group</Button>}
+                triggerButton={<Button disabled={assessmentData?.canEdit ? false : true}>Join Group</Button>}
               />
             )}
           </div>

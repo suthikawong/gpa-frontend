@@ -1,4 +1,5 @@
 import { api } from '@/api'
+import sandGlass from '@/assets/sandglass.png'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -21,6 +22,77 @@ const formSchema = z.object({
 
 const JoinAssessmentDialog = ({ triggerButton }: JoinAssessmentDialogProps) => {
   const [open, setOpen] = useState(false)
+  const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    return () => {
+      if (!open) {
+        setSuccess(false)
+      }
+    }
+  }, [open])
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <DialogTrigger asChild>
+        <div onClick={() => setOpen(true)}>{triggerButton}</div>
+      </DialogTrigger>
+      <DialogContent>
+        {success ? (
+          <PendingConfimed setOpen={setOpen} />
+        ) : (
+          <JoinAssessmentForm
+            open={open}
+            setSuccess={setSuccess}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+export default JoinAssessmentDialog
+
+const PendingConfimed = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
+  return (
+    <div>
+      <DialogHeader>
+        <DialogTitle className="text-2xl">Join assessment</DialogTitle>
+      </DialogHeader>
+      <div className="flex flex-col gap-8 items-center justify-center my-8">
+        <img
+          src={sandGlass}
+          alt="sandglass image"
+        />
+        <div className="flex flex-col gap-2 items-center justify-center">
+          <h4 className="text-2xl font-semibold">Waiting for confirmation</h4>
+          <div className="text-muted-foreground text-center">
+            Your request has been sent to the teacher. Please waiting for your request to be accepted.
+          </div>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button
+          type="submit"
+          onClick={() => setOpen(false)}
+        >
+          Okay
+        </Button>
+      </DialogFooter>
+    </div>
+  )
+}
+
+const JoinAssessmentForm = ({
+  open,
+  setSuccess,
+}: {
+  open: boolean
+  setSuccess: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
   const queryClient = useQueryClient()
   const defaultValues = {
     assessmentCode: '',
@@ -33,16 +105,16 @@ const JoinAssessmentDialog = ({ triggerButton }: JoinAssessmentDialogProps) => {
   const joinMutation = useMutation({
     mutationFn: api.assessment.studentJoinAssessment,
     onSuccess: () => {
-      setOpen(false)
+      setSuccess(true)
       toast.success('Join assessment successfully')
       queryClient.invalidateQueries({ queryKey: ['getAssessmentsByStudent'] })
       form.reset()
     },
     onError: (error: AxiosError) => {
-      if (error.response?.status === 400) {
+      if (error.response?.status === 404) {
         form.setError('assessmentCode', {
           type: 'manual',
-          message: 'No assessment code found.',
+          message: 'Assessment not found with provided code',
         })
       } else {
         toast.error('Failed to join assessment. Please try again.')
@@ -59,55 +131,43 @@ const JoinAssessmentDialog = ({ triggerButton }: JoinAssessmentDialogProps) => {
   }, [open, form])
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-    >
-      <DialogTrigger asChild>
-        <div onClick={() => setOpen(true)}>{triggerButton}</div>
-      </DialogTrigger>
-      <DialogContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Join assessment</DialogTitle>
+        </DialogHeader>
+
+        <div className="grid w-full items-center gap-4">
+          <FormField
+            control={form.control}
+            name="assessmentCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Assessment Code</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="Enter assessment code"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="submit"
+            loading={joinMutation.isPending}
           >
-            <DialogHeader>
-              <DialogTitle className="text-2xl">Join assessment</DialogTitle>
-            </DialogHeader>
-
-            <div className="grid w-full items-center gap-4">
-              <FormField
-                control={form.control}
-                name="assessmentCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Assessment Code</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Enter assessment code"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="submit"
-                loading={joinMutation.isPending}
-              >
-                Join
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+            Join
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   )
 }
-
-export default JoinAssessmentDialog
