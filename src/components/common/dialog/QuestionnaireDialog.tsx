@@ -61,7 +61,7 @@ const QuestionnaireDialog = ({ triggerButton }: QuestionnaireDialogProps) => {
           {triggerButton}
         </div>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="lg:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Questionnaire</DialogTitle>
         </DialogHeader>

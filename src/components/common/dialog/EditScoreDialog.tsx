@@ -117,7 +117,7 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
           {triggerButton}
         </div>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="lg:max-w-4xl">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}

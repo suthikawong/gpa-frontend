@@ -145,7 +145,6 @@ const RemoveMemberDialog = ({
       onSuccessMessage="Member removed successfully."
       onErrorMessage="Failed to remove member."
       refetchKeys={['getMembersByGroupId', groupId]}
-      className="sm:!max-w-[600px]"
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">

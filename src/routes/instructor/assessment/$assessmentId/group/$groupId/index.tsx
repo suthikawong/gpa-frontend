@@ -203,7 +203,6 @@ const DeleteGroupDialog = ({
       onErrorMessage="Failed to delete group."
       refetchKeys={['getInstructorAssessments']}
       redirectTo={`/instructor/assessment/${assessmentId}`}
-      className="sm:!max-w-[600px]"
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">

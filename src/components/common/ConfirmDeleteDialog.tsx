@@ -71,7 +71,7 @@ const ConfirmDeleteDialog = <T,>({
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-      <DialogContent className={cn('sm:!max-w-[500px]', className)}>
+      <DialogContent className={className}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{title}</DialogTitle>
           <DialogDescription className="hidden">Description</DialogDescription>
