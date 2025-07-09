@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 import { format, setHours, setMinutes, setSeconds } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
+import { Matcher } from 'react-day-picker'
 import { ControllerRenderProps, FieldValues } from 'react-hook-form'
 import { Input } from './input'
 
@@ -12,9 +13,16 @@ interface DatePickerProps<T extends FieldValues = FieldValues> {
   field: ControllerRenderProps<T, any>
   disabled?: boolean
   isInvalid?: boolean
+  disabledDates?: Matcher | Matcher[] | undefined
 }
 
-export function DatePicker<T extends FieldValues>({ type = 'date', field, disabled, isInvalid }: DatePickerProps<T>) {
+export function DatePicker<T extends FieldValues>({
+  type = 'date',
+  field,
+  disabled,
+  isInvalid,
+  disabledDates,
+}: DatePickerProps<T>) {
   const handleDateChange = (value: any) => {
     if (field.value) {
       const [hours, minutes, seconds] = format(field.value, 'HH:mm:ss')
@@ -62,6 +70,7 @@ export function DatePicker<T extends FieldValues>({ type = 'date', field, disabl
                 mode="single"
                 selected={field.value}
                 onSelect={handleDateChange}
+                disabled={disabledDates}
               />
             </PopoverContent>
           </Popover>
@@ -76,6 +85,7 @@ export function DatePicker<T extends FieldValues>({ type = 'date', field, disabl
             value={field.value ? format(field.value, 'HH:mm:ss') : '00:00:00'}
             onChange={handleTimeChange}
             className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+            aria-invalid={isInvalid}
           />
         </div>
       )}

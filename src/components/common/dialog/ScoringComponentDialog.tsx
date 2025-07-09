@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
+import { startOfDay } from 'date-fns'
 import { GetScoringComponentByIdResponse } from 'gpa-backend/src/scoring-component/dto/scoring-component.response'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -26,23 +27,28 @@ interface ScoringComponentDialogProps {
   data?: GetScoringComponentByIdResponse
 }
 
-const formSchema = z.object({
-  startDate: z.date({
-    required_error: 'Please select a start date.',
-  }),
-  endDate: z.date({
-    required_error: 'Please select a end date.',
-  }),
-  weight: z
-    .string()
-    .min(1, { message: 'Please enter a weight.' })
-    .refine((val) => /^[0-9]*\.?[0-9]+$/.test(val), {
-      message: 'Weight must be a number.',
-    })
-    .refine((val) => Number(val) > 0, {
-      message: 'Weight must be greater than zero.',
+const formSchema = z
+  .object({
+    startDate: z.date({
+      required_error: 'Please select a start date.',
     }),
-})
+    endDate: z.date({
+      required_error: 'Please select a end date.',
+    }),
+    weight: z
+      .string()
+      .min(1, { message: 'Please enter a weight.' })
+      .refine((val) => /^[0-9]*\.?[0-9]+$/.test(val), {
+        message: 'Weight must be a number.',
+      })
+      .refine((val) => Number(val) > 0, {
+        message: 'Weight must be greater than zero.',
+      }),
+  })
+  .refine((data) => data.endDate > data.startDate, {
+    message: 'End date must be after start date',
+    path: ['endDate'],
+  })
 
 const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogProps) => {
   const [open, setOpen] = useState(false)
@@ -50,6 +56,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
   const route = useRouter()
   const params: any = route.routeTree.useParams()
   const assessmentId = parseInt(params?.assessmentId!)
+  const now = new Date()
   const defaultValues = {
     startDate: data?.startDate ? new Date(data.startDate) : undefined,
     endDate: data?.endDate ? new Date(data.endDate) : undefined,
@@ -141,6 +148,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
                         type="datetime"
                         field={field}
                         isInvalid={fieldState.invalid}
+                        disabledDates={(date) => date < startOfDay(now)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -158,6 +166,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
                         type="datetime"
                         field={field}
                         isInvalid={fieldState.invalid}
+                        disabledDates={(date) => date < startOfDay(now)}
                       />
                     </FormControl>
                     <FormMessage />
