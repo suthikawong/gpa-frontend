@@ -1,4 +1,4 @@
-import { Roles } from '@/config'
+import { Roles } from '@/config/app'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
@@ -6,14 +6,14 @@ export const Route = createFileRoute('/')({
   beforeLoad: ({ context, location }) => {
     if (context?.user?.roleId === Roles.Instructor) {
       throw redirect({
-        to: '/instructor/my-classrooms',
+        to: '/instructor/assessment',
         search: {
           redirect: location.href,
         },
       })
     } else if (context?.user?.roleId === Roles.Student) {
       throw redirect({
-        to: '/student',
+        to: '/student/assessment',
         search: {
           redirect: location.href,
         },

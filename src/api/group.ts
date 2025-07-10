@@ -5,7 +5,11 @@ import {
   DeleteGroupRequest,
   GetGroupByIdRequest,
   GetGroupMembersRequest,
+  GetScoresRequest,
+  JoinGroupRequest,
+  LeaveGroupRequest,
   UpdateGroupRequest,
+  UpsertScoresRequest,
 } from 'gpa-backend/src/group/dto/group.request'
 import {
   AddGroupMemberResponse,
@@ -14,7 +18,11 @@ import {
   DeleteGroupResponse,
   GetGroupByIdResponse,
   GetGroupMembersResponse,
+  GetScoresResponse,
+  JoinGroupResponse,
+  LeaveGroupResponse,
   UpdateGroupResponse,
+  UpsertScoresResponse,
 } from 'gpa-backend/src/group/dto/group.response'
 import { AppResponse } from '../../gpa-backend/src/app.response'
 import axios from './axios'
@@ -39,14 +47,14 @@ const deleteGroup = async ({ groupId }: DeleteGroupRequest): Promise<AppResponse
   return response.data
 }
 
-const getMemberByGroupId = async ({
+const getMembersByGroupId = async ({
   groupId,
 }: GetGroupMembersRequest): Promise<AppResponse<GetGroupMembersResponse>> => {
   const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/group/${groupId}/member`)
   return response.data
 }
 
-const addMember = async ({
+const addGroupMember = async ({
   groupId,
   studentUserId,
 }: AddGroupMemberRequest): Promise<AppResponse<AddGroupMemberResponse>> => {
@@ -54,11 +62,31 @@ const addMember = async ({
   return response.data
 }
 
-const removeMember = async ({
+const deleteGroupMember = async ({
   groupId,
   studentUserId,
 }: DeleteGroupMemberRequest): Promise<AppResponse<DeleteGroupMemberResponse>> => {
   const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/group/${groupId}/member/${studentUserId}/`)
+  return response.data
+}
+
+const getScores = async ({ groupId }: GetScoresRequest): Promise<AppResponse<GetScoresResponse>> => {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/group/${groupId}/score`)
+  return response.data
+}
+
+const upsertScore = async (data: UpsertScoresRequest): Promise<AppResponse<UpsertScoresResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/score`, data)
+  return response.data
+}
+
+const joinGroup = async (data: JoinGroupRequest): Promise<AppResponse<JoinGroupResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/join`, data)
+  return response.data
+}
+
+const leaveGroup = async (data: LeaveGroupRequest): Promise<AppResponse<LeaveGroupResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/leave`, data)
   return response.data
 }
 
@@ -67,7 +95,11 @@ export const group = {
   createGroup,
   updateGroup,
   deleteGroup,
-  getMemberByGroupId,
-  addMember,
-  removeMember,
+  getMembersByGroupId,
+  addGroupMember,
+  deleteGroupMember,
+  getScores,
+  upsertScore,
+  joinGroup,
+  leaveGroup,
 }

@@ -8,13 +8,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { cn } from '@/lib/utils'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import toast from './toast'
 
 interface ConfirmDeleteDialogProps<T> {
+  dialogType?: 'delete' | 'info'
   triggerButton: React.ReactNode
   data: T
   api: (data: T) => Promise<any>
@@ -26,9 +26,11 @@ interface ConfirmDeleteDialogProps<T> {
   redirectTo?: string
   callback?: () => void
   className?: string
+  confirmButtonText?: string
 }
 
 const ConfirmDeleteDialog = <T,>({
+  dialogType = 'delete',
   triggerButton,
   data,
   api,
@@ -40,6 +42,7 @@ const ConfirmDeleteDialog = <T,>({
   redirectTo,
   callback,
   className,
+  confirmButtonText,
 }: ConfirmDeleteDialogProps<T>) => {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
@@ -66,33 +69,29 @@ const ConfirmDeleteDialog = <T,>({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <div onClick={() => setOpen(true)}>{triggerButton}</div>
-      </DialogTrigger>
-      <DialogContent className={cn('sm:!max-w-[500px]', className)}>
+      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
+      <DialogContent className={className}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{title}</DialogTitle>
-          <DialogDescription className="hidden">
-            Are you sure you want to delete this? This action cannot be undone.
-          </DialogDescription>
+          <DialogDescription className="hidden">Description</DialogDescription>
         </DialogHeader>
         <div className="text-sm text-muted-foreground">
           {content ?? 'Are you sure you want to delete this? This action cannot be undone.'}
         </div>
         <DialogFooter>
           <Button
-            variant="destructiveOutline"
+            variant={dialogType === 'delete' ? 'destructiveOutline' : 'outline'}
             onClick={() => setOpen(false)}
             disabled={mutation.isPending}
           >
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            variant={dialogType === 'delete' ? 'destructive' : 'default'}
             onClick={() => mutation.mutate()}
             loading={mutation.isPending}
           >
-            Delete
+            {(confirmButtonText ?? dialogType === 'delete') ? 'Delete' : 'Continue'}
           </Button>
         </DialogFooter>
       </DialogContent>

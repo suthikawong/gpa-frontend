@@ -34,7 +34,7 @@ const GroupDialog = ({ triggerButton, data }: GroupDialogProps) => {
   const queryClient = useQueryClient()
   const route = useRouter()
   const params: any = route.routeTree.useParams()
-  const assignmentId = parseInt(params?.assignmentId!)
+  const assessmentId = parseInt(params?.assessmentId!)
   const defaultValues = {
     groupName: data?.groupName ?? '',
   }
@@ -48,7 +48,7 @@ const GroupDialog = ({ triggerButton, data }: GroupDialogProps) => {
     onSuccess: () => {
       setOpen(false)
       toast.success('Group created successfully')
-      queryClient.invalidateQueries({ queryKey: ['getGroupsByAssignmentId'] })
+      queryClient.invalidateQueries({ queryKey: ['getGroupsByAssessmentId'] })
       form.reset()
     },
     onError: () => {
@@ -77,7 +77,7 @@ const GroupDialog = ({ triggerButton, data }: GroupDialogProps) => {
       })
     } else {
       createMutation.mutate({
-        assignmentId: assignmentId,
+        assessmentId: assessmentId,
         groupName: values.groupName,
       })
     }

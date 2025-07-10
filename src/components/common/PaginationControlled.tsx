@@ -114,7 +114,7 @@ export function PaginationControlled({ pageSize, totalCount, page, onPageChange 
 
           <PaginationItem>
             <PaginationNext
-              aria-disabled={page === totalPageCount}
+              aria-disabled={page === totalPageCount || totalPageCount === 0}
               tabIndex={page === totalPageCount ? -1 : undefined}
               onClick={() => onPageChange(Math.min(page + 1, totalPageCount))}
               className={page === totalPageCount ? 'pointer-events-none opacity-50' : undefined}
