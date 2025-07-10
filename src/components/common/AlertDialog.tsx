@@ -19,6 +19,7 @@ interface AlertDialogProps {
   onCancel?: () => void
   className?: string
   confirmButtonText?: string
+  showCancelButton?: boolean
 }
 
 const AlertDialog = ({
@@ -30,6 +31,7 @@ const AlertDialog = ({
   onCancel,
   className,
   confirmButtonText,
+  showCancelButton = true,
 }: AlertDialogProps) => {
   const [open, setOpen] = useState(false)
 
@@ -58,12 +60,14 @@ const AlertDialog = ({
           {content ?? 'Are you sure you want to delete this? This action cannot be undone.'}
         </div>
         <DialogFooter>
-          <Button
-            variant={dialogType === 'danger' ? 'destructiveOutline' : 'outline'}
-            onClick={onClickCancel}
-          >
-            Cancel
-          </Button>
+          {showCancelButton && (
+            <Button
+              variant={dialogType === 'danger' ? 'destructiveOutline' : 'outline'}
+              onClick={onClickCancel}
+            >
+              Cancel
+            </Button>
+          )}
           <Button
             variant={dialogType === 'danger' ? 'destructive' : 'default'}
             onClick={onClickConfirm}

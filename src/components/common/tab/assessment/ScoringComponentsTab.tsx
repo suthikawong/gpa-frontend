@@ -3,7 +3,7 @@ import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { Assessment } from 'gpa-backend/src/drizzle/schema'
+import { Assessment, ScoringComponent } from 'gpa-backend/src/drizzle/schema'
 import { Plus } from 'lucide-react'
 import { useEffect } from 'react'
 import ActionCard from '../../ActionCard'
@@ -71,7 +71,7 @@ const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['asse
                         </Button>
                       }
                     />,
-                    <ConfirmDeleteDialog
+                    <DeleteScoringComponentDialog
                       triggerButton={
                         <Button
                           size="sm"
@@ -80,12 +80,8 @@ const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['asse
                           Delete
                         </Button>
                       }
-                      data={{ scoringComponentId: scoringComponent.scoringComponentId }}
-                      api={api.scoringComponent.deleteScoringComponent}
-                      title="Confirm Delete"
-                      onSuccessMessage="Scoring Component removed successfully."
-                      onErrorMessage="Failed to remove student."
-                      refetchKeys={['getScoringComponentsByAssessmentId', assessmentId]}
+                      assessmentId={assessmentId}
+                      scoringComponentId={scoringComponent.scoringComponentId}
                     />,
                   ]}
                 />
@@ -95,6 +91,44 @@ const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['asse
         </SuspenseArea>
       </div>
     </div>
+  )
+}
+
+const DeleteScoringComponentDialog = ({
+  triggerButton,
+  assessmentId,
+  scoringComponentId,
+}: {
+  triggerButton: React.ReactNode
+  assessmentId: Assessment['assessmentId']
+  scoringComponentId: ScoringComponent['scoringComponentId']
+}) => {
+  return (
+    <ConfirmDeleteDialog
+      triggerButton={triggerButton}
+      data={{ scoringComponentId }}
+      api={api.scoringComponent.deleteScoringComponent}
+      title="Confirm Delete"
+      onSuccessMessage="Scoring Component removed successfully."
+      onErrorMessage="Failed to remove student."
+      refetchKeys={['getScoringComponentsByAssessmentId', assessmentId]}
+      content={
+        <div className="space-y-4 text-sm text-muted-foreground">
+          <div className="mt-1 text-sm">
+            Deleting this scoring component will also remove all associated information, including:
+          </div>
+
+          <div className="rounded-xl border border-gray-200 bg-muted p-5">
+            <ul className="list-inside list-disc space-y-1 text-sm">
+              <li>Student's peer rating</li>
+            </ul>
+          </div>
+          <div className="mt-4 text-sm text-muted-foreground">
+            This action cannot be undone. Please make sure you've backed up any important data before continuing.
+          </div>
+        </div>
+      }
+    />
   )
 }
 

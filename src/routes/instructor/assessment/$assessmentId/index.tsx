@@ -98,7 +98,10 @@ function RouteComponent() {
                 value="students"
                 className="flex flex-col flex-grow"
               >
-                <StudentsTab assessmentId={assessmentId} />
+                <StudentsTab
+                  assessmentId={assessmentId}
+                  canEdit={data.canEdit}
+                />
               </TabsContent>
               <TabsContent
                 value="groups"
@@ -241,21 +244,17 @@ const DeleteAssessmentDialog = ({
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">
-            Deleting this classroom will also remove all associated information, including:
+            Deleting this assessment will also remove all associated information, including:
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-muted p-5">
             <ul className="list-inside list-disc space-y-1 text-sm">
-              <li>Assignments</li>
-              <li>Students</li>
-              <li>Groups</li>
-              <li>Criteria</li>
               <li>Model configuration</li>
-              <li>Assessment periods</li>
-              <li>Assessment questions</li>
-              <li>Group marks</li>
-              <li>Student marks</li>
-              <li>Student's peer ratings</li>
+              <li>Scoring components</li>
+              <li>Groups</li>
+              <li>Group scores</li>
+              <li>Student scores</li>
+              <li>Student's peer rating</li>
             </ul>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">

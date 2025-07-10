@@ -211,9 +211,9 @@ const DeleteGroupDialog = ({
 
           <div className="rounded-xl border border-gray-200 bg-muted p-5">
             <ul className="list-inside list-disc space-y-1 text-sm">
-              <li>Group marks</li>
-              <li>Student marks</li>
-              <li>Student's peer ratings</li>
+              <li>Group score</li>
+              <li>Student scores</li>
+              <li>Student's peer rating</li>
             </ul>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">

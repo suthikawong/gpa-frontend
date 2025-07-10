@@ -9,13 +9,14 @@ import { Assessment, AssessmentStudent, User } from 'gpa-backend/src/drizzle/sch
 import { Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import ActionCard from '../../ActionCard'
+import AlertDialog from '../../AlertDialog'
 import ConfirmDeleteDialog from '../../ConfirmDeleteDialog'
 import EmptyState from '../../EmptyState'
 import { PaginationControlled } from '../../PaginationControlled'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
 
-const StudentsTab = ({ assessmentId }: { assessmentId: Assessment['assessmentId'] }) => {
+const StudentsTab = ({ assessmentId, canEdit }: { assessmentId: Assessment['assessmentId']; canEdit: boolean }) => {
   const queryClient = useQueryClient()
   const [keyword, setKeyword] = useState<string | undefined>(undefined)
   const [page, setPage] = useState(1)
@@ -127,7 +128,25 @@ const StudentsTab = ({ assessmentId }: { assessmentId: Assessment['assessmentId'
             ) : (
               data?.map((student, index) => {
                 const actionButtons = []
-                if (student.isConfirmed) {
+                if (student.joinedGroupId && !canEdit) {
+                  actionButtons.push(
+                    <AlertDialog
+                      triggerButton={
+                        <Button
+                          size="sm"
+                          variant="destructiveOutline"
+                        >
+                          <Trash2 className="sm:hidden" />
+                          <span className="hidden sm:block">Remove</span>
+                        </Button>
+                      }
+                      title="Cannot remove student"
+                      content="Can't remove this student from assessment. Student who already joined group when peer rating started can't be deleted."
+                      confirmButtonText="Okay"
+                      showCancelButton={false}
+                    />
+                  )
+                } else if (student.isConfirmed) {
                   actionButtons.push(
                     <ConfirmDeleteDialog
                       triggerButton={
