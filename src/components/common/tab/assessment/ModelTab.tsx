@@ -30,10 +30,42 @@ const qassSchema = z.object({
   selfRating: z.boolean(),
   tuningFactor: z.union([
     z
-      .number({ required_error: 'Please enter a turing factor', invalid_type_error: 'Turing factor must be a number' })
+      .number({ required_error: 'Please enter a turing factor', invalid_type_error: 'Tuning factor must be a number' })
       .finite()
       .gt(0, { message: 'Tuning factor must be greater than 0' })
       .lt(0.5, { message: 'Tuning factor must be less than 0.5' }),
+    z.nan(),
+  ]),
+  peerRatingImpact: z.union([
+    z
+      .number({
+        required_error: 'Please enter a peer rating impact',
+        invalid_type_error: 'Peer rating impact must be a number',
+      })
+      .finite()
+      .min(0, { message: 'Peer rating impact must be greater than or equal to 0' }),
+    z.nan(),
+  ]),
+  groupSpread: z.union([
+    z
+      .number({
+        required_error: 'Please enter a group spread',
+        invalid_type_error: 'Group spread must be a number',
+      })
+      .finite()
+      .min(0, { message: 'Group spread must be greater than or equal to 0' })
+      .max(1, { message: 'Group spread must be less than or equal to 1' }),
+    z.nan(),
+  ]),
+  peerRatingWeight: z.union([
+    z
+      .number({
+        required_error: 'Please enter a peer rating weight',
+        invalid_type_error: 'Peer rating weight must be a number',
+      })
+      .finite()
+      .min(0, { message: 'Peer rating weight must be greater than or equal to 0' })
+      .max(1, { message: 'Peer rating weight must be less than or equal to 1' }),
     z.nan(),
   ]),
 })
@@ -86,14 +118,14 @@ const ModelTab = ({
       // generate default value for QASS
       case model.QASS:
         if (data?.modelId?.toString() !== model.QASS) {
-          return { modelId: model.QASS, tuningFactor: 1 }
+          return { modelId: model.QASS, selfRating: false, tuningFactor: 1, peerRatingImpact: 1, groupSpread: 0.5 }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
         return { ...modelConfigQASS, modelId: model.QASS }
       //generate default value for WebAVALIA
       case model.WebAVALIA:
         if (data?.modelId?.toString() !== model.WebAVALIA) {
-          return { modelId: model.WebAVALIA, selfAssessmentWeight: 0, peerAssessmentWeight: 1 }
+          return { modelId: model.WebAVALIA, selfRating: false, selfAssessmentWeight: 0, peerAssessmentWeight: 1 }
         }
         const modelConfigWeb = webavaliaSchema.omit({ modelId: true }).parse(data.modelConfig)
         return { ...modelConfigWeb, modelId: model.WebAVALIA }
@@ -124,6 +156,16 @@ const ModelTab = ({
     control: form.control,
     name: 'modelId',
   })
+
+  // useEffect(() => {
+  //   if (selectedModel !== '0') {
+  //     const values = getDefaultValues(selectedModel)
+  //     for (const key in values) {
+  //       const field = key as keyof typeof values
+  //       form.setValue(field, values[field]!)
+  //     }
+  //   }
+  // }, [selectedModel])
 
   const onSubmit = async (values: ModelFormSchema) => {
     // console.log('TLOG ~ values:', values)
@@ -182,25 +224,84 @@ const ModelTab = ({
                       />
 
                       {selectedModel === model.QASS && (
-                        <FormField
-                          control={form.control}
-                          name="tuningFactor"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Tuning Factor</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                  type="number"
-                                  placeholder="Enter tuning factor"
-                                  step="0.1"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="tuningFactor"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Tuning Factor</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    type="number"
+                                    placeholder="Enter tuning factor"
+                                    step="0.1"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="peerRatingImpact"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Peer rating impact</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    type="number"
+                                    placeholder="Enter peer rating impact"
+                                    step="0.1"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="groupSpread"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Group spread</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    type="number"
+                                    placeholder="Enter group spread"
+                                    step="0.1"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="peerRatingWeight"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Peer rating weight</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    type="number"
+                                    placeholder="Enter peer rating weight"
+                                    step="0.1"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
                       )}
 
                       {selectedModel === model.WebAVALIA && (
