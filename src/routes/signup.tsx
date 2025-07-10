@@ -29,7 +29,10 @@ const formSchema = z
   .object({
     name: z.string().min(1, { message: 'Please enter your name.' }),
     email: z.string().min(1, { message: 'Please enter your email address.' }).email('This is not a valid email.'),
-    password: z.string().min(1, { message: 'Please enter your password.' }),
+    password: z
+      .string()
+      .min(1, { message: 'Please enter your password.' })
+      .min(8, { message: 'password must be longer than or equal to 8 characters' }),
     confirmPassword: z.string().min(1, { message: 'Please enter your password again.' }),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -165,7 +168,7 @@ const SignUpForm = ({ formType }: { formType: Roles }) => {
       <Card className="w-full max-w-[400px] m-6">
         <CardHeader>
           <CardTitle className="text-2xl md:text-3xl m-auto">Sign Up</CardTitle>
-          <CardDescription className="m-auto md:text-base">Sign in to your account</CardDescription>
+          <CardDescription className="m-auto md:text-base">Create your account</CardDescription>
         </CardHeader>
         <Form {...form}>
           <form
@@ -243,26 +246,20 @@ const SignUpForm = ({ formType }: { formType: Roles }) => {
               </div>
             </CardContent>
             <CardFooter className="flex-col gap-y-6">
-              <Link
-                className="text-[13px] text-primary font-semibold self-end"
-                to="/forgot-password"
-              >
-                Forgot password?
-              </Link>
               <Button
                 loading={loading}
                 type="submit"
                 className="w-full"
               >
-                Sign In
+                Create account
               </Button>
               <div className="flex gap-x-2">
-                <Label className="text-[13px]">Don't have an account?</Label>
+                <Label className="text-[13px]">Already have an account?</Label>
                 <Link
                   className="text-[13px] text-primary font-semibold self-end"
                   to="/signup"
                 >
-                  Sign up
+                  Sign In
                 </Link>
               </div>
             </CardFooter>
