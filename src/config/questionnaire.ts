@@ -36,7 +36,7 @@ export const modelSelectionSet: Array<QuestionnaireCoverItem | QuestionnaireQues
   },
   {
     type: 'question',
-    question: 'Do you want to pose a restriction on the sum of ratings/votes that a student may assign to his peers?',
+    question: 'Do you want to pose a restriction peer assessments that a student may assign to his peers?',
     options: [
       {
         answer: 'no',
@@ -51,16 +51,16 @@ export const modelSelectionSet: Array<QuestionnaireCoverItem | QuestionnaireQues
   },
   {
     type: 'question',
-    question: 'How many times do you want to run a complete peer assessment?',
+    question: 'Do you want to force self-assessments, i.e., the peer rater should also rate himself?',
     options: [
       {
-        answer: 'less than 3',
+        answer: 'no',
       },
       {
-        answer: '3',
+        answer: 'yes',
       },
       {
-        answer: 'more than 3',
+        answer: 'undecided',
       },
     ],
   },
@@ -122,6 +122,36 @@ export const modelSelectionSet: Array<QuestionnaireCoverItem | QuestionnaireQues
       },
       {
         answer: 'both rewards and penalties',
+      },
+    ],
+  },
+  {
+    type: 'question',
+    question: 'How do you want self-ratings to be used in your assessment model?',
+    options: [
+      {
+        answer: 'to set weightings',
+      },
+      {
+        answer: 'to enable calibration',
+      },
+      {
+        answer: "can't decide",
+      },
+    ],
+  },
+  {
+    type: 'question',
+    question: 'How many times do you want to run a complete peer assessment?',
+    options: [
+      {
+        answer: 'less than 3',
+      },
+      {
+        answer: '3',
+      },
+      {
+        answer: 'more than 3',
       },
     ],
   },
@@ -143,110 +173,38 @@ export const qassConfigurationSet: Array<QuestionnaireCoverItem | QuestionnaireQ
   },
   {
     type: 'question',
-    question: 'What kind of scale do you prefer for the peer assessments?',
+    question: 'How much should peer ratings influence individual scores?',
     options: [
       {
-        answer: 'percentage scale',
+        answer: 'Not at all',
       },
       {
-        answer: 'n-point scale',
+        answer: 'A little',
       },
       {
-        answer: 'no preference',
+        answer: 'Moderately',
+      },
+      {
+        answer: 'A lot',
       },
     ],
   },
   {
     type: 'question',
-    question: 'Do you want to pose a restriction on the sum of ratings/votes that a student may assign to his peers?',
+    question: 'How much should individual scores differ based on peer ratings?',
     options: [
       {
-        answer: 'no',
+        answer: 'Very similar',
       },
       {
-        answer: 'yes',
+        answer: 'Balanced',
       },
       {
-        answer: 'undecided',
+        answer: 'Very different',
       },
     ],
   },
-  {
-    type: 'question',
-    question: 'How many times do you want to run a complete peer assessment?',
-    options: [
-      {
-        answer: 'less than 3',
-      },
-      {
-        answer: '3',
-      },
-      {
-        answer: 'more than 3',
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question:
-      'Do you want to be able to specify how much impact the peer assessments will have on the final student score?',
-    options: [
-      {
-        answer: 'no',
-      },
-      {
-        answer: 'yes',
-      },
-      {
-        answer: "can't decide",
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'Do you want to be able to specify the spread of final scores around the group score?',
-    options: [
-      {
-        answer: 'no',
-      },
-      {
-        answer: 'yes',
-      },
-      {
-        answer: "can't decide",
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'What kind of scale do you prefer for the final student scores?',
-    options: [
-      {
-        answer: 'percentage scale',
-      },
-      {
-        answer: 'n-point scale',
-      },
-      {
-        answer: 'no preference',
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'Are peer assessments treated as rewards, as penalties, or mixed rewards and penalties?',
-    options: [
-      {
-        answer: 'only rewards',
-      },
-      {
-        answer: 'only penalies',
-      },
-      {
-        answer: 'both rewards and penalties',
-      },
-    ],
-  },
+
   {
     type: 'cover',
     title: 'All Set!',
