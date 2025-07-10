@@ -257,7 +257,7 @@ const SignUpForm = ({ formType }: { formType: Roles }) => {
                 <Label className="text-[13px]">Already have an account?</Label>
                 <Link
                   className="text-[13px] text-primary font-semibold self-end"
-                  to="/signup"
+                  to="/signin"
                 >
                   Sign In
                 </Link>
