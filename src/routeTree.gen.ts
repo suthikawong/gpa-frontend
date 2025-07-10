@@ -15,9 +15,7 @@ import { Route as SignupImport } from './routes/signup'
 import { Route as SigninImport } from './routes/signin'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
-import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
-import { Route as StudentIndexImport } from './routes/student/index'
 import { Route as StudentAssessmentIndexImport } from './routes/student/assessment/index'
 import { Route as InstructorAssessmentIndexImport } from './routes/instructor/assessment/index'
 import { Route as StudentAssessmentAssessmentIdImport } from './routes/student/assessment/$assessmentId'
@@ -52,21 +50,9 @@ const ForgotPasswordRoute = ForgotPasswordImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AboutRoute = AboutImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const StudentIndexRoute = StudentIndexImport.update({
-  id: '/student/',
-  path: '/student/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -130,13 +116,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
-      parentRoute: typeof rootRoute
-    }
     '/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
@@ -163,13 +142,6 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupImport
-      parentRoute: typeof rootRoute
-    }
-    '/student/': {
-      id: '/student/'
-      path: '/student'
-      fullPath: '/student'
-      preLoaderRoute: typeof StudentIndexImport
       parentRoute: typeof rootRoute
     }
     '/student/assessment/$assessmentId': {
@@ -228,12 +200,10 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/student': typeof StudentIndexRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
   '/instructor/assessment': typeof InstructorAssessmentIndexRoute
   '/student/assessment': typeof StudentAssessmentIndexRoute
@@ -245,12 +215,10 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/student': typeof StudentIndexRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
   '/instructor/assessment': typeof InstructorAssessmentIndexRoute
   '/student/assessment': typeof StudentAssessmentIndexRoute
@@ -263,12 +231,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/student/': typeof StudentIndexRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
   '/instructor/assessment/': typeof InstructorAssessmentIndexRoute
   '/student/assessment/': typeof StudentAssessmentIndexRoute
@@ -282,12 +248,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
     | '/forgot-password'
     | '/profile'
     | '/signin'
     | '/signup'
-    | '/student'
     | '/student/assessment/$assessmentId'
     | '/instructor/assessment'
     | '/student/assessment'
@@ -298,12 +262,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
     | '/forgot-password'
     | '/profile'
     | '/signin'
     | '/signup'
-    | '/student'
     | '/student/assessment/$assessmentId'
     | '/instructor/assessment'
     | '/student/assessment'
@@ -314,12 +276,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/about'
     | '/forgot-password'
     | '/profile'
     | '/signin'
     | '/signup'
-    | '/student/'
     | '/student/assessment/$assessmentId'
     | '/instructor/assessment/'
     | '/student/assessment/'
@@ -332,12 +292,10 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ProfileRoute: typeof ProfileRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
-  StudentIndexRoute: typeof StudentIndexRoute
   StudentAssessmentAssessmentIdRoute: typeof StudentAssessmentAssessmentIdRoute
   InstructorAssessmentIndexRoute: typeof InstructorAssessmentIndexRoute
   StudentAssessmentIndexRoute: typeof StudentAssessmentIndexRoute
@@ -349,12 +307,10 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ProfileRoute: ProfileRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
-  StudentIndexRoute: StudentIndexRoute,
   StudentAssessmentAssessmentIdRoute: StudentAssessmentAssessmentIdRoute,
   InstructorAssessmentIndexRoute: InstructorAssessmentIndexRoute,
   StudentAssessmentIndexRoute: StudentAssessmentIndexRoute,
@@ -379,12 +335,10 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about",
         "/forgot-password",
         "/profile",
         "/signin",
         "/signup",
-        "/student/",
         "/student/assessment/$assessmentId",
         "/instructor/assessment/",
         "/student/assessment/",
@@ -397,9 +351,6 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.tsx"
     },
-    "/about": {
-      "filePath": "about.tsx"
-    },
     "/forgot-password": {
       "filePath": "forgot-password.tsx"
     },
@@ -411,9 +362,6 @@ export const routeTree = rootRoute
     },
     "/signup": {
       "filePath": "signup.tsx"
-    },
-    "/student/": {
-      "filePath": "student/index.tsx"
     },
     "/student/assessment/$assessmentId": {
       "filePath": "student/assessment/$assessmentId.tsx"

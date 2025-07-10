@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
+import { Roles } from '@/config/app'
 import { useAuth } from '@/hooks/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -36,6 +37,13 @@ export const Route = createFileRoute('/student/assessment/$assessmentId')({
     if (!context.user?.userId) {
       throw redirect({
         to: '/signin',
+        search: {
+          redirect: location.href,
+        },
+      })
+    } else if (context.user?.roleId === Roles.Instructor) {
+      throw redirect({
+        to: '/instructor/assessment',
         search: {
           redirect: location.href,
         },

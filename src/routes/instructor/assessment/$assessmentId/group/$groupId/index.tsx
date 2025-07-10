@@ -13,8 +13,9 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
+import { Roles } from '@/config/app'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { Assessment, Group } from 'gpa-backend/src/drizzle/schema'
 import { GetGroupByIdResponse } from 'gpa-backend/src/group/dto/group.response'
 import { Pencil, Trash2 } from 'lucide-react'
@@ -22,6 +23,23 @@ import { useEffect } from 'react'
 
 export const Route = createFileRoute('/instructor/assessment/$assessmentId/group/$groupId/')({
   component: RouteComponent,
+  beforeLoad: ({ context, location }) => {
+    if (!context.user?.userId) {
+      throw redirect({
+        to: '/signin',
+        search: {
+          redirect: location.href,
+        },
+      })
+    } else if (context.user?.roleId === Roles.Student) {
+      throw redirect({
+        to: '/student/assessment',
+        search: {
+          redirect: location.href,
+        },
+      })
+    }
+  },
 })
 
 function RouteComponent() {

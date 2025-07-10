@@ -9,14 +9,32 @@ import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
+import { Roles } from '@/config/app'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Group, User } from 'gpa-backend/src/drizzle/schema'
 import { Plus, Trash2 } from 'lucide-react'
 import { useEffect } from 'react'
 
 export const Route = createFileRoute('/instructor/assessment/$assessmentId/group/$groupId/member')({
   component: RouteComponent,
+  beforeLoad: ({ context, location }) => {
+    if (!context.user?.userId) {
+      throw redirect({
+        to: '/signin',
+        search: {
+          redirect: location.href,
+        },
+      })
+    } else if (context.user?.roleId === Roles.Student) {
+      throw redirect({
+        to: '/student/assessment',
+        search: {
+          redirect: location.href,
+        },
+      })
+    }
+  },
 })
 
 function RouteComponent() {

@@ -7,6 +7,7 @@ import DashboardLayout from '@/components/layouts/DashboardLayout'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
+import { Roles } from '@/config/app'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
@@ -19,6 +20,13 @@ export const Route = createFileRoute('/student/assessment/')({
     if (!context.user?.userId) {
       throw redirect({
         to: '/signin',
+        search: {
+          redirect: location.href,
+        },
+      })
+    } else if (context.user?.roleId === Roles.Instructor) {
+      throw redirect({
+        to: '/instructor/assessment',
         search: {
           redirect: location.href,
         },

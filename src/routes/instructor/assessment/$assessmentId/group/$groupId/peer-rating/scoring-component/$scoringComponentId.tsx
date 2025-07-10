@@ -9,9 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Roles } from '@/config/app'
 import { cn } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import {
   GetPeerRatingsByScoringComponentIdResponse,
@@ -25,6 +26,23 @@ export const Route = createFileRoute(
   '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId'
 )({
   component: RouteComponent,
+  beforeLoad: ({ context, location }) => {
+    if (!context.user?.userId) {
+      throw redirect({
+        to: '/signin',
+        search: {
+          redirect: location.href,
+        },
+      })
+    } else if (context.user?.roleId === Roles.Student) {
+      throw redirect({
+        to: '/student/assessment',
+        search: {
+          redirect: location.href,
+        },
+      })
+    }
+  },
 })
 
 enum Toggle {
