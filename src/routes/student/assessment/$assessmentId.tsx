@@ -1,4 +1,5 @@
 import { api } from '@/api'
+import AlertDialog from '@/components/common/AlertDialog'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
 import JoinGroupDialog from '@/components/common/dialog/JoinGroupDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
@@ -14,7 +15,7 @@ import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { useAuth } from '@/hooks/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import {
   AssessmentWithInstructor,
@@ -345,6 +346,8 @@ const PeerRatingPage = ({
   const selfRating = modelConfig?.selfRating ?? false
   const ratees = groupData?.members?.filter((member) => user?.userId !== member.userId || selfRating) ?? []
   const defaultValues = {
+    scoringComponentId,
+    groupId: groupData?.groupId!,
     studentScores: ratees.map((ratee) => ({ rateeStudentUserId: ratee.userId, score: 50, comment: '' })),
   }
 
@@ -352,6 +355,28 @@ const PeerRatingPage = ({
     resolver: zodResolver(formSchema),
     defaultValues,
   })
+
+  const mutation = useMutation({
+    mutationFn: api.peerRating.ratePeer,
+    onSuccess: () => {
+      toast.success('Student was rated successfully.')
+      queryClient.setQueryData(['checkScoringComponentActive', assessmentData?.assessmentId], {
+        data: { scoringComponentId, rated: true },
+      })
+      onClickBack()
+    },
+    onError: () => {
+      toast.error('Peer rating failed. Please try again.')
+    },
+  })
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    mutation.mutate({
+      scoringComponentId,
+      groupId: groupData?.groupId!,
+      studentScores: values?.studentScores,
+    })
+  }
 
   const onClickBack = () => {
     setPageState(State.Assessment)
@@ -431,36 +456,21 @@ const PeerRatingPage = ({
               </div>
             </form>
           </Form>
-          <ConfirmDeleteDialog
+          <AlertDialog
             dialogType="info"
             triggerButton={
               <Button
                 size="lg"
+                type="button"
                 className="w-fit ml-auto"
+                loading={mutation.isPending}
               >
                 Submit
               </Button>
             }
-            data={{
-              scoringComponentId,
-              studentScores: form.getValues().studentScores,
-            }}
-            api={async (data) => {
-              const isValid = await form.trigger()
-              if (isValid) {
-                await api.peerRating.ratePeer(data)
-              }
-            }}
             title="Confirm submit ratings"
             content="Are you sure you want to submit this? You can't submit this again."
-            onSuccessMessage="Student was rated successfully."
-            onErrorMessage="Peer rating failed. Please try again."
-            callback={() => {
-              queryClient.setQueryData(['checkScoringComponentActive', assessmentData?.assessmentId], {
-                data: { scoringComponentId, rated: true },
-              })
-              onClickBack()
-            }}
+            onConfirm={() => form.handleSubmit(onSubmit)()}
           />
         </div>
       </div>
