@@ -1,16 +1,15 @@
 import { api } from '@/api'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { Assessment, Group, ScoringComponent } from 'gpa-backend/src/drizzle/schema'
 import { useEffect } from 'react'
+import ActionCard from '../../ActionCard'
 import EmptyState from '../../EmptyState'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
-import ActionCard from '../../ActionCard'
 
 const PeerRatingsTab = ({
   assessmentId,

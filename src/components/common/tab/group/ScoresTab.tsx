@@ -70,7 +70,7 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
                   startAngle={270 - offset} // max 270
                   endAngle={-90 + offset} // max -90
                   innerRadius={64}
-                  outerRadius={80}
+                  outerRadius={96}
                 >
                   <PolarGrid
                     gridType="circle"
