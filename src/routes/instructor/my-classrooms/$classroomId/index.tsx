@@ -1,13 +1,11 @@
 import { api } from '@/api'
-import ActionCard from '@/components/common/ActionCard'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
 import ClassroomDialog from '@/components/common/dialog/ClassroomDialog'
-import EmptyState from '@/components/common/EmptyState'
-import { PaginationControlled } from '@/components/common/PaginationControlled'
 import SuspenseArea from '@/components/common/SuspenseArea'
+import AssignmentsTab from '@/components/common/tab/classroom/AssignmentsTab'
+import StudentsTab from '@/components/common/tab/classroom/StudentsTab'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
-import NoDocuments from '@/components/svg/NoDocuments'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
@@ -20,10 +18,10 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { ClassroomWithInstructor } from 'gpa-backend/src/classroom/dto/classroom.response'
 import { Classroom } from 'gpa-backend/src/drizzle/schema'
-import { Landmark, Pencil, Plus, Trash2, Users } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Landmark, Pencil, Trash2, Users } from 'lucide-react'
+import { useEffect } from 'react'
 
-export const Route = createFileRoute('/instructor/my-classrooms/$classroomId')({
+export const Route = createFileRoute('/instructor/my-classrooms/$classroomId/')({
   component: RouteComponent,
   beforeLoad: ({ context, location }) => {
     if (!context.user?.userId) {
@@ -224,6 +222,7 @@ const DeleteClassroomDialog = ({
       onErrorMessage="Failed to delete classroom."
       refetchKeys={['getInstructorClassrooms']}
       redirectTo={appPaths.instructor.myClassrooms}
+      className="sm:!max-w-[600px]"
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">
@@ -241,6 +240,7 @@ const DeleteClassroomDialog = ({
               <li>Assessment questions</li>
               <li>Group marks</li>
               <li>Student marks</li>
+              <li>Student's peer ratings</li>
             </ul>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">
@@ -249,146 +249,5 @@ const DeleteClassroomDialog = ({
         </div>
       }
     />
-  )
-}
-
-const AssignmentsTab = ({ classroomId }: { classroomId: Classroom['classroomId'] }) => {
-  const {
-    data: res,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['getAssignmentByClassroomId', classroomId],
-    queryFn: async () => await api.classroom.getAssignmentByClassroomId({ classroomId }),
-  })
-
-  const data = res?.data ?? []
-
-  useEffect(() => {
-    if (error) {
-      toast.error('Something went wrong. Please try again.')
-    }
-  }, [error])
-
-  return (
-    <div>
-      <div className="flex justify-between mb-6">
-        <div className="text-2xl font-semibold">Assignments</div>
-        <Button>
-          <Plus />
-          Create
-        </Button>
-      </div>
-      <div className="flex flex-col gap-4 flex-grow">
-        <SuspenseArea loading={isLoading}>
-          {data.length == 0 ? (
-            <EmptyState
-              title="No Classrooms Yet"
-              description1="It looks like you haven't created any classrooms."
-              icon={<NoDocuments className="w-[200px] h-[160px] md:w-[350px] md:h-[280px]" />}
-              action={<Button>Create Assignment</Button>}
-            />
-          ) : (
-            data.map((assignment, index) => {
-              return (
-                <ActionCard
-                  key={index}
-                  header={assignment.assignmentName}
-                  actions={[
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => console.log('view')}
-                    >
-                      View <span className="hidden md:block">Details</span>
-                    </Button>,
-                  ]}
-                />
-              )
-            })
-          )}
-        </SuspenseArea>
-      </div>
-    </div>
-  )
-}
-
-const StudentsTab = ({ classroomId }: { classroomId: Classroom['classroomId'] }) => {
-  const [page, setPage] = useState(1)
-  const pageSize = 4
-
-  const {
-    data: res,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['searchStudentsInClassroom', classroomId, page],
-    queryFn: async () => {
-      return await api.classroom.searchStudentsInClassroom({
-        classroomId,
-        limit: pageSize,
-        offset: (page - 1) * pageSize,
-      })
-    },
-  })
-
-  const data = res?.data ?? []
-  const total = res?.total ?? 0
-
-  useEffect(() => {
-    if (error) {
-      toast.error('Something went wrong. Please try again.')
-    }
-  }, [error])
-
-  return (
-    <>
-      <div className="flex justify-between mb-6">
-        <div className="text-2xl font-semibold">Students</div>
-        <Button>
-          <Plus />
-          Create
-        </Button>
-      </div>
-
-      <div className="flex flex-col gap-4 flex-grow">
-        <div className="flex flex-col flex-grow gap-4 ">
-          <SuspenseArea loading={isLoading}>
-            {data.length == 0 ? (
-              <EmptyState
-                title="No Classrooms Yet"
-                description1="It looks like you haven't created any classrooms."
-                icon={<NoDocuments className="w-[200px] h-[160px] md:w-[350px] md:h-[280px]" />}
-                action={<Button>Create Assignment</Button>}
-              />
-            ) : (
-              data.map((student, index) => {
-                return (
-                  <ActionCard
-                    key={index}
-                    header={student.name}
-                    actions={[
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => console.log('view')}
-                      >
-                        View <span className="hidden md:block">Details</span>
-                      </Button>,
-                    ]}
-                  />
-                )
-              })
-            )}
-          </SuspenseArea>
-        </div>
-        <PaginationControlled
-          page={page}
-          pageSize={pageSize}
-          totalCount={total}
-          onPageChange={setPage}
-        />
-      </div>
-    </>
   )
 }

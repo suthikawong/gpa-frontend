@@ -12,12 +12,12 @@ export const Route = createFileRoute('/')({
         },
       })
     } else if (context?.user?.roleId === Roles.Student) {
-      // throw redirect({
-      //   to: '/student/my-classroom',
-      //   search: {
-      //     redirect: location.href,
-      //   },
-      // })
+      throw redirect({
+        to: '/student',
+        search: {
+          redirect: location.href,
+        },
+      })
     } else {
       throw redirect({
         to: '/signin',

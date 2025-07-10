@@ -3,6 +3,7 @@ import {
   DeleteClassroomRequest,
   GetAssignmentsByClassroomIdRequest,
   GetClassroomByIdRequest,
+  RemoveStudentFromClassroomRequest,
   SearchStudentsInClassroomRequest,
   UpdateClassroomRequest,
 } from 'gpa-backend/src/classroom/dto/classroom.request'
@@ -12,6 +13,7 @@ import {
   GetAssignmentsByClassroomIdResponse,
   GetClassroomByIdResponse,
   GetClassroomsByInstructorResponse,
+  RemoveStudentFromClassroomResponse,
   SearchStudentsInClassroomResponse,
   UpdateClassroomResponse,
 } from 'gpa-backend/src/classroom/dto/classroom.response'
@@ -61,6 +63,16 @@ const searchStudentsInClassroom = async (
   return response.data
 }
 
+const removeStudentFromClassroom = async ({
+  classroomId,
+  studentUserId,
+}: RemoveStudentFromClassroomRequest): Promise<AppResponse<RemoveStudentFromClassroomResponse>> => {
+  const response = await axios.delete(
+    `${import.meta.env.VITE_API_URL}/api/classroom/${classroomId}/student/${studentUserId}`
+  )
+  return response.data
+}
+
 export const classroom = {
   getInstructorClassrooms,
   getClassroomById,
@@ -69,4 +81,5 @@ export const classroom = {
   deleteClassroom,
   getAssignmentByClassroomId,
   searchStudentsInClassroom,
+  removeStudentFromClassroom,
 }

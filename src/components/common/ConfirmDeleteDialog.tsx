@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -21,8 +22,10 @@ interface ConfirmDeleteDialogProps<T> {
   content?: React.ReactNode
   onSuccessMessage: string
   onErrorMessage: string
-  refetchKeys?: string[]
+  refetchKeys?: (string | number)[]
   redirectTo?: string
+  callback?: () => void
+  className?: string
 }
 
 const ConfirmDeleteDialog = <T,>({
@@ -35,6 +38,8 @@ const ConfirmDeleteDialog = <T,>({
   onErrorMessage,
   refetchKeys = [],
   redirectTo,
+  callback,
+  className,
 }: ConfirmDeleteDialogProps<T>) => {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
@@ -49,6 +54,7 @@ const ConfirmDeleteDialog = <T,>({
       if (redirectTo) {
         router.history.push(redirectTo)
       }
+      callback?.()
     },
     onError: () => {
       toast.error(onErrorMessage)
@@ -63,15 +69,15 @@ const ConfirmDeleteDialog = <T,>({
       <DialogTrigger asChild>
         <div onClick={() => setOpen(true)}>{triggerButton}</div>
       </DialogTrigger>
-      <DialogContent className="!max-w-[600px]">
+      <DialogContent className={cn('sm:!max-w-[500px]', className)}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{title}</DialogTitle>
           <DialogDescription className="hidden">
-            This action cannot be undone. This will permanently delete the selected item.
+            Are you sure you want to delete this? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <div className="text-sm text-muted-foreground">
-          {content ?? 'This action cannot be undone. This will permanently delete the selected item.'}
+          {content ?? 'Are you sure you want to delete this? This action cannot be undone.'}
         </div>
         <DialogFooter>
           <Button
