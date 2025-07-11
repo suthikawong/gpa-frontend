@@ -51,7 +51,6 @@ const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['asse
               title="No Scoring Component Yet"
               description1="It looks like you haven't created any scoring components."
               icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
-              action={<Button>Create Scoring Component</Button>}
             />
           ) : (
             data.map((scoringComponent, index) => {
