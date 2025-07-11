@@ -57,7 +57,6 @@ const GroupsTab = ({ assessmentId }: { assessmentId: Assessment['assessmentId'] 
               title="No Classrooms Yet"
               description1="It looks like you haven't created any classrooms."
               icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
-              action={<Button>Create Group</Button>}
             />
           ) : (
             data.map((group, index) => {
