@@ -115,11 +115,11 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
         </DialogHeader>
 
         <div className="flex flex-col gap-2 mt-4">
-          <Label htmlFor="search">Student Name</Label>
+          <Label htmlFor="search">Search</Label>
           <div className="flex gap-2">
             <Input
               id="search"
-              placeholder="Type to search..."
+              placeholder="Student name"
               onChange={onKeywordChange}
               value={keyword}
               className="h-10"
@@ -156,12 +156,15 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
                   return (
                     <ActionCard
                       key={index}
-                      header={
+                      title={
                         <div className="flex gap-3 items-center">
                           <Avatar className="size-10">
                             <AvatarImage src="https://github.com/shadcn.png" />
                           </Avatar>
-                          <div>{student.name}</div>
+                          <div>
+                            <div>{student.name}</div>
+                            <div className="text-sm text-muted-foreground font-normal">{student.email}</div>
+                          </div>
                         </div>
                       }
                       actions={[

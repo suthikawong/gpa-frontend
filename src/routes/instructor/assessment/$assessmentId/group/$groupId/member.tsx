@@ -118,7 +118,8 @@ function RouteComponent() {
               return (
                 <ActionCard
                   key={index}
-                  header={student.name}
+                  title={student.name}
+                  description={student.email}
                   actions={[
                     <RemoveMemberDialog
                       triggerButton={

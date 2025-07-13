@@ -63,7 +63,7 @@ const GroupsTab = ({ assessmentId }: { assessmentId: Assessment['assessmentId'] 
               return (
                 <ActionCard
                   key={index}
-                  header={group.groupName}
+                  title={group.groupName}
                   actions={[
                     <Button
                       size="sm"

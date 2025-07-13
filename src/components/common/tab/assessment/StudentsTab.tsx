@@ -197,7 +197,8 @@ const StudentsTab = ({ assessmentId, canEdit }: { assessmentId: Assessment['asse
                 return (
                   <ActionCard
                     key={index}
-                    header={student.name}
+                    title={student.name}
+                    description={student.email}
                     actions={actionButtons}
                   />
                 )

@@ -61,7 +61,7 @@ const PeerRatingsTab = ({
               return (
                 <ActionCard
                   key={scoringComponent.scoringComponentId}
-                  header={`${format(scoringComponent.startDate, 'dd/MM/y')} - ${format(scoringComponent.endDate, 'dd/MM/y')}`}
+                  title={`${format(scoringComponent.startDate, 'dd/MM/y')} - ${format(scoringComponent.endDate, 'dd/MM/y')}`}
                   actions={[
                     <Button
                       size="sm"

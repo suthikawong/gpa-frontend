@@ -204,7 +204,10 @@ const StudentScoreCollapsible = ({
       className="flex flex-col gap-2"
     >
       <div className="flex items-center justify-between gap-4 px-4 py-2 rounded-md border">
-        <div className="text-sm font-semibold">{studentScore?.name ?? '-'}</div>
+        <div>
+          <div className="text-sm font-semibold">{studentScore?.name ?? '-'}</div>
+          <div className="text-xs text-muted-foreground">{studentScore?.email ?? '-'}</div>
+        </div>
         <CollapsibleTrigger asChild>
           <Button
             variant="ghost"

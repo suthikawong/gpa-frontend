@@ -57,7 +57,7 @@ const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['asse
               return (
                 <ActionCard
                   key={index}
-                  header={`${format(scoringComponent.startDate, 'dd/MM/y')} - ${format(scoringComponent.endDate, 'dd/MM/y')}`}
+                  title={`${format(scoringComponent.startDate, 'dd/MM/y')} - ${format(scoringComponent.endDate, 'dd/MM/y')}`}
                   actions={[
                     <ScoringComponentDialog
                       data={scoringComponent}
