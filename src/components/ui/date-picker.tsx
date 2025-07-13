@@ -69,7 +69,9 @@ export function DatePicker<T extends FieldValues>({
               <Calendar
                 mode="single"
                 selected={field.value}
-                onSelect={handleDateChange}
+                onSelect={(value) => {
+                  if (value) handleDateChange(value)
+                }}
                 disabled={disabledDates}
               />
             </PopoverContent>
