@@ -28,73 +28,52 @@ const baseSchema = z.object({
 const qassSchema = z.object({
   modelId: z.literal(model.QASS),
   selfRating: z.boolean(),
-  tuningFactor: z.union([
-    z
-      .number({ required_error: 'Please enter a turing factor', invalid_type_error: 'Tuning factor must be a number' })
-      .finite()
-      .gt(0, { message: 'Tuning factor must be greater than 0' })
-      .lt(0.5, { message: 'Tuning factor must be less than 0.5' }),
-    z.nan(),
-  ]),
-  peerRatingImpact: z.union([
-    z
-      .number({
-        required_error: 'Please enter a peer rating impact',
-        invalid_type_error: 'Peer rating impact must be a number',
-      })
-      .finite()
-      .min(0, { message: 'Peer rating impact must be greater than or equal to 0' }),
-    z.nan(),
-  ]),
-  groupSpread: z.union([
-    z
-      .number({
-        required_error: 'Please enter a group spread',
-        invalid_type_error: 'Group spread must be a number',
-      })
-      .finite()
-      .min(0, { message: 'Group spread must be greater than or equal to 0' })
-      .max(1, { message: 'Group spread must be less than or equal to 1' }),
-    z.nan(),
-  ]),
-  peerRatingWeight: z.union([
-    z
-      .number({
-        required_error: 'Please enter a peer rating weight',
-        invalid_type_error: 'Peer rating weight must be a number',
-      })
-      .finite()
-      .min(0, { message: 'Peer rating weight must be greater than or equal to 0' })
-      .max(1, { message: 'Peer rating weight must be less than or equal to 1' }),
-    z.nan(),
-  ]),
+  tuningFactor: z
+    .number({ required_error: 'Tuning factor is required.', invalid_type_error: 'Tuning factor must be a number.' })
+    .finite()
+    .gt(0, { message: 'Tuning factor must be greater than 0.' })
+    .lt(0.5, { message: 'Tuning factor must be less than 0.5.' }),
+  peerRatingImpact: z
+    .number({
+      required_error: 'Peer rating impact is required.',
+      invalid_type_error: 'Peer rating impact must be a number.',
+    })
+    .finite()
+    .min(0, { message: 'Peer rating impact must be greater than or equal to 0.' }),
+  groupSpread: z
+    .number({ required_error: 'Group spread is required.', invalid_type_error: 'Group spread must be a number.' })
+    .finite()
+    .min(0, { message: 'Group spread must be greater than or equal to 0.' })
+    .max(1, { message: 'Group spread must be less than or equal to 1.' }),
+  peerRatingWeight: z
+    .number({
+      required_error: 'Peer rating weight is required.',
+      invalid_type_error: 'Peer rating weight must be a number.',
+    })
+    .finite()
+    .min(0, { message: 'Peer rating weight must be greater than or equal to 0.' })
+    .max(1, { message: 'Peer rating weight must be less than or equal to 1.' }),
 })
 
 const webavaliaSchema = z.object({
   modelId: z.literal(model.WebAVALIA),
   selfRating: z.boolean(),
-  selfAssessmentWeight: z.union([
-    z
-      .number({
-        required_error: 'Please enter a self assessment weight',
-        invalid_type_error: 'Self assessment weight must be a number',
-      })
-      .finite()
-      .min(0, { message: 'Self assessment weight must be greater than or equal to 0' })
-      .max(1, { message: 'Self assessment weight must be less than or equal to 1' }),
-    z.nan(),
-  ]),
-  peerAssessmentWeight: z.union([
-    z
-      .number({
-        required_error: 'Please enter a peer assessment weight',
-        invalid_type_error: 'Peer assessment weight must be a number',
-      })
-      .finite()
-      .min(0, { message: 'Peer assessment weight must be greater than or equal to 0' })
-      .max(1, { message: 'Peer assessment weight must be less than or equal to 1' }),
-    z.nan(),
-  ]),
+  selfAssessmentWeight: z
+    .number({
+      required_error: 'Self-assessment weight is required.',
+      invalid_type_error: 'Self-assessment weight must be a number.',
+    })
+    .finite()
+    .min(0, { message: 'Self-assessment weight must be greater than or equal to 0.' })
+    .max(1, { message: 'Self-assessment weight must be less than or equal to 1.' }),
+  peerAssessmentWeight: z
+    .number({
+      required_error: 'Peer assessment weight is required.',
+      invalid_type_error: 'Peer assessment weight must be a number.',
+    })
+    .finite()
+    .min(0, { message: 'Peer assessment weight must be greater than or equal to 0.' })
+    .max(1, { message: 'Peer assessment weight must be less than or equal to 1.' }),
 })
 
 const formSchema = z.discriminatedUnion('modelId', [baseSchema, qassSchema, webavaliaSchema])

@@ -70,7 +70,6 @@ function RouteComponent() {
             title="No Assessments Yet"
             description1="It looks like you haven't created any assessments."
             icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
-            action={<Button>Create Assessment</Button>}
           />
         ) : (
           data.map((assessment, index) => {
