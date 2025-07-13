@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
+import { AxiosError } from 'axios'
 import { startOfDay } from 'date-fns'
 import { GetScoringComponentByIdResponse } from 'gpa-backend/src/scoring-component/dto/scoring-component.response'
 import { useEffect, useState } from 'react'
@@ -70,8 +71,19 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
       queryClient.invalidateQueries({ queryKey: ['getScoringComponentsByAssessmentId', assessmentId] })
       form.reset()
     },
-    onError: () => {
-      toast.error('Failed to create scoring component.')
+    onError: (error: AxiosError) => {
+      if (error.response?.status === 400) {
+        form.setError('startDate', {
+          type: 'manual',
+          message: 'The scoring component dates overlap with existing components',
+        })
+        form.setError('endDate', {
+          type: 'manual',
+          message: 'The scoring component dates overlap with existing components',
+        })
+      } else {
+        toast.error('Failed to create scoring component.')
+      }
     },
   })
 
@@ -83,8 +95,19 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
       queryClient.invalidateQueries({ queryKey: ['getScoringComponentsByAssessmentId', assessmentId] })
       form.reset()
     },
-    onError: () => {
-      toast.error('Failed to update scoring component.')
+    onError: (error: AxiosError) => {
+      if (error.response?.status === 400) {
+        form.setError('startDate', {
+          type: 'manual',
+          message: 'The scoring component dates overlap with existing components',
+        })
+        form.setError('endDate', {
+          type: 'manual',
+          message: 'The scoring component dates overlap with existing components',
+        })
+      } else {
+        toast.error('Failed to update scoring component.')
+      }
     },
   })
 
