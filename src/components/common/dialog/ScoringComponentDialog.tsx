@@ -36,14 +36,9 @@ const formSchema = z
       required_error: 'Please select a end date.',
     }),
     weight: z
-      .string()
-      .min(1, { message: 'Please enter a weight.' })
-      .refine((val) => /^[0-9]*\.?[0-9]+$/.test(val), {
-        message: 'Weight must be a number.',
-      })
-      .refine((val) => Number(val) > 0, {
-        message: 'Weight must be greater than zero.',
-      }),
+      .number({ required_error: 'Please enter a weight', invalid_type_error: 'Weight must be a number' })
+      .int()
+      .gt(0, { message: 'Weight must be greater than 0' }),
   })
   .refine((data) => data.endDate > data.startDate, {
     message: 'End date must be after start date',
@@ -60,7 +55,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
   const defaultValues = {
     startDate: data?.startDate ? new Date(data.startDate) : undefined,
     endDate: data?.endDate ? new Date(data.endDate) : undefined,
-    weight: data?.weight.toString() ?? '',
+    weight: 1,
   }
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -99,14 +94,14 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
         scoringComponentId: data.scoringComponentId,
         startDate: values.startDate,
         endDate: values.endDate,
-        weight: parseInt(values.weight),
+        weight: values.weight,
       })
     } else {
       createMutation.mutate({
         assessmentId: assessmentId,
         startDate: values.startDate,
         endDate: values.endDate,
-        weight: parseInt(values.weight),
+        weight: values.weight,
       })
     }
   }
@@ -182,6 +177,8 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
                     <FormControl>
                       <Input
                         {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        type="number"
                         placeholder="Enter scoring component weight"
                       />
                     </FormControl>

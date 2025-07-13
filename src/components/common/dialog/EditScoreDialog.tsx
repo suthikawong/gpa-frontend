@@ -30,15 +30,11 @@ interface EditScoreDialogProps {
 }
 
 const formSchema = z.object({
-  groupScore: z.union([
-    z
-      .number()
-      .int()
-      .min(0, { message: 'Group score must be greater than or equal zero.' })
-      .max(100, { message: 'Group score must be less than or equal one hundred.' }),
-    z.nan(),
-  ]),
-  // .optional(),
+  groupScore: z
+    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
+    .finite()
+    .gt(0, { message: 'Group score must be greater than 0' })
+    .lt(1, { message: 'Group score must be less than 1' }),
   studentScores: z.array(
     z.object({
       studentUserId: z.number(),
@@ -46,8 +42,8 @@ const formSchema = z.object({
         z
           .number()
           .int()
-          .min(0, { message: 'Student score must be greater than or equal zero.' })
-          .max(100, { message: 'Student score must be less than or equal one hundred.' }),
+          .min(0, { message: 'Student score must be greater than or equal zero' })
+          .max(100, { message: 'Student score must be less than or equal one hundred' }),
         z.nan(),
       ]),
       // .optional(),
@@ -134,13 +130,14 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
                 name="groupScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg mb-2">Group score</FormLabel>
+                    <FormLabel className="text-lg mb-2">Group [product] score</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
                         type="number"
                         placeholder="Enter group score"
+                        step="0.1"
                       />
                     </FormControl>
                     <FormMessage />
@@ -224,7 +221,7 @@ const StudentScoreCollapsible = ({
           name={`studentScores.${index}.score`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Group Score</FormLabel>
+              <FormLabel>Student score</FormLabel>
               <FormControl>
                 <Input
                   {...field}

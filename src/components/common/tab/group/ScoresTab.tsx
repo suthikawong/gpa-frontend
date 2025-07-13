@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartContainer } from '@/components/ui/chart'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useQuery } from '@tanstack/react-query'
+import { format } from 'date-fns'
 import { Group } from 'gpa-backend/src/drizzle/schema'
 import { StudentScoreItem } from 'gpa-backend/src/group/dto/group.response'
 import { Pencil } from 'lucide-react'
@@ -31,15 +32,19 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
     }
   }, [error])
 
-  const chartData = [{ groupScore: data?.groupScore?.score ?? '-', fill: 'var(--chart-2)' }]
+  const chartData = [
+    { groupScore: data?.groupScore?.score ? data.groupScore.score * 100 : '-', fill: 'var(--chart-2)' },
+  ]
   const chartConfig = {
     groupScore: {
       label: 'Group Score',
     },
   }
 
-  const degree = ((data?.groupScore?.score ?? 0) / 100) * 360
+  const degree = (data?.groupScore?.score ?? 0) * 360
   const offset = (360 - degree) / 2
+
+  const groupScoreUpdatedDate = data?.groupScore?.updatedDate || data?.groupScore?.createdDate
 
   return (
     <SuspenseArea loading={isLoading}>
@@ -57,8 +62,8 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
         <div className="flex flex-col md:flex-row gap-4">
           <Card className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8 h-fit md:w-fit">
             <CardContent className="gap-0 px-4! sm:pl-8! md:pl-6! sm:pr-0!">
-              <CardTitle className="text-xl">Group score</CardTitle>
-              <CardDescription>January - June 2024</CardDescription>
+              <CardTitle className="text-xl text-center sm:text-left">Group score</CardTitle>
+              <CardDescription>{`Last update: ${groupScoreUpdatedDate ? format(groupScoreUpdatedDate, 'PPP') : '-'}`}</CardDescription>
             </CardContent>
             <CardContent className="pl-4! sm:pr-8! md:pr-6! sm:pl-0!">
               <ChartContainer
@@ -104,7 +109,7 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
                                 y={viewBox.cy}
                                 className="fill-foreground text-3xl font-bold"
                               >
-                                {chartData[0].groupScore}
+                                {chartData[0].groupScore}%
                               </tspan>
                               <tspan
                                 x={viewBox.cx}

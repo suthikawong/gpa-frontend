@@ -99,8 +99,8 @@ export default function Menu() {
                   <AvatarImage src="https://github.com/shadcn.png" />
                 </Avatar>
                 <div className="space-y-0.5 min-w-0">
-                  <Label className="text-[10px] text-muted-foreground">INSTRUCTOR</Label>
-                  <Label className="block truncate">{user?.name}</Label>
+                  <Label className="text-[10px] text-muted-foreground">{user?.roleId ? Roles[user.roleId] : '-'}</Label>
+                  <Label className="block truncate">{user?.name ?? '-'}</Label>
                 </div>
               </div>
             </SheetHeader>
@@ -213,8 +213,8 @@ const ProfilePopover = () => {
             <AvatarImage src="https://github.com/shadcn.png" />
           </Avatar>
           <div className="space-y-0.5 min-w-0">
-            <Label className="text-[10px] text-muted-foreground">INSTRUCTOR</Label>
-            <Label className="block truncate">{user?.name}</Label>
+            <Label className="text-[10px] text-muted-foreground">{user?.roleId ? Roles[user.roleId] : '-'}</Label>
+            <Label className="block truncate">{user?.name ?? '-'}</Label>
           </div>
         </div>
         <Separator className="mt-4 mb-2" />
