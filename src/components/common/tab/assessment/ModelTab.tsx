@@ -10,6 +10,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { SettingsIcon } from 'lucide-react'
+import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import QuestionnaireDialog from '../../dialog/QuestionnaireDialog'
@@ -53,6 +54,14 @@ const qassSchema = z.object({
     .finite()
     .min(0, { message: 'Peer rating weight must be greater than or equal to 0.' })
     .max(1, { message: 'Peer rating weight must be less than or equal to 1.' }),
+  selfRatingWeight: z
+    .number({
+      required_error: 'Self rating weight is required.',
+      invalid_type_error: 'Self rating weight must be a number.',
+    })
+    .finite()
+    .min(0, { message: 'Self rating weight must be greater than or equal to 0.' })
+    .max(1, { message: 'Self rating weight must be less than or equal to 1.' }),
 })
 
 const webavaliaSchema = z.object({
@@ -97,14 +106,27 @@ const ModelTab = ({
       // generate default value for QASS
       case model.QASS:
         if (data?.modelId?.toString() !== model.QASS) {
-          return { modelId: model.QASS, selfRating: false, tuningFactor: 1, peerRatingImpact: 1, groupSpread: 0.5 }
+          return {
+            modelId: model.QASS,
+            selfRating: false,
+            tuningFactor: undefined,
+            peerRatingImpact: undefined,
+            groupSpread: undefined,
+            peerRatingWeight: undefined,
+            selfRatingWeight: undefined,
+          }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
         return { ...modelConfigQASS, modelId: model.QASS }
       //generate default value for WebAVALIA
       case model.WebAVALIA:
         if (data?.modelId?.toString() !== model.WebAVALIA) {
-          return { modelId: model.WebAVALIA, selfRating: false, selfAssessmentWeight: 0, peerAssessmentWeight: 1 }
+          return {
+            modelId: model.WebAVALIA,
+            selfRating: false,
+            selfAssessmentWeight: undefined,
+            peerAssessmentWeight: undefined,
+          }
         }
         const modelConfigWeb = webavaliaSchema.omit({ modelId: true }).parse(data.modelConfig)
         return { ...modelConfigWeb, modelId: model.WebAVALIA }
@@ -136,15 +158,37 @@ const ModelTab = ({
     name: 'modelId',
   })
 
-  // useEffect(() => {
-  //   if (selectedModel !== '0') {
-  //     const values = getDefaultValues(selectedModel)
-  //     for (const key in values) {
-  //       const field = key as keyof typeof values
-  //       form.setValue(field, values[field]!)
-  //     }
-  //   }
-  // }, [selectedModel])
+  useEffect(() => {
+    if (selectedModel !== '0') {
+      const values = getDefaultValues(selectedModel)
+      setFormValues(values)
+    }
+  }, [selectedModel])
+
+  const onClickUseRecommended = () => {
+    if (selectedModel === model.QASS) {
+      const values = {
+        modelId: model.QASS,
+        selfRating: true,
+        tuningFactor: 0.001,
+        peerRatingImpact: 1,
+        groupSpread: 0.5,
+        peerRatingWeight: 0.5,
+        selfRatingWeight: 0.5,
+      }
+      setFormValues(values)
+    } else if (selectedModel === model.WebAVALIA) {
+      const values = { modelId: model.WebAVALIA, selfRating: false, selfAssessmentWeight: 0, peerAssessmentWeight: 1 }
+      setFormValues(values)
+    }
+  }
+
+  const setFormValues = (values: Partial<ModelFormSchema>) => {
+    for (const key in values) {
+      const field = key as keyof typeof values
+      form.setValue(field, values[field]!)
+    }
+  }
 
   const onSubmit = async (values: ModelFormSchema) => {
     // console.log('TLOG ~ values:', values)
@@ -280,6 +324,25 @@ const ModelTab = ({
                               </FormItem>
                             )}
                           />
+                          <FormField
+                            control={form.control}
+                            name="selfRatingWeight"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Self rating weight</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    type="number"
+                                    placeholder="Enter self rating weight"
+                                    step="0.1"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </>
                       )}
 
@@ -347,14 +410,24 @@ const ModelTab = ({
                       )}
                     </div>
                   </div>
-                  <Button
-                    type="submit"
-                    loading={updateMutation.isPending}
-                    className="ml-auto"
-                    disabled={selectedModel === '0'}
-                  >
-                    Save
-                  </Button>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      loading={updateMutation.isPending}
+                      disabled={selectedModel === '0'}
+                      onClick={onClickUseRecommended}
+                    >
+                      Use Recommended
+                    </Button>
+                    <Button
+                      type="submit"
+                      loading={updateMutation.isPending}
+                      disabled={selectedModel === '0'}
+                    >
+                      Save
+                    </Button>
+                  </div>
                 </form>
               </Form>
             </SuspenseArea>
