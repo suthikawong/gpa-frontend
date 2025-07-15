@@ -17,6 +17,8 @@ const QuestionnaireDialog = ({ triggerButton }: QuestionnaireDialogProps) => {
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(0)
   const [pages, setPages] = useState(modelSelectionSet)
+  const [model, setModel] = useState(null)
+  const [modelConfig, setModelConfig] = useState(null)
 
   const content = pages[step]
 
@@ -25,12 +27,17 @@ const QuestionnaireDialog = ({ triggerButton }: QuestionnaireDialogProps) => {
   }
 
   const onClickNext = () => {
-    if (modelSelectionSet.length === step + 1) {
+    if (modelSelectionSet.length === step + 1 && model) {
       // last page of first set
       setPages(modelSelectionSet.concat(qassConfigurationSet))
     } else {
       setStep(step + 1)
     }
+  }
+
+  const onClickChooseAgain = () => {
+    setStep(0)
+    setPages(modelSelectionSet)
   }
 
   useEffect(() => {
@@ -69,13 +76,32 @@ const QuestionnaireDialog = ({ triggerButton }: QuestionnaireDialogProps) => {
         {content.type === 'cover' ? <CoverPage data={content} /> : <QuestionPage data={content} />}
 
         <div className="flex sm:justify-end gap-2">
-          {pages.length > modelSelectionSet.length && pages.length === step + 1 ? (
+          {modelConfig && pages.length === step + 1 ? (
             <Button
               className="flex-grow sm:max-w-fit sm:ml-auto"
               onClick={() => setOpen(false)}
             >
               Apply
             </Button>
+          ) : model && pages.length === step + 1 ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={onClickChooseAgain}
+                className="flex-grow sm:max-w-fit"
+              >
+                <ChevronLeft />
+                Choose again
+              </Button>
+              <Button
+                variant="outline"
+                onClick={onClickNext}
+                className="flex-grow sm:max-w-fit"
+              >
+                Next
+                <ChevronRight />
+              </Button>
+            </>
           ) : (
             <>
               {step > 0 && (

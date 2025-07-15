@@ -9,7 +9,7 @@ export interface QuestionnaireCoverItem {
 export interface QuestionnaireQuestionItem {
   type: 'question'
   question: string
-  options: { answer: string }[]
+  options: { answer: string; value?: number }[]
 }
 
 export const modelSelectionSet: Array<QuestionnaireCoverItem | QuestionnaireQuestionItem> = [
