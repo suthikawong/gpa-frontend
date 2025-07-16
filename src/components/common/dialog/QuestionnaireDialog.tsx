@@ -17,8 +17,8 @@ const QuestionnaireDialog = ({ triggerButton }: QuestionnaireDialogProps) => {
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(0)
   const [pages, setPages] = useState(modelSelectionSet)
-  const [model, setModel] = useState(null)
-  const [modelConfig, setModelConfig] = useState(null)
+  const [model] = useState(null)
+  const [modelConfig] = useState(null)
 
   const content = pages[step]
 
