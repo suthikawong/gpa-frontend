@@ -38,15 +38,16 @@ const formSchema = z.object({
   studentScores: z.array(
     z.object({
       studentUserId: z.number(),
-      score: z.union([
-        z
-          .number()
-          .int()
-          .min(0, { message: 'Student score must be greater than or equal zero' })
-          .max(100, { message: 'Student score must be less than or equal one hundred' }),
-        z.nan(),
-      ]),
-      // .optional(),
+      score: z
+        .union([
+          z
+            .number()
+            .int()
+            .min(0, { message: 'Student score must be greater than or equal zero' })
+            .max(100, { message: 'Student score must be less than or equal one hundred' }),
+          z.nan(),
+        ])
+        .optional(),
       remark: z.string().optional(),
     })
   ),
@@ -89,8 +90,8 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
       remark: StudentScore['remark']
     }[] = []
     values?.studentScores?.forEach((value) => {
-      if (typeof value.score === 'number') {
-        studentPayload.push({ ...value, remark: value?.remark ?? null })
+      if (value.score && typeof value.score === 'number' && !isNaN(value.score)) {
+        studentPayload.push({ studentUserId: value.studentUserId, score: value.score, remark: value?.remark ?? null })
       }
     })
     upsertMutation.mutate({ ...values, studentScores: studentPayload, groupId })
