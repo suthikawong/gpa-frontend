@@ -3,6 +3,7 @@ export const appPaths = {
   profile: '/profile',
   instructor: {
     assessment: '/instructor/assessment',
+    simulation: '/instructor/simulation',
   },
   student: {
     assessment: '/student/assessment',
@@ -20,6 +21,11 @@ export const instructorMenuItems = [
     name: 'Peer Assessments',
     icon: 'LayoutDashboard',
     href: appPaths.instructor.assessment,
+  },
+  {
+    name: 'Simulation',
+    icon: 'LayoutDashboard',
+    href: appPaths.instructor.simulation,
   },
   profileMenuItem,
 ]

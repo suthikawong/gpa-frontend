@@ -144,7 +144,7 @@ const MenuItem = ({
   isPopover?: boolean
 }) => {
   const router = useRouter()
-  const isActive = router.state.location.pathname === data.href
+  const isActive = router.state.location.pathname.split('/').slice(0, 3).join('/') === data.href
   const IconComponent = iconMap[data.icon as keyof typeof iconMap]
 
   return (

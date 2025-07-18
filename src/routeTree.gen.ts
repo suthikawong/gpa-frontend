@@ -16,6 +16,7 @@ import { Route as SigninImport } from './routes/signin'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as IndexImport } from './routes/index'
+import { Route as InstructorSimulationImport } from './routes/instructor/simulation'
 import { Route as StudentAssessmentIndexImport } from './routes/student/assessment/index'
 import { Route as InstructorAssessmentIndexImport } from './routes/instructor/assessment/index'
 import { Route as StudentAssessmentAssessmentIdImport } from './routes/student/assessment/$assessmentId'
@@ -53,6 +54,12 @@ const ForgotPasswordRoute = ForgotPasswordImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const InstructorSimulationRoute = InstructorSimulationImport.update({
+  id: '/instructor/simulation',
+  path: '/instructor/simulation',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -144,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
+    '/instructor/simulation': {
+      id: '/instructor/simulation'
+      path: '/instructor/simulation'
+      fullPath: '/instructor/simulation'
+      preLoaderRoute: typeof InstructorSimulationImport
+      parentRoute: typeof rootRoute
+    }
     '/student/assessment/$assessmentId': {
       id: '/student/assessment/$assessmentId'
       path: '/student/assessment/$assessmentId'
@@ -204,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/instructor/simulation': typeof InstructorSimulationRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
   '/instructor/assessment': typeof InstructorAssessmentIndexRoute
   '/student/assessment': typeof StudentAssessmentIndexRoute
@@ -219,6 +234,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/instructor/simulation': typeof InstructorSimulationRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
   '/instructor/assessment': typeof InstructorAssessmentIndexRoute
   '/student/assessment': typeof StudentAssessmentIndexRoute
@@ -235,6 +251,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/instructor/simulation': typeof InstructorSimulationRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
   '/instructor/assessment/': typeof InstructorAssessmentIndexRoute
   '/student/assessment/': typeof StudentAssessmentIndexRoute
@@ -252,6 +269,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
+    | '/instructor/simulation'
     | '/student/assessment/$assessmentId'
     | '/instructor/assessment'
     | '/student/assessment'
@@ -266,6 +284,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
+    | '/instructor/simulation'
     | '/student/assessment/$assessmentId'
     | '/instructor/assessment'
     | '/student/assessment'
@@ -280,6 +299,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/signin'
     | '/signup'
+    | '/instructor/simulation'
     | '/student/assessment/$assessmentId'
     | '/instructor/assessment/'
     | '/student/assessment/'
@@ -296,6 +316,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  InstructorSimulationRoute: typeof InstructorSimulationRoute
   StudentAssessmentAssessmentIdRoute: typeof StudentAssessmentAssessmentIdRoute
   InstructorAssessmentIndexRoute: typeof InstructorAssessmentIndexRoute
   StudentAssessmentIndexRoute: typeof StudentAssessmentIndexRoute
@@ -311,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  InstructorSimulationRoute: InstructorSimulationRoute,
   StudentAssessmentAssessmentIdRoute: StudentAssessmentAssessmentIdRoute,
   InstructorAssessmentIndexRoute: InstructorAssessmentIndexRoute,
   StudentAssessmentIndexRoute: StudentAssessmentIndexRoute,
@@ -339,6 +361,7 @@ export const routeTree = rootRoute
         "/profile",
         "/signin",
         "/signup",
+        "/instructor/simulation",
         "/student/assessment/$assessmentId",
         "/instructor/assessment/",
         "/student/assessment/",
@@ -362,6 +385,9 @@ export const routeTree = rootRoute
     },
     "/signup": {
       "filePath": "signup.tsx"
+    },
+    "/instructor/simulation": {
+      "filePath": "instructor/simulation.tsx"
     },
     "/student/assessment/$assessmentId": {
       "filePath": "student/assessment/$assessmentId.tsx"
