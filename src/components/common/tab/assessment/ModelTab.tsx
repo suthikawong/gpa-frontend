@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
@@ -22,12 +23,19 @@ const model = {
   WebAVALIA: '2',
 }
 
+const mode = {
+  Bijunction: 'B',
+  Conjunction: 'C',
+  Disjunction: 'D',
+}
+
 const baseSchema = z.object({
   modelId: z.literal('0'),
 })
 
 const qassSchema = z.object({
   modelId: z.literal(model.QASS),
+  mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction]),
   selfRating: z.boolean(),
   tuningFactor: z
     .number({ required_error: 'Tuning factor is required.', invalid_type_error: 'Tuning factor must be a number.' })
@@ -108,6 +116,7 @@ const ModelTab = ({
         if (data?.modelId?.toString() !== model.QASS) {
           return {
             modelId: model.QASS,
+            mode: mode.Bijunction,
             selfRating: false,
             tuningFactor: undefined,
             peerRatingImpact: undefined,
@@ -169,6 +178,7 @@ const ModelTab = ({
     if (selectedModel === model.QASS) {
       const values = {
         modelId: model.QASS,
+        mode: mode.Bijunction,
         selfRating: true,
         tuningFactor: 0.001,
         peerRatingImpact: 1,
@@ -246,168 +256,188 @@ const ModelTab = ({
                         )}
                       />
 
-                      {selectedModel === model.QASS && (
-                        <>
-                          <FormField
-                            control={form.control}
-                            name="tuningFactor"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Tuning Factor</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter tuning factor"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="peerRatingImpact"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Peer rating impact</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter peer rating impact"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="groupSpread"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Group spread</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter group spread"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="peerRatingWeight"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Peer rating weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter peer rating weight"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="selfRatingWeight"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Self rating weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter self rating weight"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </>
-                      )}
+                      {/* QASS */}
+                      <FormField
+                        control={form.control}
+                        name="mode"
+                        render={({ field }) => (
+                          <FormItem className={cn('hidden', selectedModel === model.QASS && 'grid')}>
+                            <FormLabel>Mode</FormLabel>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select mode" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value={mode.Bijunction}>Bijunction</SelectItem>
+                                <SelectItem value={mode.Conjunction}>Conjuction</SelectItem>
+                                <SelectItem value={mode.Disjunction}>Disjunction</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="tuningFactor"
+                        render={({ field }) => (
+                          <FormItem className={cn('hidden', selectedModel === model.QASS && 'grid')}>
+                            <FormLabel>Tuning Factor</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                type="number"
+                                placeholder="Enter tuning factor"
+                                step="0.1"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="peerRatingImpact"
+                        render={({ field }) => (
+                          <FormItem className={cn('hidden', selectedModel === model.QASS && 'grid')}>
+                            <FormLabel>Peer rating impact</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                type="number"
+                                placeholder="Enter peer rating impact"
+                                step="0.1"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="groupSpread"
+                        render={({ field }) => (
+                          <FormItem className={cn('hidden', selectedModel === model.QASS && 'grid')}>
+                            <FormLabel>Group spread</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                type="number"
+                                placeholder="Enter group spread"
+                                step="0.1"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="peerRatingWeight"
+                        render={({ field }) => (
+                          <FormItem className={cn('hidden', selectedModel === model.QASS && 'grid')}>
+                            <FormLabel>Peer rating weight</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                type="number"
+                                placeholder="Enter peer rating weight"
+                                step="0.1"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="selfRatingWeight"
+                        render={({ field }) => (
+                          <FormItem className={cn('hidden', selectedModel === model.QASS && 'grid')}>
+                            <FormLabel>Self rating weight</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                type="number"
+                                placeholder="Enter self rating weight"
+                                step="0.1"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                      {selectedModel === model.WebAVALIA && (
-                        <>
-                          <FormField
-                            control={form.control}
-                            name="selfAssessmentWeight"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Self Assessment Weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter self assessment weight"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="peerAssessmentWeight"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Peer Assessment Weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter peer assessment weight"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </>
-                      )}
+                      {/* WebAVALIA */}
+                      <FormField
+                        control={form.control}
+                        name="selfAssessmentWeight"
+                        render={({ field }) => (
+                          <FormItem className={cn('hidden', selectedModel === model.WebAVALIA && 'grid')}>
+                            <FormLabel>Self Assessment Weight</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                type="number"
+                                placeholder="Enter self assessment weight"
+                                step="0.1"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="peerAssessmentWeight"
+                        render={({ field }) => (
+                          <FormItem className={cn('hidden', selectedModel === model.WebAVALIA && 'grid')}>
+                            <FormLabel>Peer Assessment Weight</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                type="number"
+                                placeholder="Enter peer assessment weight"
+                                step="0.1"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                      {selectedModel !== '0' && (
-                        <FormField
-                          control={form.control}
-                          name="selfRating"
-                          render={({ field }) => {
-                            return (
-                              <FormItem className="flex flex-row items-center gap-2">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={(checked) => field.onChange(checked)}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-normal">Allow self rating</FormLabel>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      )}
+                      {/* All */}
+                      <FormField
+                        control={form.control}
+                        name="selfRating"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              className={cn('hidden', selectedModel !== '0' && 'flex flex-row items-center gap-2')}
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={(checked) => field.onChange(checked)}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-normal">Allow self rating</FormLabel>
+                            </FormItem>
+                          )
+                        }}
+                      />
                     </div>
                   </div>
                   <div className="flex justify-end gap-2">
