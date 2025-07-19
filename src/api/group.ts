@@ -1,6 +1,7 @@
 import {
   AddGroupMemberRequest,
   CreateGroupRequest,
+  CreateRandomGroupsRequest,
   DeleteGroupMemberRequest,
   DeleteGroupRequest,
   GetGroupByIdRequest,
@@ -14,15 +15,18 @@ import {
 import {
   AddGroupMemberResponse,
   CreateGroupResponse,
+  CreateRandomGroupsResponse,
   DeleteGroupMemberResponse,
   DeleteGroupResponse,
   GetGroupByIdResponse,
   GetGroupMembersResponse,
   GetScoresResponse,
+  ImportGroupsResponse,
   JoinGroupResponse,
   LeaveGroupResponse,
   UpdateGroupResponse,
   UpsertScoresResponse,
+  VerifyImportGroupsResponse,
 } from 'gpa-backend/src/group/dto/group.response'
 import { AppResponse } from '../../gpa-backend/src/app.response'
 import axios from './axios'
@@ -34,6 +38,27 @@ const getGroupById = async ({ groupId }: GetGroupByIdRequest): Promise<AppRespon
 
 const createGroup = async (data: CreateGroupRequest): Promise<AppResponse<CreateGroupResponse>> => {
   const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group`, data)
+  return response.data
+}
+
+const verifyImportGroups = async (data: FormData): Promise<AppResponse<VerifyImportGroupsResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/verify-import`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return response.data
+}
+
+const importGroups = async (data: FormData): Promise<AppResponse<ImportGroupsResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/import`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return response.data
+}
+
+const createRandomGroups = async (
+  data: CreateRandomGroupsRequest
+): Promise<AppResponse<CreateRandomGroupsResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/random`, data)
   return response.data
 }
 
@@ -93,6 +118,9 @@ const leaveGroup = async (data: LeaveGroupRequest): Promise<AppResponse<LeaveGro
 export const group = {
   getGroupById,
   createGroup,
+  importGroups,
+  verifyImportGroups,
+  createRandomGroups,
   updateGroup,
   deleteGroup,
   getMembersByGroupId,
