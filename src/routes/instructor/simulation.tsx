@@ -1,7 +1,8 @@
+import { api } from '@/api'
+import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -9,11 +10,14 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { Roles } from '@/config/app'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { BookOpen, Calculator, ChartSpline, CircleMinus, CirclePlus, RotateCw, SettingsIcon } from 'lucide-react'
+import { CalcualteScoresByQASSResponse } from 'gpa-backend/src/simulation/dto/simulation.response'
+import { Calculator, ChartSpline, CircleMinus, CirclePlus, GraduationCap, RotateCw, SettingsIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
+import { QASSMode } from '../../../gpa-backend/src/utils/qass.model'
 
 export const Route = createFileRoute('/instructor/simulation')({
   component: RouteComponent,
@@ -71,7 +75,7 @@ const emptySchema = baseSchema.extend({
 const qassSchema = baseSchema.extend({
   modelId: z.literal(model.QASS),
   mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
-  selfRating: z.boolean(),
+  // selfRating: z.boolean(),
   tuningFactor: z
     .number({ required_error: 'Tuning factor is required', invalid_type_error: 'Tuning factor must be a number' })
     .finite()
@@ -83,33 +87,23 @@ const qassSchema = baseSchema.extend({
       invalid_type_error: 'Peer rating impact must be a number',
     })
     .finite()
-    .min(0, { message: 'Peer rating impact must be greater than or equal to 0' }),
+    .min(0, { message: 'Peer rating impact must be greater than or equal 0' }),
   groupSpread: z
     .number({ required_error: 'Group spread is required', invalid_type_error: 'Group spread must be a number' })
     .finite()
-    .min(0, { message: 'Group spread must be greater than or equal to 0' })
-    .max(1, { message: 'Group spread must be less than or equal to 1' }),
-  peerRatingWeight: z
-    .number({
-      required_error: 'Peer rating weight is required',
-      invalid_type_error: 'Peer rating weight must be a number',
-    })
-    .finite()
-    .min(0, { message: 'Peer rating weight must be greater than or equal to 0' })
-    .max(1, { message: 'Peer rating weight must be less than or equal to 1' }),
-  selfRatingWeight: z
-    .number({
-      required_error: 'Self rating weight is required',
-      invalid_type_error: 'Self rating weight must be a number',
-    })
-    .finite()
-    .min(0, { message: 'Self rating weight must be greater than or equal to 0' })
-    .max(1, { message: 'Self rating weight must be less than or equal to 1' }),
+    .min(0, { message: 'Group spread must be greater than or equal 0' })
+    .max(1, { message: 'Group spread must be less than or equal 1' }),
+  weights: z.array(
+    z
+      .number({ required_error: 'Please enter a weight', invalid_type_error: 'Weight must be a number' })
+      .int()
+      .min(0, { message: 'Weights must be greater than or equal 0' })
+  ),
 })
 
 const webavaliaSchema = baseSchema.extend({
   modelId: z.literal(model.WebAVALIA),
-  selfRating: z.boolean(),
+  // selfRating: z.boolean(),
   selfAssessmentWeight: z
     .number({
       required_error: 'Self-assessment weight is required',
@@ -134,6 +128,7 @@ type ModelFormSchema = z.infer<typeof formSchema>
 
 function RouteComponent() {
   const [groupSize, setGroupSize] = useState(5)
+  const [result, setResult] = useState<CalcualteScoresByQASSResponse | null>(null)
 
   const randomPeerMatrix = () => {
     const peerMatrix: number[][] = []
@@ -154,24 +149,25 @@ function RouteComponent() {
         return {
           modelId: model.QASS,
           mode: undefined,
-          selfRating: false,
+          // selfRating: false,
           tuningFactor: undefined,
           peerRatingImpact: undefined,
           groupSpread: undefined,
-          peerRatingWeight: undefined,
-          selfRatingWeight: undefined,
         }
       //generate default value for WebAVALIA
       case model.WebAVALIA:
         return {
           modelId: model.WebAVALIA,
-          selfRating: false,
+          // selfRating: false,
           selfAssessmentWeight: undefined,
           peerAssessmentWeight: undefined,
         }
       // select none
       default:
-        return { modelId: '0', selfRating: false }
+        return {
+          modelId: '0',
+          // selfRating: false
+        }
     }
   }
 
@@ -187,18 +183,13 @@ function RouteComponent() {
 
   useEffect(() => {
     if (selectedModel === '0' || selectedModel === model.QASS) {
-      form.unregister(['selfRating', 'selfAssessmentWeight', 'peerAssessmentWeight'])
+      form.unregister(['selfAssessmentWeight', 'peerAssessmentWeight'])
     }
     if (selectedModel === '0' || selectedModel === model.WebAVALIA) {
-      form.unregister([
-        'mode',
-        'selfRating',
-        'tuningFactor',
-        'peerRatingImpact',
-        'groupSpread',
-        'peerRatingWeight',
-        'selfRatingWeight',
-      ])
+      form.unregister(['mode', 'tuningFactor', 'peerRatingImpact', 'groupSpread'])
+      for (let i = 0; i < groupSize; i++) {
+        form.unregister(`weights.${i}`)
+      }
     }
     const values = getDefaultValues(selectedModel)
     setFormValues(values)
@@ -211,8 +202,29 @@ function RouteComponent() {
     }
   }
 
+  const mutation = useMutation({
+    mutationFn: api.simulation.calcualteScoresByQASS,
+    onSuccess: (res) => {
+      setResult(res.data)
+    },
+    onError: () => {
+      toast.error('Something went wrong. Please try again.')
+    },
+  })
+
   const onSubmit = async (values: ModelFormSchema) => {
     console.log('calculate values:', values)
+    if (values.modelId === model.QASS) {
+      const payload = qassSchema.parse(values)
+      const enumMode =
+        payload.mode === mode.Bijunction ? QASSMode.B : payload.mode === mode.Conjunction ? QASSMode.C : QASSMode.D
+      mutation.mutate({
+        ...payload,
+        mode: enumMode,
+        groupProductScore: payload.groupScore,
+        peerRatingWeights: payload.weights,
+      })
+    }
   }
 
   return (
@@ -222,14 +234,17 @@ function RouteComponent() {
       </div>
       <div className="flex flex-col gap-8 w-full">
         <ModelConfigurationCard form={form} />
-        <GroupScoreCard form={form} />
+        <OtherParametersCard
+          form={form}
+          groupSize={groupSize}
+        />
         <PeerMatrix
           form={form}
           groupSize={groupSize}
           setGroupSize={setGroupSize}
           randomPeerMatrix={randomPeerMatrix}
         />
-        <ResultCard />
+        {result && <ResultCard result={result} />}
         <div className="flex self-end gap-2">
           <Button
             type="submit"
@@ -260,10 +275,7 @@ const ModelConfigurationCard = ({ form }: { form: UseFormReturn<ModelFormSchema>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form
-            // onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 h-full flex flex-col"
-          >
+          <form className="space-y-4 h-full flex flex-col">
             <div className="flex-grow">
               <div className="grid sm:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
                 <FormField
@@ -377,44 +389,6 @@ const ModelConfigurationCard = ({ form }: { form: UseFormReturn<ModelFormSchema>
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="peerRatingWeight"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Peer rating weight</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                              type="number"
-                              placeholder="Enter peer rating weight"
-                              step="0.1"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="selfRatingWeight"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Self rating weight</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                              type="number"
-                              placeholder="Enter self rating weight"
-                              step="0.1"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </>
                 )}
 
@@ -463,7 +437,7 @@ const ModelConfigurationCard = ({ form }: { form: UseFormReturn<ModelFormSchema>
                 )}
 
                 {/* All */}
-                {selectedModel !== '0' && (
+                {/* {selectedModel !== '0' && (
                   <FormField
                     control={form.control}
                     name="selfRating"
@@ -481,7 +455,7 @@ const ModelConfigurationCard = ({ form }: { form: UseFormReturn<ModelFormSchema>
                       )
                     }}
                   />
-                )}
+                )} */}
               </div>
             </div>
           </form>
@@ -491,13 +465,20 @@ const ModelConfigurationCard = ({ form }: { form: UseFormReturn<ModelFormSchema>
   )
 }
 
-const GroupScoreCard = ({ form }: { form: UseFormReturn<ModelFormSchema> }) => {
+const OtherParametersCard = ({ form, groupSize }: { form: UseFormReturn<ModelFormSchema>; groupSize: number }) => {
+  const groupSizeList = [...Array(groupSize)]
+
+  const selectedModel = useWatch({
+    control: form.control,
+    name: 'modelId',
+  })
+
   return (
     <Card className="flex flex-grow gap-4 w-full">
       <CardHeader>
         <CardTitle className="text-xl flex gap-2 items-center">
-          <BookOpen className="w-6 h-6 text-primary" />
-          Group [product] score
+          <GraduationCap className="w-6 h-6 text-primary" />
+          Other Parameters
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -524,6 +505,36 @@ const GroupScoreCard = ({ form }: { form: UseFormReturn<ModelFormSchema> }) => {
                 )}
               />
             </div>
+            {selectedModel === model.QASS && (
+              <>
+                <div className="flex items-center gap-4 border-t mt-2">
+                  <h2 className="font-semibold text-lg mt-4 mb-2">Student Weights</h2>
+                </div>
+                <div className="flex-grow grid md:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
+                  {groupSizeList.map((_, i) => (
+                    <FormField
+                      key={i}
+                      control={form.control}
+                      name={`weights.${i}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{`Weight of student ${i + 1}`}</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                              type="number"
+                              placeholder="Enter weight"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </form>
         </Form>
       </CardContent>
@@ -531,40 +542,7 @@ const GroupScoreCard = ({ form }: { form: UseFormReturn<ModelFormSchema> }) => {
   )
 }
 
-const ResultCard = () => {
-  const result = {
-    mean: {
-      score: 0.55,
-      rating: 0.55,
-      contribution: 0.55,
-    },
-    studentScores: [
-      {
-        student: 1,
-        score: 0.55,
-        rating: 0.55,
-        contribution: 0.55,
-      },
-      {
-        student: 2,
-        score: 0.55,
-        rating: 0.55,
-        contribution: 0.55,
-      },
-      {
-        student: 3,
-        score: 0.55,
-        rating: 0.55,
-        contribution: 0.55,
-      },
-      {
-        student: 4,
-        score: 0.55,
-        rating: 0.55,
-        contribution: 0.55,
-      },
-    ],
-  }
+const ResultCard = ({ result }: { result: CalcualteScoresByQASSResponse }) => {
   return (
     <Card className="flex flex-grow gap-4 w-full">
       <CardHeader>
@@ -584,7 +562,7 @@ const ResultCard = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {result?.studentScores?.map((item, i) => (
+            {result.studentScores?.map((item, i) => (
               <TableRow key={i}>
                 <TableCell>{item?.student ?? '-'}</TableCell>
                 <TableCell>{item?.rating ?? '-'}</TableCell>
@@ -620,6 +598,11 @@ const PeerMatrix = ({
 }) => {
   const groupSizeList = [...Array(groupSize)]
 
+  const selectedModel = useWatch({
+    control: form.control,
+    name: 'modelId',
+  })
+
   const onClickRandomPeerMatrix = () => {
     const peerMatrix = randomPeerMatrix()
     form.setValue('peerMatrix', peerMatrix)
@@ -642,6 +625,12 @@ const PeerMatrix = ({
     }
 
     form.setValue('peerMatrix', newPeerMatrix)
+    if (selectedModel === model.QASS) {
+      const weights = form.getValues('weights')
+      weights.pop()
+      form.unregister(`weights.${newSize}`)
+      form.setValue('weights', weights)
+    }
     setGroupSize(newSize)
   }
 
