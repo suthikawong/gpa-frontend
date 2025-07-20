@@ -152,8 +152,9 @@ const SelectGroup = ({
         <DialogTitle className="text-2xl">Create group</DialogTitle>
         <DialogDescription>Choose one of the options below to create a group.</DialogDescription>
       </DialogHeader>
-      {createGroupOptions.map((option) => (
+      {createGroupOptions.map((option, index) => (
         <div
+          key={index}
           className="rounded-xl border-2 p-4 cursor-pointer hover:bg-secondary hover:border-primary"
           onClick={() => setState(option.dialogState)}
         >
@@ -389,10 +390,10 @@ const ImportMultipleGroup = ({
               </DialogDescription>
               <div className="space-y-4 text-sm text-muted-foreground">
                 <div className="rounded-xl border border-gray-200 bg-muted p-5">
-                  <ScrollArea className="max-h-[200px]">
-                    <ul className="list-inside list-disc space-y-1 text-sm">
-                      {errors?.map((error) => (
-                        <li>{(error.row > 0 ? `Row ${error.row}: ` : '') + `${error.message}`}</li>
+                  <ScrollArea>
+                    <ul className="list-inside list-disc space-y-1 text-sm max-h-[200px]">
+                      {errors?.map((error, index) => (
+                        <li key={index}>{(error.row > 0 ? `Row ${error.row}: ` : '') + `${error.message}`}</li>
                       ))}
                     </ul>
                   </ScrollArea>
@@ -420,9 +421,24 @@ const ImportMultipleGroup = ({
       ) : (
         <>
           <DialogDescription>
-            Upload an Excel of CSV file to import and create multiple groups at once. This is ideal for bulk group
-            creation when you already have the group structure prepared.
+            Upload an Excel file to import and create multiple groups at once. This is ideal for bulk group creation
+            when you already have the group structure prepared.
           </DialogDescription>
+          <div className="flex flex-col gap-3 p-3 rounded-xl border w-full m-auto">
+            <div>
+              <div className="font-semibold">Need a template?</div>
+              <div className="text-sm text-muted-foreground">
+                Download the official template file to ensure your data is in the correct format.
+              </div>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={() => window.open('/templates/group-import-template.xlsx', '_blank')}
+              className="w-fit"
+            >
+              Download
+            </Button>
+          </div>
           <Uploader
             files={files}
             setFiles={setFiles}

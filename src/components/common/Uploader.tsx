@@ -18,14 +18,12 @@ import toast from './toast'
 
 export enum FileTypes {
   XLSX = 'xlsx',
-  CSV = 'csv',
   JPEG = 'jpeg',
   PNG = 'png',
 }
 
 export const FileTypeMapping = {
   [FileTypes.XLSX]: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  [FileTypes.CSV]: 'text/csv',
   [FileTypes.JPEG]: 'image/jpeg',
   [FileTypes.PNG]: 'image/png',
 }
@@ -102,7 +100,7 @@ const Uploader = ({ files, setFiles, allowFileTypes, showUploadedFiles = true, c
       onFileValidate={onFileValidate}
       onFileReject={onFileReject}
       maxFiles={1}
-      className={cn('w-full max-w-md', className)}
+      className={cn('w-full', className)}
       multiple
     >
       <FileUploadDropzone>
