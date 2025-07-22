@@ -57,15 +57,7 @@ const baseSchema = z.object({
     .finite()
     .gt(0, { message: 'Group score must be greater than 0' })
     .lt(1, { message: 'Group score must be less than 1' }),
-  peerMatrix: z.array(
-    z.array(
-      z
-        .number()
-        .finite()
-        .min(0, { message: 'Self-assessment weight must be greater than or equal to 0' })
-        .max(1, { message: 'Self-assessment weight must be less than or equal to 1' })
-    )
-  ),
+  peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(1), z.nan()]).optional())),
 })
 
 const emptySchema = baseSchema.extend({
@@ -129,18 +121,6 @@ type ModelFormSchema = z.infer<typeof formSchema>
 function RouteComponent() {
   const [groupSize, setGroupSize] = useState(5)
   const [result, setResult] = useState<CalcualteScoresByQASSResponse | null>(null)
-
-  const randomPeerMatrix = () => {
-    const peerMatrix: number[][] = []
-    for (let i = 0; i < groupSize; i++) {
-      peerMatrix.push([])
-      for (let j = 0; j < groupSize; j++) {
-        const randomScore = Math.round(Math.random() * 100) / 100
-        peerMatrix[i].push(randomScore)
-      }
-    }
-    return peerMatrix
-  }
 
   const getDefaultValues = (modelId: string): Partial<ModelFormSchema> => {
     switch (modelId) {
@@ -242,7 +222,6 @@ function RouteComponent() {
           form={form}
           groupSize={groupSize}
           setGroupSize={setGroupSize}
-          randomPeerMatrix={randomPeerMatrix}
         />
         {result && <ResultCard result={result} />}
         <div className="flex self-end gap-2">
@@ -250,6 +229,7 @@ function RouteComponent() {
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
             disabled={selectedModel === '0'}
+            loading={mutation.isPending}
           >
             <Calculator />
             Calculate scores
@@ -589,12 +569,10 @@ const PeerMatrix = ({
   form,
   groupSize,
   setGroupSize,
-  randomPeerMatrix,
 }: {
   form: UseFormReturn<ModelFormSchema>
   groupSize: number
   setGroupSize: React.Dispatch<React.SetStateAction<number>>
-  randomPeerMatrix: () => number[][]
 }) => {
   const groupSizeList = [...Array(groupSize)]
 
@@ -602,6 +580,54 @@ const PeerMatrix = ({
     control: form.control,
     name: 'modelId',
   })
+
+  const selectedMode = useWatch({
+    control: form.control,
+    name: 'mode',
+  })
+
+  useEffect(() => {
+    if (selectedMode === mode.Conjunction) {
+      setDiagonalValues(1)
+    } else if (selectedMode === mode.Disjunction) {
+      setDiagonalValues(0)
+    }
+  }, [selectedMode])
+
+  const setDiagonalValues = (value: number) => {
+    const peerMatrix = form.getValues('peerMatrix') || []
+    for (let i = 0; i < peerMatrix.length; i++) {
+      form.setValue(`peerMatrix.${i}.${i}`, value)
+    }
+  }
+
+  const randomPeerMatrix = () => {
+    const peerMatrix: number[][] = []
+    for (let i = 0; i < groupSize; i++) {
+      peerMatrix.push([])
+      for (let j = 0; j < groupSize; j++) {
+        if (i === j && selectedMode === mode.Conjunction) {
+          peerMatrix[i].push(1)
+          continue
+        }
+        if (i === j && selectedMode === mode.Disjunction) {
+          peerMatrix[i].push(0)
+          continue
+        }
+        const randomScore = Math.round(Math.random() * 100) / 100
+        peerMatrix[i].push(randomScore)
+      }
+    }
+    return peerMatrix
+  }
+
+  useEffect(() => {
+    if (selectedMode === mode.Conjunction) {
+      form.setValue(`peerMatrix.${groupSize - 1}.${groupSize - 1}`, 1)
+    } else if (selectedMode === mode.Disjunction) {
+      form.setValue(`peerMatrix.${groupSize - 1}.${groupSize - 1}`, 0)
+    }
+  }, [groupSize])
 
   const onClickRandomPeerMatrix = () => {
     const peerMatrix = randomPeerMatrix()
@@ -680,19 +706,34 @@ const PeerMatrix = ({
                           control={form.control}
                           name={`peerMatrix.${i}.${j}`}
                           key={j}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                  type="number"
-                                  step="0.1"
-                                  className={cn('matrix-input size-15 text-center bg-white', i == j && 'bg-secondary')}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
+                          render={({ field }) => {
+                            let value = field.value
+                            if (i === j) {
+                              if (selectedMode === mode.Conjunction) {
+                                value = 1
+                              } else if (selectedMode === mode.Disjunction) {
+                                value = 0
+                              }
+                            }
+                            return (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    value={value}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    disabled={selectedMode !== mode.Bijunction && i === j ? true : false}
+                                    type="number"
+                                    step="0.1"
+                                    className={cn(
+                                      'matrix-input size-15 text-center bg-white',
+                                      i == j && 'bg-secondary'
+                                    )}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )
+                          }}
                         />
                       ))}
                     </div>
