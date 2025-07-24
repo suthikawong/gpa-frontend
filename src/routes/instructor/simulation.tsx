@@ -1,4 +1,5 @@
 import QassSimulationTab from '@/components/common/tab/simulation/QassSimulationTab'
+import WebavaliaSimulationTab from '@/components/common/tab/simulation/WebavaliaSimulationTab'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
@@ -56,7 +57,7 @@ function RouteComponent() {
             value="webavalia"
             className="flex flex-col flex-grow"
           >
-            {/* <QassSimulationTab /> */}
+            <WebavaliaSimulationTab />
           </TabsContent>
         </Tabs>
       </div>

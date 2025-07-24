@@ -1,5 +1,11 @@
-import { CalcualteScoresByQASSRequest } from 'gpa-backend/src/simulation/dto/simulation.request'
-import { CalcualteScoresByQASSResponse } from 'gpa-backend/src/simulation/dto/simulation.response'
+import {
+  CalcualteScoresByQASSRequest,
+  CalcualteScoresByWebavaliaRequest,
+} from 'gpa-backend/src/simulation/dto/simulation.request'
+import {
+  CalcualteScoresByQASSResponse,
+  CalcualteScoresByWebavaliaResponse,
+} from 'gpa-backend/src/simulation/dto/simulation.response'
 import { AppResponse } from '../../gpa-backend/src/app.response'
 import axios from './axios'
 
@@ -10,6 +16,14 @@ const calcualteScoresByQASS = async (
   return response.data
 }
 
+const calcualteScoresByWebAvalia = async (
+  data: CalcualteScoresByWebavaliaRequest
+): Promise<AppResponse<CalcualteScoresByWebavaliaResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/simulation/webavalia`, data)
+  return response.data
+}
+
 export const simulation = {
   calcualteScoresByQASS,
+  calcualteScoresByWebAvalia,
 }
