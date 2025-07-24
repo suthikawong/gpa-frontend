@@ -1,8 +1,7 @@
 import { api } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -35,7 +34,6 @@ const baseSchema = z.object({
 const qassSchema = z.object({
   modelId: z.literal(model.QASS),
   mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
-  selfRating: z.boolean(),
   tuningFactor: z
     .number({ required_error: 'Tuning factor is required.', invalid_type_error: 'Tuning factor must be a number.' })
     .finite()
@@ -53,28 +51,11 @@ const qassSchema = z.object({
     .finite()
     .min(0, { message: 'Group spread must be greater than or equal to 0.' })
     .max(1, { message: 'Group spread must be less than or equal to 1.' }),
-  peerRatingWeight: z
-    .number({
-      required_error: 'Peer rating weight is required.',
-      invalid_type_error: 'Peer rating weight must be a number.',
-    })
-    .finite()
-    .min(0, { message: 'Peer rating weight must be greater than or equal to 0.' })
-    .max(1, { message: 'Peer rating weight must be less than or equal to 1.' }),
-  selfRatingWeight: z
-    .number({
-      required_error: 'Self rating weight is required.',
-      invalid_type_error: 'Self rating weight must be a number.',
-    })
-    .finite()
-    .min(0, { message: 'Self rating weight must be greater than or equal to 0.' })
-    .max(1, { message: 'Self rating weight must be less than or equal to 1.' }),
 })
 
 const webavaliaSchema = z.object({
   modelId: z.literal(model.WebAVALIA),
-  selfRating: z.boolean(),
-  selfAssessmentWeight: z
+  selfWeight: z
     .number({
       required_error: 'Self-assessment weight is required.',
       invalid_type_error: 'Self-assessment weight must be a number.',
@@ -82,14 +63,6 @@ const webavaliaSchema = z.object({
     .finite()
     .min(0, { message: 'Self-assessment weight must be greater than or equal to 0.' })
     .max(1, { message: 'Self-assessment weight must be less than or equal to 1.' }),
-  peerAssessmentWeight: z
-    .number({
-      required_error: 'Peer assessment weight is required.',
-      invalid_type_error: 'Peer assessment weight must be a number.',
-    })
-    .finite()
-    .min(0, { message: 'Peer assessment weight must be greater than or equal to 0.' })
-    .max(1, { message: 'Peer assessment weight must be less than or equal to 1.' }),
 })
 
 const formSchema = z.discriminatedUnion('modelId', [baseSchema, qassSchema, webavaliaSchema])
@@ -116,12 +89,9 @@ const ModelTab = ({
           return {
             modelId: model.QASS,
             mode: undefined,
-            selfRating: false,
             tuningFactor: undefined,
             peerRatingImpact: undefined,
             groupSpread: undefined,
-            peerRatingWeight: undefined,
-            selfRatingWeight: undefined,
           }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
@@ -131,16 +101,14 @@ const ModelTab = ({
         if (data?.modelId?.toString() !== model.WebAVALIA) {
           return {
             modelId: model.WebAVALIA,
-            selfRating: false,
-            selfAssessmentWeight: undefined,
-            peerAssessmentWeight: undefined,
+            selfWeight: undefined,
           }
         }
         const modelConfigWeb = webavaliaSchema.omit({ modelId: true }).parse(data.modelConfig)
         return { ...modelConfigWeb, modelId: model.WebAVALIA }
       // select none
       default:
-        return { modelId: '0', selfRating: false }
+        return { modelId: '0' }
     }
   }
 
@@ -177,7 +145,6 @@ const ModelTab = ({
       const values = {
         modelId: model.QASS,
         mode: mode.Bijunction,
-        selfRating: true,
         tuningFactor: 0.001,
         peerRatingImpact: 1,
         groupSpread: 0.5,
@@ -186,7 +153,10 @@ const ModelTab = ({
       }
       setFormValues(values)
     } else if (selectedModel === model.WebAVALIA) {
-      const values = { modelId: model.WebAVALIA, selfRating: false, selfAssessmentWeight: 0, peerAssessmentWeight: 1 }
+      const values = {
+        modelId: model.WebAVALIA,
+        selfWeight: 0,
+      }
       setFormValues(values)
     }
   }
@@ -199,7 +169,6 @@ const ModelTab = ({
   }
 
   const onSubmit = async (values: ModelFormSchema) => {
-    // console.log('TLOG ~ values:', values)
     const { modelId, ...modelConfig } = values
     const payload = {
       ...data,
@@ -339,44 +308,6 @@ const ModelTab = ({
                               </FormItem>
                             )}
                           />
-                          <FormField
-                            control={form.control}
-                            name="peerRatingWeight"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Peer rating weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter peer rating weight"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="selfRatingWeight"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Self rating weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter self rating weight"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                         </>
                       )}
 
@@ -385,64 +316,29 @@ const ModelTab = ({
                         <>
                           <FormField
                             control={form.control}
-                            name="selfAssessmentWeight"
+                            name="selfWeight"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Self Assessment Weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter self assessment weight"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="peerAssessmentWeight"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Peer Assessment Weight</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter peer assessment weight"
-                                    step="0.1"
-                                  />
-                                </FormControl>
+                                <div className="space-y-2">
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                      type="number"
+                                      placeholder="Enter self assessment weight"
+                                      step="0.1"
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    This self-assessment weight will affect the value of the peer assessment weight
+                                  </FormDescription>
+                                </div>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                         </>
-                      )}
-
-                      {/* All */}
-                      {selectedModel !== '0' && (
-                        <FormField
-                          control={form.control}
-                          name="selfRating"
-                          render={({ field }) => {
-                            return (
-                              <FormItem className="flex flex-row items-center gap-2">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={(checked) => field.onChange(checked)}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-normal">Allow self rating</FormLabel>
-                              </FormItem>
-                            )
-                          }}
-                        />
                       )}
                     </div>
                   </div>
@@ -474,7 +370,7 @@ const ModelTab = ({
             <div className="flex gap-3">
               <h4 className="font-semibold text-xl">Are you new to this?</h4>
             </div>
-            <div>Don't worry, this questionnarie will help you find the right model for you!</div>
+            <div className="text-sm">Don't worry, this questionnarie will help you find the right model for you!</div>
             <QuestionnaireDialog
               triggerButton={
                 <Button className="w-full bg-linear-65 from-purple-500 to-pink-500 sm:max-w-50 md:max-w-full xl:max-w-50">
