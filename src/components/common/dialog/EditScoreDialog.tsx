@@ -353,7 +353,9 @@ const QassWeightForm = ({
       >
         <DialogHeader>
           <DialogTitle className="text-2xl">Review student weights</DialogTitle>
-          <DialogDescription>Enter group score and student scores. Click save when you're done.</DialogDescription>
+          <DialogDescription>
+            Review student weights that will be used for calculation. Click calculate when you're done.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid w-full items-center gap-4">
@@ -485,7 +487,9 @@ const WebavaliaWeightForm = ({
       >
         <DialogHeader>
           <DialogTitle className="text-2xl">Review student weights</DialogTitle>
-          <DialogDescription>Enter group score and student scores. Click save when you're done.</DialogDescription>
+          <DialogDescription>
+            Review student weights that will be used for calculation. Click calculate when you're done.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid w-full items-center gap-4">
