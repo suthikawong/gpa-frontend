@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { ErrorResponse } from '../../../../gpa-backend/src/app.response'
 import toast from '../toast'
 
 interface AssessmentDialogProps {
@@ -55,8 +57,12 @@ const AssessmentDialog = ({ triggerButton, data }: AssessmentDialogProps) => {
       queryClient.invalidateQueries({ queryKey: ['getAssessmentById', data?.assessmentId] })
       form.reset()
     },
-    onError: () => {
-      toast.error('Failed to update assessment.')
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (error.response?.status === 400 || error.response?.status === 404) {
+        toast.error(error.response?.data?.message)
+      } else {
+        toast.error('Failed to update assessment.')
+      }
     },
   })
 

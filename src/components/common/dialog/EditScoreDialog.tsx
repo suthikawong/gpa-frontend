@@ -23,6 +23,7 @@ import { Calculator, ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
+import { ErrorResponse } from '../../../../gpa-backend/src/app.response'
 import { GetAssessmentByIdResponse } from '../../../../gpa-backend/src/assessment/dto/assessment.response'
 import toast from '../toast'
 
@@ -463,8 +464,8 @@ const WebavaliaWeightForm = ({
       toast.success('Scores were updated successfully')
       queryClient.invalidateQueries({ queryKey: ['getScores', groupId] })
     },
-    onError: (error: AxiosError<{ error: string; message: string; status: number }>) => {
-      if (error.response?.status === 400) {
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (error.response?.status === 400 || error.response?.status === 403) {
         toast.error(error.response?.data?.message)
       } else {
         toast.error('Failed to update scores.')
