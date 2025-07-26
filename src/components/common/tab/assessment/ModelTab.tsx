@@ -12,6 +12,7 @@ import { SettingsIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
+import AlertDialog from '../../AlertDialog'
 import QuestionnaireDialog from '../../dialog/QuestionnaireDialog'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
@@ -352,13 +353,31 @@ const ModelTab = ({
                     >
                       Use Recommended
                     </Button>
-                    <Button
-                      type="submit"
-                      loading={updateMutation.isPending}
-                      disabled={selectedModel === '0'}
-                    >
-                      Save
-                    </Button>
+                    {!data.canEdit && data?.modelId?.toString() !== selectedModel ? (
+                      <AlertDialog
+                        dialogType="info"
+                        triggerButton={
+                          <Button
+                            type="button"
+                            disabled={selectedModel === '0'}
+                          >
+                            Save
+                          </Button>
+                        }
+                        title="Can't change assessment model"
+                        content="You can't change assessment model since some scoring components already started. You have to delete them before you can change assessment model."
+                        confirmButtonText="Understand"
+                        showCancelButton={false}
+                      />
+                    ) : (
+                      <Button
+                        type="submit"
+                        loading={updateMutation.isPending}
+                        disabled={selectedModel === '0'}
+                      >
+                        Save
+                      </Button>
+                    )}
                   </div>
                 </form>
               </Form>

@@ -159,7 +159,9 @@ const StudentTable = ({ studentScores }: { studentScores: Array<StudentScoreItem
         {studentScores.map((item) => (
           <TableRow key={item.userId}>
             <TableCell>{item?.name ?? '-'}</TableCell>
-            <TableCell className="text-right">{item?.studentScore?.score ?? '-'}</TableCell>
+            <TableCell className="text-right">
+              {typeof item?.studentScore?.score === 'number' ? (item.studentScore.score * 100).toFixed(2) + '%' : '-'}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

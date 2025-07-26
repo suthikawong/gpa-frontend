@@ -65,7 +65,6 @@ const WebavaliaSimulationTab = () => {
   })
   const onSubmit = async (values: FormSchema) => {
     const payload = formSchema.parse(values)
-    console.log('payload:', payload)
     const valid = validatePeerMatrix(payload.peerMatrix)
     if (!valid) return
     setErrorMatrix(null)
@@ -176,10 +175,10 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
                   <Input
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                    disabled={true}
                     type="number"
                     placeholder="Enter peer assessment weight"
                     step="0.1"
+                    disabled
                   />
                 </FormControl>
                 <FormMessage />

@@ -184,7 +184,6 @@ const SummaryToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponentId
 }
 
 const PeerMatrixToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponentIdResponse }) => {
-  const selfRating = data.length !== data?.[0]?.ratings.length
   const groupSize = data.length
   const matrixData = []
   for (let i = 0; i < groupSize; i++) {
@@ -193,12 +192,7 @@ const PeerMatrixToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponen
     let subtract = 0
     for (let j = 0; j < groupSize; j++) {
       // rater
-      if (i === j && selfRating) {
-        subtract = 1
-        row.push(null)
-      } else {
-        row.push(data[i].ratings[j - subtract]?.score ?? null)
-      }
+      row.push(data[i].ratings[j - subtract]?.score ?? null)
     }
     matrixData.push(row)
   }

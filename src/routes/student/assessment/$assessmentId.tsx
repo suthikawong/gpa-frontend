@@ -14,7 +14,6 @@ import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { Roles } from '@/config/app'
-import { useAuth } from '@/hooks/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
@@ -28,7 +27,7 @@ import {
 import { Assessment, Group, ScoringComponent } from 'gpa-backend/src/drizzle/schema'
 import { ChevronLeft, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 export const Route = createFileRoute('/student/assessment/$assessmentId')({
@@ -55,6 +54,11 @@ export const Route = createFileRoute('/student/assessment/$assessmentId')({
 enum State {
   Assessment = 1,
   PeerRating,
+}
+
+const model = {
+  QASS: 1,
+  WebAVALIA: 2,
 }
 
 const studentScore = z.object({
@@ -349,10 +353,7 @@ const PeerRatingPage = ({
   setPageState: React.Dispatch<React.SetStateAction<State>>
 }) => {
   const queryClient = useQueryClient()
-  const { user } = useAuth()
-  const modelConfig = assessmentData?.modelConfig as { selfRating: boolean }
-  const selfRating = modelConfig?.selfRating ?? false
-  const ratees = groupData?.members?.filter((member) => user?.userId !== member.userId || selfRating) ?? []
+  const ratees = groupData?.members ?? []
   const defaultValues = {
     scoringComponentId,
     groupId: groupData?.groupId!,
@@ -379,6 +380,10 @@ const PeerRatingPage = ({
   })
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    if (assessmentData?.modelId === model.WebAVALIA && remainScores !== 0) {
+      toast.error('Remaining scores must be exactly zero. Please redistribute your rating.')
+      return
+    }
     mutation.mutate({
       scoringComponentId,
       groupId: groupData?.groupId!,
@@ -389,6 +394,13 @@ const PeerRatingPage = ({
   const onClickBack = () => {
     setPageState(State.Assessment)
   }
+
+  const studentScores = useWatch({
+    control: form.control,
+    name: 'studentScores',
+  })
+
+  const remainScores = 100 - studentScores.reduce((prev, curr) => prev + curr.score, 0)
 
   return (
     <>
@@ -432,7 +444,7 @@ const PeerRatingPage = ({
                                   <div className="flex gap-4">
                                     <Slider
                                       max={100}
-                                      step={1}
+                                      step={assessmentData?.modelId === model.WebAVALIA ? 5 : 1}
                                       value={[field.value]}
                                       onValueChange={(value) => field.onChange(value[0])}
                                     />
@@ -464,6 +476,21 @@ const PeerRatingPage = ({
               </div>
             </form>
           </Form>
+          {assessmentData?.modelId === model.WebAVALIA && (
+            <Card className="w-full">
+              <CardContent className="flex justify-end gap-2">
+                <div className="font-semibold">Remaining scores :</div>
+                {remainScores < 0 ? (
+                  <div className="text-destructive font-semibold">{remainScores}</div>
+                ) : remainScores === 0 ? (
+                  <div className="text-success font-semibold">{remainScores}</div>
+                ) : (
+                  <div className="font-semibold">{remainScores}</div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <AlertDialog
             dialogType="info"
             triggerButton={

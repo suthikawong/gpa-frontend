@@ -1,5 +1,7 @@
 import {
   AddGroupMemberRequest,
+  CalculateScoreByQassRequest,
+  CalculateScoreByWebavaliaRequest,
   CreateGroupRequest,
   CreateRandomGroupsRequest,
   DeleteGroupMemberRequest,
@@ -14,6 +16,8 @@ import {
 } from 'gpa-backend/src/group/dto/group.request'
 import {
   AddGroupMemberResponse,
+  CalculateScoreByQassResponse,
+  CalculateScoreByWebavaliaResponse,
   CreateGroupResponse,
   CreateRandomGroupsResponse,
   DeleteGroupMemberResponse,
@@ -115,6 +119,20 @@ const leaveGroup = async (data: LeaveGroupRequest): Promise<AppResponse<LeaveGro
   return response.data
 }
 
+const calculateScoreByQass = async (
+  data: CalculateScoreByQassRequest
+): Promise<AppResponse<CalculateScoreByQassResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/calculate/qass`, data)
+  return response.data
+}
+
+const calculateScoreByWebavalia = async (
+  data: CalculateScoreByWebavaliaRequest
+): Promise<AppResponse<CalculateScoreByWebavaliaResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/group/calculate/webavalia`, data)
+  return response.data
+}
+
 export const group = {
   getGroupById,
   createGroup,
@@ -130,4 +148,6 @@ export const group = {
   upsertScore,
   joinGroup,
   leaveGroup,
+  calculateScoreByQass,
+  calculateScoreByWebavalia,
 }
