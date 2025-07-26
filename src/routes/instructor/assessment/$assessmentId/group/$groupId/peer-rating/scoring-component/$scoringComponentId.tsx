@@ -1,9 +1,11 @@
 import { api } from '@/api'
 import { Breadcrumbs } from '@/components/common/Breadcrumbs'
 import PeerRatingDialog from '@/components/common/dialog/PeerRatingDialog'
+import EmptyState from '@/components/common/EmptyState'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
+import NoDocuments from '@/components/svg/NoDocuments'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
@@ -73,7 +75,7 @@ function RouteComponent() {
     isLoading: isLoadingPeerRating,
     error: errorPeerRating,
   } = useQuery({
-    queryKey: ['getPeerRatingsByScoringComponentId', scoringComponentId],
+    queryKey: ['getPeerRatingsByScoringComponentId', scoringComponentId, groupId],
     queryFn: async () => await api.peerRating.getPeerRatingsByScoringComponentId({ scoringComponentId, groupId }),
   })
 
@@ -170,6 +172,15 @@ const ScoringComponentCard = ({ data }: { data: GetScoringComponentByIdResponse 
 }
 
 const SummaryToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponentIdResponse }) => {
+  if (data.length === 0) {
+    return (
+      <EmptyState
+        title="No Peer Rating"
+        description1="It looks like there is no student and peer rating information in this group."
+        icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
+      />
+    )
+  }
   return (
     <div className="grid gap-4">
       {data.map((item, i) => (
@@ -195,6 +206,16 @@ const PeerMatrixToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponen
       row.push(data[i].ratings[j - subtract]?.score ?? null)
     }
     matrixData.push(row)
+  }
+
+  if (data.length === 0) {
+    return (
+      <EmptyState
+        title="No Peer Rating"
+        description1="It looks like there is no student and peer rating information in this group."
+        icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
+      />
+    )
   }
 
   return (

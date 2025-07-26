@@ -1,4 +1,5 @@
 import { api } from '@/api'
+import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
@@ -25,6 +26,7 @@ import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { ErrorResponse } from '../../../../gpa-backend/src/app.response'
 import { GetAssessmentByIdResponse } from '../../../../gpa-backend/src/assessment/dto/assessment.response'
+import EmptyState from '../EmptyState'
 import toast from '../toast'
 
 interface EditScoreDialogProps {
@@ -282,15 +284,23 @@ const EditScoreForm = ({
               {error && <FormMessage>{error}</FormMessage>}
             </div>
           </div>
-          <div className="flex flex-col gap-4">
-            {data?.studentScores?.map((studentScore, index) => (
-              <StudentScoreCollapsible
-                index={index}
-                form={form}
-                studentScore={studentScore}
-              />
-            ))}
-          </div>
+          {(data?.studentScores?.length ?? 0) == 0 ? (
+            <EmptyState
+              title="No Student"
+              description1="It looks like there is no student in this group."
+              icon={<NoDocuments className="w-[126px] h-[100px] md:w-[180px] md:h-[144px]" />}
+            />
+          ) : (
+            <div className="flex flex-col gap-4">
+              {data?.studentScores?.map((studentScore, index) => (
+                <StudentScoreCollapsible
+                  index={index}
+                  form={form}
+                  studentScore={studentScore}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <DialogFooter>

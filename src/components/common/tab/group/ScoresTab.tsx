@@ -148,6 +148,9 @@ export default ScoresTab
 const StudentTable = ({ studentScores }: { studentScores: Array<StudentScoreItem> }) => {
   return (
     <Table className="flex-grow">
+      {studentScores.length === 0 && (
+        <TableCaption className="text-foreground font-semibold">No student found</TableCaption>
+      )}
       <TableCaption>A list of student scores in this group.</TableCaption>
       <TableHeader>
         <TableRow>
