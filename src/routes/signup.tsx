@@ -131,7 +131,6 @@ const SelectRegisterType = () => {
 
 const SignUpForm = ({ formType }: { formType: Roles }) => {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -153,14 +152,7 @@ const SignUpForm = ({ formType }: { formType: Roles }) => {
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      setLoading(true)
-      createMutation.mutate({ ...values, roleId: formType })
-    } catch (error) {
-      toast.error('Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+    createMutation.mutate({ ...values, roleId: formType })
   }
 
   return (
@@ -247,7 +239,7 @@ const SignUpForm = ({ formType }: { formType: Roles }) => {
             </CardContent>
             <CardFooter className="flex-col gap-y-6">
               <Button
-                loading={loading}
+                loading={createMutation.isPending}
                 type="submit"
                 className="w-full"
               >
