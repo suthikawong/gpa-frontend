@@ -56,6 +56,8 @@ function RouteComponent() {
     onError: (error: AxiosError) => {
       if (error.response?.status === 401) {
         setErrorMessage('Incorrect email or password')
+      } else if (error.response?.status === 403) {
+        setErrorMessage('Your email is not verified. Please verify your email before sign in.')
       } else {
         toast.error('Something went wrong. Please try again.')
       }

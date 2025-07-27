@@ -1,3 +1,4 @@
+import { publicPaths } from '@/config/app'
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 const axiosInstance: AxiosInstance = axios.create({
@@ -28,8 +29,6 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean }
 
     const status = error.response?.status
-
-    const publicPaths = ['/signin', '/signup']
 
     if (status === 401 && !originalRequest._retry && !publicPaths.includes(window.location.pathname)) {
       if (isRefreshing) {

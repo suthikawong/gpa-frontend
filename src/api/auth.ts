@@ -1,6 +1,6 @@
 import { AppResponse } from '../../gpa-backend/src/app.response'
-import { RegisterRequest } from '../../gpa-backend/src/auth/dto/auth.request'
-import { LoginResponse, RegisterResponse } from '../../gpa-backend/src/auth/dto/auth.response'
+import { RegisterRequest, VerifyEmailRequest } from '../../gpa-backend/src/auth/dto/auth.request'
+import { LoginResponse, RegisterResponse, VerifyEmailResponse } from '../../gpa-backend/src/auth/dto/auth.response'
 import axios from './axios'
 
 const login = async (data: { email: string; password: string }): Promise<AppResponse<LoginResponse>> => {
@@ -17,8 +17,14 @@ const register = async (data: RegisterRequest): Promise<AppResponse<RegisterResp
   return response.data
 }
 
+const verifyEmail = async (params: VerifyEmailRequest): Promise<AppResponse<VerifyEmailResponse>> => {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/verify-email`, { params })
+  return response.data
+}
+
 export const auth = {
   login,
   logout,
   register,
+  verifyEmail,
 }

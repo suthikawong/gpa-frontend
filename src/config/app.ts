@@ -1,5 +1,8 @@
 export const appPaths = {
   signIn: '/signin',
+  signUp: '/signup',
+  forgotPassword: '/forgot-password',
+  verifyEmail: '/verify-email',
   profile: '/profile',
   instructor: {
     assessment: '/instructor/assessment',
@@ -9,6 +12,8 @@ export const appPaths = {
     assessment: '/student/assessment',
   },
 }
+
+export const publicPaths = [appPaths.signIn, appPaths.signUp, appPaths.forgotPassword, appPaths.verifyEmail]
 
 export const profileMenuItem = {
   name: 'Edit Profile',

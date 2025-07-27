@@ -118,7 +118,7 @@ const ForgotPasswordForm = () => {
               className="text-[13px] text-primary font-semibold"
               to="/signin"
             >
-              Back to login
+              Back to Sign In
             </Link>
           </CardFooter>
         </form>
