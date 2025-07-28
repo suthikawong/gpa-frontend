@@ -104,7 +104,7 @@ const AssessmentCard = ({ data }: { data: Omit<Assessment, 'modelId' | 'modelCon
             className="h-fit mt-1"
             asChild
           >
-            <div>{data.isPublished ? 'Acitve' : 'Inactive'}</div>
+            <div>{data.isPublished ? 'Published' : 'Private'}</div>
           </Badge>
         </div>
         <div className="flex justify-between my-4 sm:mb-0">
