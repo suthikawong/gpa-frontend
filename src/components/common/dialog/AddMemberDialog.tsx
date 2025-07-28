@@ -1,6 +1,6 @@
 import { api } from '@/api'
 import NoDocuments from '@/components/svg/NoDocuments'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -159,7 +159,8 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
                       title={
                         <div className="flex gap-3 items-center">
                           <Avatar className="size-10">
-                            <AvatarImage src="https://github.com/shadcn.png" />
+                            {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+                            <AvatarFallback>{student?.name?.[0] ?? ''}</AvatarFallback>
                           </Avatar>
                           <div>
                             <div>{student.name}</div>

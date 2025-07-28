@@ -5,7 +5,7 @@ import JoinGroupDialog from '@/components/common/dialog/JoinGroupDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
@@ -428,7 +428,8 @@ const PeerRatingPage = ({
                       <div className="grid grid-cols-1 lg:grid-cols-2 w-full gap-4">
                         <div className="flex gap-4 items-center lg:items-start">
                           <Avatar className="size-12">
-                            <AvatarImage src="https://github.com/shadcn.png" />
+                            {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+                            <AvatarFallback>{ratee?.name?.[0] ?? ''}</AvatarFallback>
                           </Avatar>
                           <div>
                             <div className="text-2xl font-semibold">{ratee.name}</div>

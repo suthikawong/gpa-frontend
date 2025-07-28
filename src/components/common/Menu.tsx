@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { Link, useRouter } from '@tanstack/react-router'
 import { LayoutDashboard, LogOut, Menu as LucideMenu, UserRound } from 'lucide-react'
 import React, { useState } from 'react'
-import { Avatar, AvatarImage } from '../ui/avatar'
+import { Avatar, AvatarFallback } from '../ui/avatar'
 import { Label } from '../ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Separator } from '../ui/separator'
@@ -96,7 +96,8 @@ export default function Menu() {
               <SheetDescription className="hidden">User information</SheetDescription>
               <div className="flex gap-x-4 items-center">
                 <Avatar className="size-12">
-                  <AvatarImage src="https://github.com/shadcn.png" />
+                  {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+                  <AvatarFallback>{user?.name?.[0] ?? ''}</AvatarFallback>
                 </Avatar>
                 <div className="space-y-0.5 min-w-0">
                   <Label className="text-[10px] text-muted-foreground">{user?.roleId ? Roles[user.roleId] : '-'}</Label>
@@ -204,13 +205,15 @@ const ProfilePopover = () => {
     >
       <PopoverTrigger asChild>
         <Avatar className="size-10 cursor-pointer">
-          <AvatarImage src="https://github.com/shadcn.png" />
+          {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+          <AvatarFallback>{user?.name?.[0] ?? ''}</AvatarFallback>
         </Avatar>
       </PopoverTrigger>
       <PopoverContent className="w-70 mr-6 mt-1">
         <div className="flex gap-x-4 items-center">
           <Avatar className="size-12">
-            <AvatarImage src="https://github.com/shadcn.png" />
+            {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+            <AvatarFallback>{user?.name?.[0] ?? ''}</AvatarFallback>
           </Avatar>
           <div className="space-y-0.5 min-w-0">
             <Label className="text-[10px] text-muted-foreground">{user?.roleId ? Roles[user.roleId] : '-'}</Label>
