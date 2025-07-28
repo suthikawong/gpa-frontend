@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as VerifyEmailImport } from './routes/verify-email'
 import { Route as SignupImport } from './routes/signup'
 import { Route as SigninImport } from './routes/signin'
+import { Route as ResetPasswordImport } from './routes/reset-password'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as IndexImport } from './routes/index'
@@ -44,6 +45,12 @@ const SignupRoute = SignupImport.update({
 const SigninRoute = SigninImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ResetPasswordRoute = ResetPasswordImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -151,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileImport
       parentRoute: typeof rootRoute
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordImport
+      parentRoute: typeof rootRoute
+    }
     '/signin': {
       id: '/signin'
       path: '/signin'
@@ -244,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -262,6 +277,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -281,6 +297,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -301,6 +318,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/profile'
+    | '/reset-password'
     | '/signin'
     | '/signup'
     | '/verify-email'
@@ -318,6 +336,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/profile'
+    | '/reset-password'
     | '/signin'
     | '/signup'
     | '/verify-email'
@@ -335,6 +354,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/profile'
+    | '/reset-password'
     | '/signin'
     | '/signup'
     | '/verify-email'
@@ -354,6 +374,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
@@ -372,6 +393,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   VerifyEmailRoute: VerifyEmailRoute,
@@ -403,6 +425,7 @@ export const routeTree = rootRoute
         "/",
         "/forgot-password",
         "/profile",
+        "/reset-password",
         "/signin",
         "/signup",
         "/verify-email",
@@ -425,6 +448,9 @@ export const routeTree = rootRoute
     },
     "/profile": {
       "filePath": "profile.tsx"
+    },
+    "/reset-password": {
+      "filePath": "reset-password.tsx"
     },
     "/signin": {
       "filePath": "signin.tsx"
