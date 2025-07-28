@@ -233,7 +233,9 @@ const MyScoreCard = ({ myScoreData }: { myScoreData: GetMyScoreResponse }) => {
       <CardContent className="flex-col">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg md:text-xl md:mb-1">My Score</CardTitle>
-          <CardTitle className="text-lg md:text-xl md:mb-1">{myScoreData?.score ?? '-'}/100</CardTitle>
+          <CardTitle className="text-lg md:text-xl md:mb-1">
+            {myScoreData?.score ? myScoreData.score * 100 : '-'}/100
+          </CardTitle>
         </div>
       </CardContent>
     </Card>
