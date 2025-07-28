@@ -7,12 +7,18 @@ import {
 } from '../../gpa-backend/src/auth/dto/auth.request'
 import {
   ForgotPasswordResponse,
+  GetLoggedInUserResponse,
   LoginResponse,
   RegisterResponse,
   ResetPasswordResponse,
   VerifyEmailResponse,
 } from '../../gpa-backend/src/auth/dto/auth.response'
 import axios from './axios'
+
+const getLoggedInUser = async (): Promise<AppResponse<GetLoggedInUserResponse>> => {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`)
+  return response.data
+}
 
 const login = async (data: { email: string; password: string }): Promise<AppResponse<LoginResponse>> => {
   const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, data)
@@ -44,6 +50,7 @@ const resetPassword = async (data: ResetPasswordRequest): Promise<AppResponse<Re
 }
 
 export const auth = {
+  getLoggedInUser,
   login,
   logout,
   register,

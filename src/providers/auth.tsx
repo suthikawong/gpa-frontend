@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   if (!user && !fetched) {
     setFetched(true)
     setLoading(true)
-    api.user
+    api.auth
       .getLoggedInUser()
       .then((res) => {
         setUser(res.data)
