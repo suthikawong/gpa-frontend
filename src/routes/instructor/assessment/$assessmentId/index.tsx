@@ -16,11 +16,11 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
 import { appPaths, Roles } from '@/config/app'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { AssessmentWithInstructor } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
-import { Pencil, Trash2, Users } from 'lucide-react'
+import { Pencil, Trash2, Upload, Users } from 'lucide-react'
 import { useEffect } from 'react'
 
 export const Route = createFileRoute('/instructor/assessment/$assessmentId/')({
@@ -141,6 +141,27 @@ function RouteComponent() {
 }
 
 const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
+  const mutation = useMutation({
+    mutationFn: api.assessment.exportAssessmentScores,
+    onSuccess: (res) => {
+      const filename = 'export-scores.xlsx'
+      const url = window.URL.createObjectURL(new Blob([res]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    },
+    onError: () => {
+      toast.error('Something went wrong. Please try again.')
+    },
+  })
+
+  const exportStudentScores = async () => {
+    mutation.mutate({ assessmentId: data.assessmentId })
+  }
+
   return (
     <Card className="w-full">
       <CardContent className="flex-col">
@@ -175,13 +196,21 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
               <div>{data.assessmentCode}</div>
             </Badge>
           </div>
-          <div className="flex gap-2">
+          <div className="hidden gap-2 md:flex">
+            <Button
+              variant="secondary"
+              onClick={exportStudentScores}
+              loading={mutation.isPending}
+            >
+              {!mutation.isPending && <Upload />}
+              Export
+            </Button>
             <AssessmentDialog
               data={data}
               triggerButton={
                 <Button
                   variant="outline"
-                  className="hidden w-22 md:flex"
+                  className="w-22"
                 >
                   <Pencil />
                   Edit
@@ -190,10 +219,7 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
             />
             <DeleteAssessmentDialog
               triggerButton={
-                <Button
-                  variant="destructiveOutline"
-                  className="hidden md:flex"
-                >
+                <Button variant="destructiveOutline">
                   <Trash2 />
                   Delete
                 </Button>
@@ -204,6 +230,14 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
         </div>
         <Separator className="md:hidden" />
         <div className="mt-4 flex gap-2 justify-end md:hidden">
+          <Button
+            variant="secondary"
+            onClick={exportStudentScores}
+            loading={mutation.isPending}
+          >
+            {!mutation.isPending && <Upload />}
+            Export
+          </Button>
           <AssessmentDialog
             data={data}
             triggerButton={

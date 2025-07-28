@@ -3,6 +3,7 @@ import {
   ConfirmStudentJoinAssessmentRequest,
   CreateAssessmentRequest,
   DeleteAssessmentRequest,
+  ExportAssessmentScoresRequest,
   GetAssessmentByIdRequest,
   GetGroupsByAssessmentIdRequest,
   GetMyScoreRequest,
@@ -133,6 +134,13 @@ const getMyScore = async ({ assessmentId }: GetMyScoreRequest): Promise<AppRespo
   return response.data
 }
 
+const exportAssessmentScores = async ({ assessmentId }: ExportAssessmentScoresRequest): Promise<Blob> => {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/assessment/${assessmentId}/export`, {
+    responseType: 'blob',
+  })
+  return response.data
+}
+
 export const assessment = {
   getAssessmentsByInstructor,
   getAssessmentsByStudent,
@@ -149,4 +157,5 @@ export const assessment = {
   getJoinedGroup,
   checkScoringComponentActive,
   getMyScore,
+  exportAssessmentScores,
 }
