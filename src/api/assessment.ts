@@ -1,4 +1,5 @@
 import {
+  AddStudentByEmailRequest,
   CheckScoringComponentActiveRequest,
   ConfirmStudentJoinAssessmentRequest,
   CreateAssessmentRequest,
@@ -15,6 +16,7 @@ import {
   UpdateAssessmentRequest,
 } from 'gpa-backend/src/assessment/dto/assessment.request'
 import {
+  AddStudentByEmailResponse,
   CheckScoringComponentActiveResponse,
   ConfirmStudentJoinAssessmentResponse,
   CreateAssessmentResponse,
@@ -72,6 +74,11 @@ const searchStudentsInAssessment = async (
   params: SearchStudentsInAssessmentRequest
 ): Promise<AppResponse<SearchStudentsInAssessmentResponse>> => {
   const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/assessment/student/search`, { params })
+  return response.data
+}
+
+const addStudentByEmail = async (data: AddStudentByEmailRequest): Promise<AppResponse<AddStudentByEmailResponse>> => {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/assessment/add-student`, data)
   return response.data
 }
 
@@ -149,6 +156,7 @@ export const assessment = {
   updateAssessment,
   deleteAssessment,
   searchStudentsInAssessment,
+  addStudentByEmail,
   confirmStudentJoinAssessment,
   removeStudentFromAssessment,
   getGroupsByAssessmentId,

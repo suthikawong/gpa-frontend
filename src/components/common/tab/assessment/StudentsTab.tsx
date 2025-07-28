@@ -6,11 +6,12 @@ import { Label } from '@/components/ui/label'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SearchStudentsInAssessmentResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { Assessment, AssessmentStudent, User } from 'gpa-backend/src/drizzle/schema'
-import { Trash2 } from 'lucide-react'
+import { Plus, SearchIcon, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import ActionCard from '../../ActionCard'
 import AlertDialog from '../../AlertDialog'
 import ConfirmDeleteDialog from '../../ConfirmDeleteDialog'
+import AddStudentDialog from '../../dialog/AddStudentDialog'
 import EmptyState from '../../EmptyState'
 import { PaginationControlled } from '../../PaginationControlled'
 import SuspenseArea from '../../SuspenseArea'
@@ -96,22 +97,36 @@ const StudentsTab = ({ assessmentId, canEdit }: { assessmentId: Assessment['asse
 
   return (
     <>
-      <div className="flex flex-col md:flex-row justify-between mb-6">
-        <div className="text-2xl font-semibold">Students</div>
-        <div className="flex flex-col md:flex-row gap-4 mt-6 p-4 bg-primary-foreground rounded-xl md:bg-transparent md:p-0 md:mt-0">
-          <Label className="md:hidden">Search:</Label>
-          <div className="flex gap-4">
-            <Input
-              className="bg-border"
-              placeholder="Search student name"
-              onChange={onKeywordChange}
-            />
-            <Button
-              onClick={onSearch}
-              loading={isFetching}
-            >
-              Search
-            </Button>
+      <div className="flex flex-col justify-between mb-6">
+        <div className="flex justify-between">
+          <div className="text-2xl font-semibold">Students</div>
+          <AddStudentDialog
+            assessmentId={assessmentId}
+            triggerButton={
+              <Button>
+                <Plus />
+                Add
+              </Button>
+            }
+          />
+        </div>
+        <div className="flex flex-col gap-4 mt-6 p-4 bg-primary-foreground rounded-xl border-2">
+          <div className="flex flex-col gap-2">
+            <Label className="text-sm text-muted-foreground">Search by student name</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                className="bg-border/80 text-sm"
+                placeholder="Enter student name..."
+                onChange={onKeywordChange}
+              />
+              <Button
+                onClick={onSearch}
+                loading={isFetching}
+              >
+                {!isFetching && <SearchIcon />}
+                <span className="hidden sm:block">Search</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
