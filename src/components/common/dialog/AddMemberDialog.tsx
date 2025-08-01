@@ -23,6 +23,8 @@ import EmptyState from '../EmptyState'
 import { PaginationControlled } from '../PaginationControlled'
 import SuspenseArea from '../SuspenseArea'
 import toast from '../toast'
+import { AxiosError } from 'axios'
+import { ErrorResponse } from 'gpa-backend/src/app.response'
 
 interface AddMemberDialogProps {
   triggerButton: React.ReactNode
@@ -73,8 +75,12 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
       }
       setClickedStudentId(null)
     },
-    onError: () => {
-      toast.error('Failed to add member.')
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (error.response?.status === 400) {
+        toast.error(error.response?.data?.message)
+      } else {
+        toast.error('Failed to add member.')
+      }
     },
   })
 
@@ -153,6 +159,30 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
               ) : (
                 data.map((student, index) => {
                   const isMember = memberUserIds.includes(student.userId)
+                  const alreadyJoinedGroup = !!student.group
+                  const actions = []
+
+                  if (alreadyJoinedGroup && !isMember) {
+                    actions.push(<div className="text-sm text-muted-foreground">Joined Other</div>)
+                  } else {
+                    actions.push(
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isMember || !canEdit}
+                        onClick={() => onClickAddMember(student.userId)}
+                        loading={clickedStudentId === student.userId && addMemberMutation.isPending}
+                      >
+                        {isMember ? (
+                          <Check />
+                        ) : clickedStudentId === student.userId && addMemberMutation.isPending ? null : (
+                          <Plus />
+                        )}
+                        <span className="hidden sm:block">{isMember ? 'Added' : 'Add'}</span>
+                      </Button>
+                    )
+                  }
+
                   return (
                     <ActionCard
                       key={index}
@@ -168,22 +198,7 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
                           </div>
                         </div>
                       }
-                      actions={[
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={isMember || !canEdit}
-                          onClick={() => onClickAddMember(student.userId)}
-                          loading={clickedStudentId === student.userId && addMemberMutation.isPending}
-                        >
-                          {isMember ? (
-                            <Check />
-                          ) : clickedStudentId === student.userId && addMemberMutation.isPending ? null : (
-                            <Plus />
-                          )}
-                          <span className="hidden sm:block">{isMember ? 'Added' : 'Add'}</span>
-                        </Button>,
-                      ]}
+                      actions={actions}
                       dialog={true}
                     />
                   )
