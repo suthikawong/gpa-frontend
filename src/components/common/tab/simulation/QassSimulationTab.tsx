@@ -24,11 +24,11 @@ const mode = {
 
 const formSchema = z.object({
   mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
-  tuningFactor: z
-    .number({ required_error: 'Tuning factor is required', invalid_type_error: 'Tuning factor must be a number' })
+  polishingFactor: z
+    .number({ required_error: 'Polishing factor is required', invalid_type_error: 'Polishing factor must be a number' })
     .finite()
-    .gt(0, { message: 'Tuning factor must be greater than 0' })
-    .lt(0.5, { message: 'Tuning factor must be less than 0.5' }),
+    .gt(0, { message: 'Polishing factor must be greater than 0' })
+    .lt(0.5, { message: 'Polishing factor must be less than 0.5' }),
   peerRatingImpact: z
     .number({
       required_error: 'Peer rating impact is required',
@@ -65,7 +65,7 @@ const QassSimulationTab = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       mode: undefined,
-      tuningFactor: undefined,
+      polishingFactor: undefined,
       peerRatingImpact: undefined,
       groupSpread: undefined,
     },
@@ -165,16 +165,16 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
           />
           <FormField
             control={form.control}
-            name="tuningFactor"
+            name="polishingFactor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tuning Factor</FormLabel>
+                <FormLabel>Polishing Factor</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                     type="number"
-                    placeholder="Enter tuning factor"
+                    placeholder="Enter polishing factor"
                     step="0.1"
                   />
                 </FormControl>
