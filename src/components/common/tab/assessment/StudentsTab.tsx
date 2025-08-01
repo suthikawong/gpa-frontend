@@ -143,7 +143,7 @@ const StudentsTab = ({ assessmentId, canEdit }: { assessmentId: Assessment['asse
             ) : (
               data?.map((student, index) => {
                 const actionButtons = []
-                if (student.joinedGroupId && !canEdit) {
+                if (student.group?.groupId && !canEdit) {
                   actionButtons.push(
                     <AlertDialog
                       triggerButton={
