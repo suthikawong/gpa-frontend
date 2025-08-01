@@ -17,11 +17,12 @@ import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
 import { appPaths, Roles } from '@/config/app'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { AssessmentWithInstructor } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { Pencil, Trash2, Upload, Users } from 'lucide-react'
 import { useEffect } from 'react'
+import { z } from 'zod'
 
 export const Route = createFileRoute('/instructor/assessment/$assessmentId/')({
   component: RouteComponent,
@@ -42,10 +43,22 @@ export const Route = createFileRoute('/instructor/assessment/$assessmentId/')({
       })
     }
   },
+  validateSearch: z.object({
+    tab: z.coerce.string().optional(),
+  }),
 })
+
+export const AssessmentTabs = {
+  Students: 'students',
+  Groups: 'groups',
+  Model: 'model',
+  ScoringComponents: 'scoring-components',
+}
 
 function RouteComponent() {
   const params = Route.useParams()
+  const search = Route.useSearch()
+  const router = useRouter()
   const assessmentId = parseInt(params.assessmentId)
 
   const {
@@ -64,6 +77,10 @@ function RouteComponent() {
       toast.error('Something went wrong. Please try again.')
     }
   }, [error])
+
+  const onClickTab = (tab: (typeof AssessmentTabs)[keyof typeof AssessmentTabs]) => {
+    router.history.push(`/instructor/assessment/${assessmentId}?tab=${tab}`)
+  }
 
   return (
     <DashboardLayout className="gap-4">
@@ -84,25 +101,43 @@ function RouteComponent() {
               <AssessmentCard data={data} />
             </div>
             <Tabs
-              defaultValue="students"
+              defaultValue={AssessmentTabs.Students}
+              value={search.tab}
               className="flex flex-col flex-grow"
             >
               <ScrollArea>
                 <div className="w-full relative">
                   <TabsList>
-                    <TabsTrigger value="students">Students</TabsTrigger>
-                    <TabsTrigger value="groups">Groups</TabsTrigger>
-                    <TabsTrigger value="model">Model</TabsTrigger>
-                    <TabsTrigger value="scoring-components">Scoring Components</TabsTrigger>
+                    <TabsTrigger
+                      value={AssessmentTabs.Students}
+                      onClick={() => onClickTab(AssessmentTabs.Students)}
+                    >
+                      Students
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value={AssessmentTabs.Groups}
+                      onClick={() => onClickTab(AssessmentTabs.Groups)}
+                    >
+                      Groups
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value={AssessmentTabs.Model}
+                      onClick={() => onClickTab(AssessmentTabs.Model)}
+                    >
+                      Model
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value={AssessmentTabs.ScoringComponents}
+                      onClick={() => onClickTab(AssessmentTabs.ScoringComponents)}
+                    >
+                      Scoring Components
+                    </TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsScrollBar />
               </ScrollArea>
-              {/* <TabsContent value="assignments">
-                <AssignmentsTab assessmentId={assessmentId} />
-              </TabsContent> */}
               <TabsContent
-                value="students"
+                value={AssessmentTabs.Students}
                 className="flex flex-col flex-grow"
               >
                 <StudentsTab
@@ -111,13 +146,13 @@ function RouteComponent() {
                 />
               </TabsContent>
               <TabsContent
-                value="groups"
+                value={AssessmentTabs.Groups}
                 className="flex flex-col flex-grow"
               >
                 <GroupsTab assessmentId={assessmentId} />
               </TabsContent>
               <TabsContent
-                value="model"
+                value={AssessmentTabs.Model}
                 className="flex flex-col flex-grow"
               >
                 <ModelTab
@@ -127,7 +162,7 @@ function RouteComponent() {
                 />
               </TabsContent>
               <TabsContent
-                value="scoring-components"
+                value={AssessmentTabs.ScoringComponents}
                 className="flex flex-col flex-grow"
               >
                 <ScoringComponentsTab assessmentId={assessmentId} />
@@ -277,7 +312,7 @@ const DeleteAssessmentDialog = ({
       triggerButton={triggerButton}
       data={{ assessmentId }}
       api={api.assessment.deleteAssessment}
-      title="Delete Assessment"
+      title="Delete assessment"
       onSuccessMessage="Assessment deleted successfully."
       onErrorMessage="Failed to delete classroom."
       refetchKeys={['getAssessmentsByInstructor']}

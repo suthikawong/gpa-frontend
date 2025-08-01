@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
+import { ErrorResponse } from 'gpa-backend/src/app.response'
 import { Assessment, Group, User } from 'gpa-backend/src/drizzle/schema'
 import { GetGroupMembersResponse } from 'gpa-backend/src/group/dto/group.response'
 import { Check, Plus } from 'lucide-react'
@@ -23,8 +25,6 @@ import EmptyState from '../EmptyState'
 import { PaginationControlled } from '../PaginationControlled'
 import SuspenseArea from '../SuspenseArea'
 import toast from '../toast'
-import { AxiosError } from 'axios'
-import { ErrorResponse } from 'gpa-backend/src/app.response'
 
 interface AddMemberDialogProps {
   triggerButton: React.ReactNode
@@ -89,6 +89,16 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
       toast.error('Something went wrong. Please try again.')
     }
   }, [error])
+
+  useEffect(() => {
+    if (!open) {
+      setKeyword(undefined)
+      setPage(1)
+    }
+    return () => {
+      if (!open) queryClient.removeQueries({ queryKey: ['searchStudentsInAssessment', assessmentId, 1] })
+    }
+  }, [open])
 
   const onKeywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value === '' ? undefined : e.target.value)

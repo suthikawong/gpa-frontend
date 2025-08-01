@@ -14,6 +14,7 @@ import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { Plus } from 'lucide-react'
 import { useEffect } from 'react'
+import { AssessmentTabs } from './$assessmentId'
 
 export const Route = createFileRoute('/instructor/assessment/')({
   component: RouteComponent,
@@ -90,7 +91,7 @@ const AssessmentCard = ({ data }: { data: Omit<Assessment, 'modelId' | 'modelCon
   const router = useRouter()
 
   const onClickAssessment = (assessmentId: Assessment['assessmentId']) => {
-    router.history.push(`/instructor/assessment/${assessmentId}`)
+    router.history.push(`/instructor/assessment/${assessmentId}?tab=${AssessmentTabs.Students}`)
   }
 
   return (

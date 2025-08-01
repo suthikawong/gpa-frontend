@@ -3,6 +3,7 @@ import {
   CheckScoringComponentActiveRequest,
   ConfirmStudentJoinAssessmentRequest,
   CreateAssessmentRequest,
+  DeleteAllGroupsByAssessmentIdRequest,
   DeleteAssessmentRequest,
   ExportAssessmentScoresRequest,
   GetAssessmentByIdRequest,
@@ -20,6 +21,7 @@ import {
   CheckScoringComponentActiveResponse,
   ConfirmStudentJoinAssessmentResponse,
   CreateAssessmentResponse,
+  DeleteAllGroupsByAssessmentIdResponse,
   DeleteAssessmentResponse,
   GetAssessmentByIdResponse,
   GetAssessmentsByInstructorResponse,
@@ -106,6 +108,13 @@ const getGroupsByAssessmentId = async ({
   return response.data
 }
 
+const deleteAllGroupsByAssessmentId = async ({
+  assessmentId,
+}: DeleteAllGroupsByAssessmentIdRequest): Promise<AppResponse<DeleteAllGroupsByAssessmentIdResponse>> => {
+  const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/assessment/${assessmentId}/groups`)
+  return response.data
+}
+
 const getScoringComponentsByAssessmentId = async ({
   assessmentId,
 }: GetScoringComponentsByAssessmentIdRequest): Promise<AppResponse<GetScoringComponentsByAssessmentIdResponse>> => {
@@ -160,6 +169,7 @@ export const assessment = {
   confirmStudentJoinAssessment,
   removeStudentFromAssessment,
   getGroupsByAssessmentId,
+  deleteAllGroupsByAssessmentId,
   getScoringComponentsByAssessmentId,
   studentJoinAssessment,
   getJoinedGroup,

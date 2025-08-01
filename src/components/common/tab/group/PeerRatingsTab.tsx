@@ -1,6 +1,7 @@
 import { api } from '@/api'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
+import { AssessmentTabs } from '@/routes/instructor/assessment/$assessmentId'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
@@ -43,6 +44,10 @@ const PeerRatingsTab = ({
     )
   }
 
+  const backToScoringComponentTab = () => {
+    router.history.push(`/instructor/assessment/${assessmentId}?tab=${AssessmentTabs.ScoringComponents}`)
+  }
+
   return (
     <div>
       <div className="flex justify-between mb-6">
@@ -55,6 +60,7 @@ const PeerRatingsTab = ({
               title="No Scoring Component Yet"
               description1="It looks like you haven't created any scoring components."
               icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
+              action={<Button onClick={backToScoringComponentTab}>Create Scoring Component</Button>}
             />
           ) : (
             data.map((scoringComponent) => {

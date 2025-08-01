@@ -93,18 +93,31 @@ function RouteComponent() {
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center md:mb-4">
           <div className="text-xl font-bold md:text-3xl">Members</div>
-          <AddMemberDialog
-            triggerButton={
-              <Button>
-                <Plus />
-                Add
-              </Button>
-            }
-            assessmentId={assessmentId}
-            groupId={groupId}
-            members={memberData}
-            canEdit={assessmentData?.canEdit ?? false}
-          />
+          <div className="flex gap-2">
+            <RemoveAllMemberDialog
+              triggerButton={
+                <Button
+                  variant="destructive"
+                  disabled={assessmentData?.canEdit ? false : true}
+                >
+                  <span>Remove All</span>
+                </Button>
+              }
+              groupId={groupId}
+            />
+            <AddMemberDialog
+              triggerButton={
+                <Button>
+                  <Plus />
+                  Add
+                </Button>
+              }
+              assessmentId={assessmentId}
+              groupId={groupId}
+              members={memberData}
+              canEdit={assessmentData?.canEdit ?? false}
+            />
+          </div>
         </div>
         <SuspenseArea loading={isLoadingMember || isLoadingAssessment}>
           {memberData.length == 0 ? (
@@ -143,6 +156,41 @@ function RouteComponent() {
         </SuspenseArea>
       </div>
     </DashboardLayout>
+  )
+}
+
+const RemoveAllMemberDialog = ({
+  triggerButton,
+  groupId,
+}: {
+  triggerButton: React.ReactNode
+  groupId: Group['groupId']
+}) => {
+  return (
+    <ConfirmDeleteDialog
+      triggerButton={triggerButton}
+      data={{ groupId }}
+      api={api.group.deleteAllGroupMembers}
+      title="Remove all members"
+      onSuccessMessage="Members removed successfully."
+      onErrorMessage="Failed to remove members."
+      refetchKeys={['getMembersByGroupId', groupId]}
+      content={
+        <div className="space-y-4 text-sm text-muted-foreground">
+          <div className="mt-1 text-sm">Deleting members will also remove all associated information, including:</div>
+
+          <div className="rounded-xl border border-gray-200 bg-muted p-5">
+            <ul className="list-inside list-disc space-y-1 text-sm">
+              <li>Student marks</li>
+              <li>Student's peer ratings</li>
+            </ul>
+          </div>
+          <div className="mt-4 text-sm text-muted-foreground">
+            This action cannot be undone. Please make sure you've backed up any important data before continuing.
+          </div>
+        </div>
+      }
+    />
   )
 }
 

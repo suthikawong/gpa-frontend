@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 import React from 'react'
 
-interface IEmptyState {
+interface EmptyStateProps {
   title: string
   description1?: string
   description2?: string
@@ -10,7 +10,7 @@ interface IEmptyState {
   action?: React.ReactNode
 }
 
-const EmptyState = ({ title, description1, description2, icon, action, className = '' }: IEmptyState) => {
+const EmptyState = ({ title, description1, description2, icon, action, className = '' }: EmptyStateProps) => {
   return (
     <div className={cn('flex flex-col items-center', className)}>
       {icon}

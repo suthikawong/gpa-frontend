@@ -1,6 +1,7 @@
 import { api } from '@/api'
 import { Breadcrumbs } from '@/components/common/Breadcrumbs'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
+import CopyButton from '@/components/common/CopyButton'
 import GroupDialog from '@/components/common/dialog/GroupDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import PeerRatingsTab from '@/components/common/tab/group/PeerRatingsTab'
@@ -18,8 +19,10 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { Assessment, Group } from 'gpa-backend/src/drizzle/schema'
 import { GetGroupByIdResponse } from 'gpa-backend/src/group/dto/group.response'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, UsersRound } from 'lucide-react'
 import { useEffect } from 'react'
+import { z } from 'zod'
+import { AssessmentTabs } from '../..'
 
 export const Route = createFileRoute('/instructor/assessment/$assessmentId/group/$groupId/')({
   component: RouteComponent,
@@ -40,10 +43,20 @@ export const Route = createFileRoute('/instructor/assessment/$assessmentId/group
       })
     }
   },
+  validateSearch: z.object({
+    tab: z.coerce.string().optional(),
+  }),
 })
+
+export const GroupTabs = {
+  Scores: 'scores',
+  PeerRatings: 'peer-ratings',
+}
 
 function RouteComponent() {
   const params = Route.useParams()
+  const search = Route.useSearch()
+  const router = useRouter()
   const assessmentId = parseInt(params.assessmentId)
   const groupId = parseInt(params.groupId)
 
@@ -63,6 +76,10 @@ function RouteComponent() {
       toast.error('Something went wrong. Please try again.')
     }
   }, [error])
+
+  const onClickTab = (tab: (typeof GroupTabs)[keyof typeof GroupTabs]) => {
+    router.history.push(`/instructor/assessment/${assessmentId}/group/${groupId}?tab=${tab}`)
+  }
 
   return (
     <DashboardLayout className="gap-4">
@@ -87,26 +104,37 @@ function RouteComponent() {
               <GroupCard data={data} />
             </div>
             <Tabs
-              defaultValue="scores"
+              defaultValue={GroupTabs.Scores}
+              value={search.tab}
               className="flex flex-col flex-grow"
             >
               <ScrollArea>
                 <div className="w-full relative">
                   <TabsList>
-                    <TabsTrigger value="scores">Scores</TabsTrigger>
-                    <TabsTrigger value="peer-ratings">Peer Ratings</TabsTrigger>
+                    <TabsTrigger
+                      value={GroupTabs.Scores}
+                      onClick={() => onClickTab(GroupTabs.Scores)}
+                    >
+                      Scores
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value={GroupTabs.PeerRatings}
+                      onClick={() => onClickTab(GroupTabs.PeerRatings)}
+                    >
+                      Peer Ratings
+                    </TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsScrollBar />
               </ScrollArea>
               <TabsContent
-                value="scores"
+                value={GroupTabs.Scores}
                 className="flex flex-col flex-grow"
               >
                 <ScoresTab groupId={groupId} />
               </TabsContent>
               <TabsContent
-                value="peer-ratings"
+                value={GroupTabs.PeerRatings}
                 className="flex flex-col flex-grow"
               >
                 <PeerRatingsTab
@@ -135,18 +163,35 @@ const GroupCard = ({ data }: { data: GetGroupByIdResponse }) => {
       <CardContent className="flex-col">
         <CardTitle className="text-lg md:text-2xl md:mb-1">{data.groupName}</CardTitle>
         <div className="flex justify-between my-2 md:mb-0">
-          <div className="flex gap-x-2">
-            <div className="text-muted-foreground text-sm">Group Code:</div>
+          <div className="flex flex-col gap-y-2">
+            <div className="flex gap-2">
+              <div className="text-muted-foreground text-sm">Group Code:</div>
+              <Badge
+                variant="secondary"
+                className="rounded-sm h-fit"
+                asChild
+              >
+                <div>{data.groupCode}</div>
+              </Badge>
+              <Badge
+                variant="secondary"
+                className="rounded-sm cursor-pointer h-fit p-1"
+              >
+                <CopyButton value={data.groupCode} />
+              </Badge>
+            </div>
             <Badge
-              variant="secondary"
-              className="rounded-sm h-fit"
+              className="rounded-sm h-fit bg-muted text-muted-foreground"
               asChild
             >
-              <div>{data.groupCode}</div>
+              <div>
+                <UsersRound className="text-primary size-[14px]! fill-primary/80 stroke-primary/80" />
+                <div className="ml-1 text-sm">{data.memberCount} Students</div>
+              </div>
             </Badge>
           </div>
-          <div className="gap-2 hidden md:flex">
-            <Button onClick={onClickViewMembers}>View Members</Button>
+          <div className="gap-2 hidden md:flex md:items-end">
+            <Button onClick={onClickViewMembers}>Edit Members</Button>
             <GroupDialog
               data={data}
               triggerButton={
@@ -173,7 +218,7 @@ const GroupCard = ({ data }: { data: GetGroupByIdResponse }) => {
         </div>
         <Separator className="md:hidden" />
         <div className="mt-4 flex gap-2 justify-end md:hidden">
-          <Button onClick={onClickViewMembers}>View Members</Button>
+          <Button onClick={onClickViewMembers}>Edit Members</Button>
           <GroupDialog
             data={data}
             triggerButton={
@@ -220,7 +265,7 @@ const DeleteGroupDialog = ({
       onSuccessMessage="Group deleted successfully."
       onErrorMessage="Failed to delete group."
       refetchKeys={['getInstructorAssessments']}
-      redirectTo={`/instructor/assessment/${assessmentId}`}
+      redirectTo={`/instructor/assessment/${assessmentId}?tab=${AssessmentTabs.Groups}`}
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">

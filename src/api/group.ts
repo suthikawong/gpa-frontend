@@ -4,6 +4,7 @@ import {
   CalculateScoreByWebavaliaRequest,
   CreateGroupRequest,
   CreateRandomGroupsRequest,
+  DeleteAllGroupMembersRequest,
   DeleteGroupMemberRequest,
   DeleteGroupRequest,
   GetGroupByIdRequest,
@@ -20,6 +21,7 @@ import {
   CalculateScoreByWebavaliaResponse,
   CreateGroupResponse,
   CreateRandomGroupsResponse,
+  DeleteAllGroupMembersResponse,
   DeleteGroupMemberResponse,
   DeleteGroupResponse,
   GetGroupByIdResponse,
@@ -99,6 +101,13 @@ const deleteGroupMember = async ({
   return response.data
 }
 
+const deleteAllGroupMembers = async ({
+  groupId,
+}: DeleteAllGroupMembersRequest): Promise<AppResponse<DeleteAllGroupMembersResponse>> => {
+  const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/group/${groupId}/member`)
+  return response.data
+}
+
 const getScores = async ({ groupId }: GetScoresRequest): Promise<AppResponse<GetScoresResponse>> => {
   const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/group/${groupId}/score`)
   return response.data
@@ -144,6 +153,7 @@ export const group = {
   getMembersByGroupId,
   addGroupMember,
   deleteGroupMember,
+  deleteAllGroupMembers,
   getScores,
   upsertScore,
   joinGroup,
