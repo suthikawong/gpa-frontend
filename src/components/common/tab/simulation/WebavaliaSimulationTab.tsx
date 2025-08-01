@@ -82,7 +82,7 @@ const WebavaliaSimulationTab = ({ scrollToBottom }: WebavaliaSimulationTabProps)
     if (!valid) return
     setLoading(true)
     setErrorMatrix(null)
-    mutation.mutate({ ...payload, groupProductScore: payload.groupScore })
+    mutation.mutate({ ...payload, groupGrade: payload.groupScore })
   }
 
   const validatePeerMatrix = (values: (number | undefined)[][]) => {
@@ -90,7 +90,7 @@ const WebavaliaSimulationTab = ({ scrollToBottom }: WebavaliaSimulationTabProps)
       let sum = 0
       for (let j = 0; j < values.length; j++) {
         if (values[j][i] !== undefined && values[j][i]! % 5 !== 0) {
-          setErrorMatrix('Voting must be divisible by 5.')
+          setErrorMatrix('Votings must be divisible by 5.')
           return false
         }
         sum += values[j][i] ?? 0
@@ -250,17 +250,13 @@ const ResultCard = ({ result }: { result: CalcualteScoresByWebavaliaResponse }) 
           <TableHeader>
             <TableRow>
               <TableHead>Student</TableHead>
-              {/* <TableHead>Rating</TableHead>
-              <TableHead>Contribution</TableHead> */}
               <TableHead className="text-right">Score</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {result.studentScores?.map((item, i) => (
+            {result.studentGrades?.map((item, i) => (
               <TableRow key={i}>
                 <TableCell>{item?.student ?? '-'}</TableCell>
-                {/* <TableCell>{item?.rating ?? '-'}</TableCell>
-                <TableCell>{item?.contribution ?? '-'}</TableCell> */}
                 <TableCell className="text-right">{item?.score ?? '-'}</TableCell>
               </TableRow>
             ))}
@@ -268,8 +264,6 @@ const ResultCard = ({ result }: { result: CalcualteScoresByWebavaliaResponse }) 
           <TableFooter>
             <TableRow>
               <TableCell>Mean</TableCell>
-              {/* <TableCell>{result?.mean?.rating ?? '-'}</TableCell>
-              <TableCell>{result?.mean?.contribution ?? '-'}</TableCell> */}
               <TableCell className="text-right">{result?.mean?.score ?? '-'}</TableCell>
             </TableRow>
           </TableFooter>
