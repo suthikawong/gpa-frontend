@@ -152,8 +152,6 @@ const ModelTab = ({
         polishingFactor: 0.001,
         peerRatingImpact: 1,
         groupSpread: 0.5,
-        peerRatingWeight: 0.5,
-        selfRatingWeight: 0.5,
       }
       setFormValues(values)
     } else if (selectedModel === model.WebAVALIA) {
