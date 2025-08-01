@@ -1,6 +1,7 @@
 import { api } from '@/api'
 import { Breadcrumbs } from '@/components/common/Breadcrumbs'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
+import CopyButton from '@/components/common/CopyButton'
 import AssessmentDialog from '@/components/common/dialog/AssessmentDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import GroupsTab from '@/components/common/tab/assessment/GroupsTab'
@@ -221,15 +222,23 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
           </Badge>
         </div>
         <div className="flex justify-between my-4 md:mb-0">
-          <div className="flex gap-x-2">
-            <div className="text-muted-foreground text-sm">Assessment Code:</div>
-            <Badge
-              variant="secondary"
-              className="rounded-sm h-fit"
-              asChild
-            >
-              <div>{data.assessmentCode}</div>
-            </Badge>
+          <div className="flex flex-col gap-y-2">
+            <div className="flex gap-2">
+              <div className="text-muted-foreground text-sm">Assessment Code:</div>
+              <Badge
+                variant="secondary"
+                className="rounded-sm h-fit"
+                asChild
+              >
+                <div>{data.assessmentCode}</div>
+              </Badge>
+              <Badge
+                variant="secondary"
+                className="rounded-sm cursor-pointer h-fit p-1"
+              >
+                <CopyButton value={data.assessmentCode} />
+              </Badge>
+            </div>
           </div>
           <div className="hidden gap-2 md:flex">
             <Button

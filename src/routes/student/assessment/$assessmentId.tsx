@@ -1,6 +1,7 @@
 import { api } from '@/api'
 import AlertDialog from '@/components/common/AlertDialog'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
+import CopyButton from '@/components/common/CopyButton'
 import JoinGroupDialog from '@/components/common/dialog/JoinGroupDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
@@ -211,15 +212,23 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
           </div>
         </div>
         <div className="flex justify-between my-4 md:mb-0">
-          <div className="flex gap-x-2">
-            <div className="text-muted-foreground text-sm">Assessment Code:</div>
-            <Badge
-              variant="secondary"
-              className="rounded-sm h-fit"
-              asChild
-            >
-              <div>{data.assessmentCode}</div>
-            </Badge>
+          <div className="flex flex-col gap-y-2">
+            <div className="flex gap-2">
+              <div className="text-muted-foreground text-sm">Assessment Code:</div>
+              <Badge
+                variant="secondary"
+                className="rounded-sm h-fit"
+                asChild
+              >
+                <div>{data.assessmentCode}</div>
+              </Badge>
+              <Badge
+                variant="secondary"
+                className="rounded-sm cursor-pointer h-fit p-1"
+              >
+                <CopyButton value={data.assessmentCode} />
+              </Badge>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -292,15 +301,23 @@ const MyGroupCard = ({
           </div>
         </div>
         {groupData?.groupId && (
-          <div className="flex gap-x-2">
-            <div className="text-muted-foreground text-sm">Group Code:</div>
-            <Badge
-              variant="secondary"
-              className="rounded-sm h-fit"
-              asChild
-            >
-              <div>{groupData?.groupCode ?? '-'}</div>
-            </Badge>
+          <div className="flex flex-col gap-y-2">
+            <div className="flex gap-2">
+              <div className="text-muted-foreground text-sm">Group Code:</div>
+              <Badge
+                variant="secondary"
+                className="rounded-sm h-fit"
+                asChild
+              >
+                <div>{groupData.groupCode}</div>
+              </Badge>
+              <Badge
+                variant="secondary"
+                className="rounded-sm cursor-pointer h-fit p-1"
+              >
+                <CopyButton value={groupData.groupCode} />
+              </Badge>
+            </div>
           </div>
         )}
         {groupData && <Separator className="my-4" />}
