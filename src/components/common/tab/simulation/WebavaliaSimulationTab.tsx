@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
-import { Calculator, ChartSpline, CircleMinus, CirclePlus, RotateCw, SettingsIcon } from 'lucide-react'
+import { Calculator, ChartSpline, CircleMinus, CirclePlus, RotateCw, SettingsIcon, UsersRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
@@ -41,10 +41,15 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>
 
-const WebavaliaSimulationTab = () => {
+interface WebavaliaSimulationTabProps {
+  scrollToBottom: () => void
+}
+
+const WebavaliaSimulationTab = ({ scrollToBottom }: WebavaliaSimulationTabProps) => {
   const [groupSize, setGroupSize] = useState(5)
   const [result, setResult] = useState<CalcualteScoresByWebavaliaResponse | null>(null)
   const [errorMatrix, setErrorMatrix] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -54,19 +59,28 @@ const WebavaliaSimulationTab = () => {
     },
   })
 
+  useEffect(() => {
+    if (result) scrollToBottom()
+  }, [result])
+
   const mutation = useMutation({
     mutationFn: api.simulation.calcualteScoresByWebAvalia,
     onSuccess: (res) => {
-      setResult(res.data)
+      setTimeout(() => {
+        setResult(res.data)
+        setLoading(false)
+      }, 100)
     },
     onError: () => {
       toast.error('Something went wrong. Please try again.')
+      setLoading(false)
     },
   })
   const onSubmit = async (values: FormSchema) => {
     const payload = formSchema.parse(values)
     const valid = validatePeerMatrix(payload.peerMatrix)
     if (!valid) return
+    setLoading(true)
     setErrorMatrix(null)
     mutation.mutate({ ...payload, groupProductScore: payload.groupScore })
   }
@@ -75,6 +89,10 @@ const WebavaliaSimulationTab = () => {
     for (let i = 0; i < values.length; i++) {
       let sum = 0
       for (let j = 0; j < values.length; j++) {
+        if (values[j][i] !== undefined && values[j][i]! % 5 !== 0) {
+          setErrorMatrix('Voting must be divisible by 5.')
+          return false
+        }
         sum += values[j][i] ?? 0
       }
       if (sum !== 100) {
@@ -114,9 +132,9 @@ const WebavaliaSimulationTab = () => {
             <Button
               type="submit"
               onClick={form.handleSubmit(onSubmit)}
-              loading={mutation.isPending}
+              loading={loading}
             >
-              <Calculator />
+              {!loading && <Calculator />}
               Calculate scores
             </Button>
           </div>
@@ -188,13 +206,17 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
         </div>
 
         <div className="flex items-center gap-4 border-t mt-2" />
+        <div className="flex items-center gap-2 mb-8">
+          <UsersRound className="w-6 h-6 text-primary" />
+          <h2 className="font-semibold text-lg">Group</h2>
+        </div>
         <div className="grid md:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
           <FormField
             control={form.control}
             name="groupScore"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-semibold text-lg">Group score</FormLabel>
+                <FormLabel>Group score</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -380,7 +402,7 @@ const PeerMatrix = ({
                                       {...field}
                                       onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                       type="number"
-                                      step="0.1"
+                                      step="5"
                                       className={cn(
                                         'matrix-input size-15 text-center bg-white',
                                         i == j && 'bg-secondary'

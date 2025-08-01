@@ -10,8 +10,17 @@ import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { CalcualteScoresByQASSResponse } from 'gpa-backend/src/simulation/dto/simulation.response'
-import { Calculator, ChartSpline, CircleMinus, CirclePlus, RotateCw, SettingsIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import {
+  Calculator,
+  ChartSpline,
+  CircleMinus,
+  CirclePlus,
+  RotateCw,
+  SettingsIcon,
+  UsersRound,
+  Weight,
+} from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { QASSMode } from '../../../../../gpa-backend/src/utils/qass.model'
@@ -43,7 +52,7 @@ const formSchema = z.object({
     .max(1, { message: 'Group spread must be less than or equal 1' }),
   weights: z.array(
     z
-      .number({ required_error: 'Please enter a weight', invalid_type_error: 'Weight must be a number' })
+      .number({ required_error: 'Please enter a weight', invalid_type_error: 'Weight must be an integer' })
       .int()
       .min(0, { message: 'Weights must be greater than or equal 0' })
   ),
@@ -57,9 +66,15 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>
 
-const QassSimulationTab = () => {
+interface QassSimulationTabProps {
+  scrollToBottom: () => void
+}
+
+const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
+  const ref = useRef<HTMLDivElement | null>(null)
   const [groupSize, setGroupSize] = useState(5)
   const [result, setResult] = useState<CalcualteScoresByQASSResponse | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -68,19 +83,30 @@ const QassSimulationTab = () => {
       polishingFactor: undefined,
       peerRatingImpact: undefined,
       groupSpread: undefined,
+      weights: Array(groupSize).fill(1),
     },
   })
+
+  useEffect(() => {
+    if (result) scrollToBottom()
+  }, [result])
 
   const mutation = useMutation({
     mutationFn: api.simulation.calcualteScoresByQASS,
     onSuccess: (res) => {
-      setResult(res.data)
+      setTimeout(() => {
+        setResult(res.data)
+        setLoading(false)
+      }, 100)
     },
     onError: () => {
       toast.error('Something went wrong. Please try again.')
+      setLoading(false)
     },
   })
+
   const onSubmit = async (values: FormSchema) => {
+    setLoading(true)
     const payload = formSchema.parse(values)
     const enumMode =
       payload.mode === mode.Bijunction ? QASSMode.B : payload.mode === mode.Conjunction ? QASSMode.C : QASSMode.D
@@ -93,12 +119,15 @@ const QassSimulationTab = () => {
   }
 
   return (
-    <div className="space-y-10">
+    <div
+      ref={ref}
+      className="space-y-10"
+    >
       <Card className="flex gap-4 w-full shadow-none border-0">
         <CardHeader>
           <CardTitle className="text-xl flex gap-2 items-center">
             <SettingsIcon className="w-6 h-6 text-primary" />
-            Configuration
+            Model configuration
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col">
@@ -116,9 +145,9 @@ const QassSimulationTab = () => {
             <Button
               type="submit"
               onClick={form.handleSubmit(onSubmit)}
-              loading={mutation.isPending}
+              loading={loading}
             >
-              <Calculator />
+              {!loading && <Calculator />}
               Calculate scores
             </Button>
           </div>
@@ -133,6 +162,23 @@ export default QassSimulationTab
 
 const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormSchema>; groupSize: number }) => {
   const groupSizeList = [...Array(groupSize)]
+
+  const randomWeight = () => Math.floor(Math.random() * 6) // random number 0 - 5
+
+  const onClickRandomWeights = () => {
+    form.setValue(
+      'weights',
+      groupSizeList.map(() => randomWeight())
+    )
+  }
+
+  const setDefaultWeights = () => {
+    form.setValue('weights', Array(groupSize).fill(1))
+  }
+
+  useEffect(() => {
+    setDefaultWeights()
+  }, [groupSize])
 
   return (
     <Form {...form}>
@@ -201,6 +247,34 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="flex items-center gap-4 border-t mt-2" />
+
+        <div className="flex items-center gap-2 mb-8">
+          <UsersRound className="w-6 h-6 text-primary" />
+          <h2 className="font-semibold text-lg">Group</h2>
+        </div>
+        <div className="grid md:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
+          <FormField
+            control={form.control}
+            name="groupScore"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Group score</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    type="number"
+                    placeholder="Enter group score"
+                    step="0.1"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="groupSpread"
@@ -223,30 +297,10 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
         </div>
 
         <div className="flex items-center gap-4 border-t mt-2" />
-        <div className="grid md:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
-          <FormField
-            control={form.control}
-            name="groupScore"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-semibold text-lg">Group score</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                    type="number"
-                    placeholder="Enter group score"
-                    step="0.1"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className="flex items-center gap-2 mb-8">
+          <Weight className="w-6 h-6 text-primary" />
+          <h2 className="font-semibold text-lg">Student Weights</h2>
         </div>
-
-        <div className="flex items-center gap-4 border-t mt-2" />
-        <h2 className="font-semibold text-lg mb-8">Student Weights</h2>
         <div className="grid md:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
           {groupSizeList.map((_, i) => (
             <FormField
@@ -269,6 +323,23 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
               )}
             />
           ))}
+        </div>
+        <div className="flex gap-2 ml-auto">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-fit"
+            onClick={onClickRandomWeights}
+          >
+            Randomize
+          </Button>
+          <Button
+            type="button"
+            className="w-fit"
+            onClick={setDefaultWeights}
+          >
+            Default
+          </Button>
         </div>
       </form>
     </Form>

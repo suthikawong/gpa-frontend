@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
 import { Roles } from '@/config/app'
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { useRef } from 'react'
 
 export const Route = createFileRoute('/instructor/simulation')({
   component: RouteComponent,
@@ -28,12 +29,25 @@ export const Route = createFileRoute('/instructor/simulation')({
 })
 
 function RouteComponent() {
+  const ref = useRef<HTMLDivElement | null>(null)
+
+  const scrollToBottom = () => {
+    if (ref.current) {
+      window.scrollTo({
+        top: ref.current.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  }
   return (
     <DashboardLayout className="gap-4">
       <div className="flex justify-between items-center md:mb-4">
         <div className="text-xl font-bold md:text-3xl">Simulation</div>
       </div>
-      <div className="flex flex-col gap-8 flex-grow">
+      <div
+        ref={ref}
+        className="flex flex-col gap-8 flex-grow"
+      >
         <Tabs
           defaultValue="qass"
           className="flex flex-col flex-grow"
@@ -51,13 +65,13 @@ function RouteComponent() {
             value="qass"
             className="flex flex-col flex-grow"
           >
-            <QassSimulationTab />
+            <QassSimulationTab scrollToBottom={scrollToBottom} />
           </TabsContent>
           <TabsContent
             value="webavalia"
             className="flex flex-col flex-grow"
           >
-            <WebavaliaSimulationTab />
+            <WebavaliaSimulationTab scrollToBottom={scrollToBottom} />
           </TabsContent>
         </Tabs>
       </div>
