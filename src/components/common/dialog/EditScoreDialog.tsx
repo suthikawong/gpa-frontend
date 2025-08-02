@@ -26,6 +26,7 @@ import { Calculator, ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
+import { QASSMode } from '../../../../../gpa-backend/src/utils/qass.model'
 import { ErrorResponse } from '../../../../gpa-backend/src/app.response'
 import { GetAssessmentByIdResponse } from '../../../../gpa-backend/src/assessment/dto/assessment.response'
 import EmptyState from '../EmptyState'
@@ -395,7 +396,9 @@ const QassWeightForm = ({
   })
 
   const onSubmit = async (values: z.infer<typeof qassWeightSchema>) => {
-    mutation.mutate({ ...values, groupId, weights: values.studentWeights })
+    const enumMode =
+      values.mode === mode.Bijunction ? QASSMode.B : values.mode === mode.Conjunction ? QASSMode.C : QASSMode.D
+    mutation.mutate({ ...values, mode: enumMode, groupId, weights: values.studentWeights })
   }
 
   return (
