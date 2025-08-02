@@ -14,15 +14,14 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
-import { Roles } from '@/config/app'
+import { AssessmentTabs, GroupTabs, Roles } from '@/config/app'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { Assessment, Group } from 'gpa-backend/src/drizzle/schema'
 import { GetGroupByIdResponse } from 'gpa-backend/src/group/dto/group.response'
-import { Pencil, Trash2, UsersRound } from 'lucide-react'
+import { Trash2, UsersRound } from 'lucide-react'
 import { useEffect } from 'react'
 import { z } from 'zod'
-import { AssessmentTabs } from '../..'
 
 export const Route = createFileRoute('/instructor/assessment/$assessmentId/group/$groupId/')({
   component: RouteComponent,
@@ -47,11 +46,6 @@ export const Route = createFileRoute('/instructor/assessment/$assessmentId/group
     tab: z.coerce.string().optional(),
   }),
 })
-
-export const GroupTabs = {
-  Scores: 'scores',
-  PeerRatings: 'peer-ratings',
-}
 
 function RouteComponent() {
   const params = Route.useParams()
@@ -199,8 +193,7 @@ const GroupCard = ({ data }: { data: GetGroupByIdResponse }) => {
                   variant="outline"
                   className="w-22"
                 >
-                  <Pencil />
-                  Edit
+                  Rename
                 </Button>
               }
             />
@@ -226,8 +219,7 @@ const GroupCard = ({ data }: { data: GetGroupByIdResponse }) => {
                 variant="outline"
                 className="w-22"
               >
-                <Pencil />
-                Edit
+                Rename
               </Button>
             }
           />

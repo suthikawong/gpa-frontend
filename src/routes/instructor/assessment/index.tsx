@@ -8,13 +8,12 @@ import NoDocuments from '@/components/svg/NoDocuments'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
-import { Roles } from '@/config/app'
+import { AssessmentTabs, Roles } from '@/config/app'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { Plus } from 'lucide-react'
 import { useEffect } from 'react'
-import { AssessmentTabs } from './$assessmentId'
 
 export const Route = createFileRoute('/instructor/assessment/')({
   component: RouteComponent,

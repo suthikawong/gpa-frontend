@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/c
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'
-import { appPaths, Roles } from '@/config/app'
+import { appPaths, AssessmentTabs, Roles } from '@/config/app'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { AssessmentWithInstructor } from 'gpa-backend/src/assessment/dto/assessment.response'
@@ -48,13 +48,6 @@ export const Route = createFileRoute('/instructor/assessment/$assessmentId/')({
     tab: z.coerce.string().optional(),
   }),
 })
-
-export const AssessmentTabs = {
-  Students: 'students',
-  Groups: 'groups',
-  Model: 'model',
-  ScoringComponents: 'scoring-components',
-}
 
 function RouteComponent() {
   const params = Route.useParams()

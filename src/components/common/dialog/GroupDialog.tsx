@@ -244,7 +244,7 @@ const SingleGroupForm = ({
         className="space-y-4"
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl">{data ? 'Edit ' : 'Create '}group</DialogTitle>
+          <DialogTitle className="text-2xl">{data ? 'Rename ' : 'Create '}group</DialogTitle>
           <DialogDescription>Enter group details. Click {data ? 'save' : 'create'} when you're done.</DialogDescription>
         </DialogHeader>
         <div className="grid w-full items-center gap-4">

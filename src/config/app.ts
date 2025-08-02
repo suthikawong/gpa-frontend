@@ -51,6 +51,18 @@ export const studentMenuItems = [
   profileMenuItem,
 ]
 
+export const AssessmentTabs = {
+  Students: 'students',
+  Groups: 'groups',
+  Model: 'model',
+  ScoringComponents: 'scoring-components',
+}
+
+export const GroupTabs = {
+  Scores: 'scores',
+  PeerRatings: 'peer-ratings',
+}
+
 export enum Roles {
   Student = 1,
   Instructor = 2,

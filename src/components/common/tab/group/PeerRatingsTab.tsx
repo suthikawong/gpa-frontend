@@ -1,7 +1,7 @@
 import { api } from '@/api'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
-import { AssessmentTabs } from '@/routes/instructor/assessment/$assessmentId'
+import { AssessmentTabs } from '@/config/app'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
