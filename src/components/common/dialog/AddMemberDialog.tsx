@@ -21,6 +21,7 @@ import { GetGroupMembersResponse } from 'gpa-backend/src/group/dto/group.respons
 import { Check, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import ActionCard from '../ActionCard'
+import AlertDialog from '../AlertDialog'
 import EmptyState from '../EmptyState'
 import { PaginationControlled } from '../PaginationControlled'
 import SuspenseArea from '../SuspenseArea'
@@ -122,7 +123,7 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
       <DialogTrigger asChild>
         <div onClick={() => setOpen(true)}>{triggerButton}</div>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="lg:max-w-4xl">
         <DialogHeader className="space-y-1.5">
           <DialogTitle className="text-2xl font-semibold">Add Members</DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -171,9 +172,29 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
                   const isMember = memberUserIds.includes(student.userId)
                   const alreadyJoinedGroup = !!student.group
                   const actions = []
+                  const isPending = clickedStudentId === student.userId && addMemberMutation.isPending
 
                   if (alreadyJoinedGroup && !isMember) {
-                    actions.push(<div className="text-sm text-muted-foreground">Joined Other</div>)
+                    actions.push(
+                      <AlertDialog
+                        dialogType="info"
+                        triggerButton={
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={!canEdit}
+                            loading={isPending}
+                          >
+                            {!isPending && <Plus />}
+                            <span className="hidden sm:block">Add</span>
+                          </Button>
+                        }
+                        title="Confirm moving student"
+                        content={`This student has already joined "${student.group?.groupName ?? '-'}". Are you sure you want to remove this student from that group and add them to this group instead?`}
+                        confirmButtonText="Proceed"
+                        onConfirm={() => onClickAddMember(student.userId)}
+                      />
+                    )
                   } else {
                     actions.push(
                       <Button
@@ -181,13 +202,9 @@ const AddMemberDialog = ({ triggerButton, assessmentId, groupId, members, canEdi
                         variant="outline"
                         disabled={isMember || !canEdit}
                         onClick={() => onClickAddMember(student.userId)}
-                        loading={clickedStudentId === student.userId && addMemberMutation.isPending}
+                        loading={isPending}
                       >
-                        {isMember ? (
-                          <Check />
-                        ) : clickedStudentId === student.userId && addMemberMutation.isPending ? null : (
-                          <Plus />
-                        )}
+                        {isMember ? <Check /> : isPending ? null : <Plus />}
                         <span className="hidden sm:block">{isMember ? 'Added' : 'Add'}</span>
                       </Button>
                     )
