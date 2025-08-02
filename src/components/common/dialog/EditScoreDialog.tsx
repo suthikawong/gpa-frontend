@@ -396,6 +396,7 @@ const QassWeightForm = ({
   })
 
   const onSubmit = async (values: z.infer<typeof qassWeightSchema>) => {
+    // test commit
     const enumMode =
       values.mode === mode.Bijunction ? QASSMode.B : values.mode === mode.Conjunction ? QASSMode.C : QASSMode.D
     mutation.mutate({ ...values, mode: enumMode, groupId, weights: values.studentWeights })
