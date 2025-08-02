@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { mode } from '@/config/app'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
@@ -20,12 +21,6 @@ import toast from '../../toast'
 const model = {
   QASS: '1',
   WebAVALIA: '2',
-}
-
-const mode = {
-  Bijunction: 'B',
-  Conjunction: 'C',
-  Disjunction: 'D',
 }
 
 const baseSchema = z.object({

@@ -63,6 +63,12 @@ export const GroupTabs = {
   PeerRatings: 'peer-ratings',
 }
 
+export const mode = {
+  Bijunction: 'B',
+  Conjunction: 'C',
+  Disjunction: 'D',
+}
+
 export enum Roles {
   Student = 1,
   Instructor = 2,

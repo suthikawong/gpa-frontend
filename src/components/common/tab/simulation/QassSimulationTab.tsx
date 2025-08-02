@@ -6,6 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { mode } from '@/config/app'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -24,12 +25,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { QASSMode } from '../../../../../gpa-backend/src/utils/qass.model'
-
-const mode = {
-  Bijunction: 'B',
-  Conjunction: 'C',
-  Disjunction: 'D',
-}
 
 const formSchema = z.object({
   mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
@@ -214,7 +209,7 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
             name="polishingFactor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Polishing Factor</FormLabel>
+                <FormLabel>Polishing factor</FormLabel>
                 <FormControl>
                   <Input
                     {...field}

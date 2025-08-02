@@ -13,7 +13,9 @@ import {
 } from '@/components/ui/dialog'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import { mode } from '@/config/app'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
@@ -72,6 +74,29 @@ const formSchema = z.object({
 type FormType = z.infer<typeof formSchema>
 
 const qassWeightSchema = z.object({
+  mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
+  polishingFactor: z
+    .number({ required_error: 'Polishing factor is required', invalid_type_error: 'Polishing factor must be a number' })
+    .finite()
+    .gt(0, { message: 'Polishing factor must be greater than 0' })
+    .lt(0.5, { message: 'Polishing factor must be less than 0.5' }),
+  peerRatingImpact: z
+    .number({
+      required_error: 'Peer rating impact is required',
+      invalid_type_error: 'Peer rating impact must be a number',
+    })
+    .finite()
+    .min(0, { message: 'Peer rating impact must be greater than or equal 0' }),
+  groupSpread: z
+    .number({ required_error: 'Group spread is required', invalid_type_error: 'Group spread must be a number' })
+    .finite()
+    .min(0, { message: 'Group spread must be greater than or equal 0' })
+    .max(1, { message: 'Group spread must be less than or equal 1' }),
+  groupScore: z
+    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
+    .finite()
+    .gt(0, { message: 'Group score must be greater than 0' })
+    .lt(1, { message: 'Group score must be less than 1' }),
   studentWeights: z.array(
     z.object({
       userId: z.number().int(),
@@ -84,6 +109,11 @@ const qassWeightSchema = z.object({
 })
 
 const webavaliaWeightSchema = z.object({
+  groupScore: z
+    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
+    .finite()
+    .gt(0, { message: 'Group score must be greater than 0' })
+    .lt(1, { message: 'Group score must be less than 1' }),
   selfWeight: z
     .number({
       required_error: 'Self-assessment weight is required.',
@@ -148,13 +178,14 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
               setOpen={setOpen}
               assessmentData={assessmentData}
             />
-          ) : (
+          ) : assessmentData?.modelId === model.QASS ? (
             <QassWeightForm
               data={data}
               groupId={groupId}
               setOpen={setOpen}
+              assessmentData={assessmentData}
             />
-          )
+          ) : null
         ) : (
           <EditScoreForm
             data={data}
@@ -327,13 +358,25 @@ const QassWeightForm = ({
   data,
   groupId,
   setOpen,
+  assessmentData,
 }: {
   data: GetScoresResponse | undefined
   groupId: number
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
+  assessmentData: GetAssessmentByIdResponse
 }) => {
   const queryClient = useQueryClient()
-  const defaultValues = { studentWeights: data?.studentScores.map((item) => ({ userId: item.userId, weight: 1 })) }
+  const modelConfigQASS = qassWeightSchema
+    .omit({ groupScore: true, studentWeights: true })
+    .parse(assessmentData.modelConfig)
+  const defaultValues = {
+    mode: modelConfigQASS.mode,
+    polishingFactor: modelConfigQASS.polishingFactor,
+    peerRatingImpact: modelConfigQASS.peerRatingImpact,
+    groupSpread: modelConfigQASS.groupSpread,
+    groupScore: data?.groupScore?.score,
+    studentWeights: data?.studentScores.map((item) => ({ userId: item.userId, weight: 1 })),
+  }
   const form = useForm<z.infer<typeof qassWeightSchema>>({
     resolver: zodResolver(qassWeightSchema),
     defaultValues,
@@ -352,7 +395,7 @@ const QassWeightForm = ({
   })
 
   const onSubmit = async (values: z.infer<typeof qassWeightSchema>) => {
-    mutation.mutate({ groupId, weights: values.studentWeights })
+    mutation.mutate({ ...values, groupId, weights: values.studentWeights })
   }
 
   return (
@@ -362,13 +405,126 @@ const QassWeightForm = ({
         className="space-y-4"
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl">Review student weights</DialogTitle>
+          <DialogTitle className="text-2xl">Review Parameters for Score Calculation</DialogTitle>
           <DialogDescription>
-            Review student weights that will be used for calculation. Click calculate when you're done.
+            These parameters will be used to calculate the final scores, along with the group score and peer evaluations
+            given by students. Please review these parameters carefully before clicking the Calculate button.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid w-full items-center gap-4">
+          <FormField
+            control={form.control}
+            name="mode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mode</FormLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select mode" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value={mode.Bijunction}>Bijunction</SelectItem>
+                    <SelectItem value={mode.Conjunction}>Conjuction</SelectItem>
+                    <SelectItem value={mode.Disjunction}>Disjunction</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="polishingFactor"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Polishing factor</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    type="number"
+                    placeholder="Enter polishing factor"
+                    step="0.1"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="peerRatingImpact"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Peer rating impact</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    type="number"
+                    placeholder="Enter peer rating impact"
+                    step="0.1"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="groupSpread"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Group spread</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    type="number"
+                    placeholder="Enter group spread"
+                    step="0.1"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="groupScore"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Group score</FormLabel>
+                <div className="space-y-2">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      type="number"
+                      placeholder="Enter group score"
+                      step="0.1"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This group score will replace the previous one. Please review it before proceeding with the
+                    calculation.
+                  </FormDescription>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex items-center gap-4 border-t mt-2" />
+          <div className="flex items-center gap-2">
+            <h2 className="font-semibold text-lg">Student Weights</h2>
+          </div>
           {data?.studentScores.map((student, i) => (
             <div key={i}>
               <FormField
@@ -451,7 +607,11 @@ const WebavaliaWeightForm = ({
   const modelConfig = assessmentData?.modelConfig as { selfWeight: number }
   const defaultSelfWeight = modelConfig.selfWeight
   const groupSize = data?.studentScores.length ?? 0
-  const defaultValues = { selfWeight: defaultSelfWeight, peerWeight: (1 - defaultSelfWeight) / (groupSize - 1) }
+  const defaultValues = {
+    groupScore: data?.groupScore?.score,
+    selfWeight: defaultSelfWeight,
+    peerWeight: (1 - defaultSelfWeight) / (groupSize - 1),
+  }
   const form = useForm<z.infer<typeof webavaliaWeightSchema>>({
     resolver: zodResolver(webavaliaWeightSchema),
     defaultValues,
@@ -496,13 +656,44 @@ const WebavaliaWeightForm = ({
         className="space-y-4"
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl">Review student weights</DialogTitle>
+          <DialogTitle className="text-2xl">Review Parameters for Score Calculation</DialogTitle>
           <DialogDescription>
-            Review student weights that will be used for calculation. Click calculate when you're done.
+            These parameters will be used to calculate the final scores, along with the group score and peer evaluations
+            given by students. Please review these parameters carefully before clicking the Calculate button.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid w-full items-center gap-4">
+          <FormField
+            control={form.control}
+            name="groupScore"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Group score</FormLabel>
+                <div className="space-y-2">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      type="number"
+                      placeholder="Enter group score"
+                      step="0.1"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This group score will replace the previous one. Please review it before proceeding with the
+                    calculation.
+                  </FormDescription>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex items-center gap-4 border-t mt-2" />
+          <div className="flex items-center gap-2">
+            <h2 className="font-semibold text-lg">Student Weights</h2>
+          </div>
           <FormField
             control={form.control}
             name="selfWeight"
