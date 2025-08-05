@@ -31,12 +31,12 @@ export const profileMenuItem = {
 export const instructorMenuItems = [
   {
     name: 'Peer Assessments',
-    icon: 'LayoutDashboard',
+    icon: 'ListChecks',
     href: appPaths.instructor.assessment,
   },
   {
     name: 'Simulation',
-    icon: 'LayoutDashboard',
+    icon: 'FlaskConical',
     href: appPaths.instructor.simulation,
   },
   profileMenuItem,
@@ -45,7 +45,7 @@ export const instructorMenuItems = [
 export const studentMenuItems = [
   {
     name: 'Peer Assessments',
-    icon: 'LayoutDashboard',
+    icon: 'ListChecks',
     href: appPaths.student.assessment,
   },
   profileMenuItem,

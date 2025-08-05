@@ -30,12 +30,13 @@ const formSchema = z.object({
     })
     .finite()
     .min(0, { message: 'Peer assessment weight must be greater than or equal to 0' })
-    .max(1, { message: 'Peer assessment weight must be less than or equal to 1' }),
+    .max(1, { message: 'Peer assessment weight must be less than or equal to 1' })
+    .optional(),
   groupScore: z
     .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
     .finite()
-    .gt(0, { message: 'Group score must be greater than 0' })
-    .lt(1, { message: 'Group score must be less than 1' }),
+    .min(0, { message: 'Group score must be greater than or equal to 0' })
+    .max(20, { message: 'Group score must be less than or equal to 20' }),
   peerMatrix: z.array(z.array(z.union([z.number().int().min(0).max(100), z.nan()]).optional())),
 })
 
@@ -220,10 +221,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
                 <FormControl>
                   <Input
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    onChange={(e) => field.onChange(parseInt(e.target.value))}
                     type="number"
                     placeholder="Enter group score"
-                    step="0.1"
                   />
                 </FormControl>
                 <FormMessage />

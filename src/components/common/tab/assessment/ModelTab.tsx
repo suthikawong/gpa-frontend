@@ -48,8 +48,8 @@ const qassSchema = z.object({
   groupSpread: z
     .number({ required_error: 'Group spread is required.', invalid_type_error: 'Group spread must be a number.' })
     .finite()
-    .min(0, { message: 'Group spread must be greater than or equal to 0.' })
-    .max(1, { message: 'Group spread must be less than or equal to 1.' }),
+    .gt(0, { message: 'Group spread must be greater than 0' })
+    .lt(1, { message: 'Group spread must be less than 1' }),
 })
 
 const webavaliaSchema = z.object({

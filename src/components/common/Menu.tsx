@@ -5,7 +5,7 @@ import { appPaths, instructorMenuItems, profileMenuItem, Roles, studentMenuItems
 import { useAuth } from '@/hooks/auth'
 import { cn } from '@/lib/utils'
 import { Link, useRouter } from '@tanstack/react-router'
-import { LayoutDashboard, LogOut, Menu as LucideMenu, UserRound } from 'lucide-react'
+import { FlaskConical, ListChecks, LogOut, Menu as LucideMenu, UserRound } from 'lucide-react'
 import React, { useState } from 'react'
 import { Avatar, AvatarFallback } from '../ui/avatar'
 import { Label } from '../ui/label'
@@ -20,7 +20,8 @@ interface MenuItem {
 }
 
 const iconMap = {
-  LayoutDashboard: LayoutDashboard,
+  ListChecks: ListChecks,
+  FlaskConical: FlaskConical,
   UserRound: UserRound,
   LogOut: LogOut,
 }
@@ -149,13 +150,13 @@ const MenuItem = ({
   const IconComponent = iconMap[data.icon as keyof typeof iconMap]
 
   return (
-    <div className={cn('flex items-center gap-3 group', isPopover && 'p-2 rounded-md hover:bg-primary/10')}>
+    <div className={cn('flex items-center gap-3 md:gap-2 group', isPopover && 'p-2 rounded-md hover:bg-primary/10')}>
       {IconComponent && (
         <IconComponent
           size={18}
           className={cn(
             'md:group-hover:text-primary',
-            !isPopover && 'md:hidden',
+            // !isPopover && 'md:hidden',
             isActive ? 'text-primary' : 'text-muted-foreground',
             className
           )}

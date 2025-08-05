@@ -26,9 +26,9 @@ import { Calculator, ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
-import { QASSMode } from '../../../../gpa-backend/src/utils/qass.model'
 import { ErrorResponse } from '../../../../gpa-backend/src/app.response'
 import { GetAssessmentByIdResponse } from '../../../../gpa-backend/src/assessment/dto/assessment.response'
+import { QASSMode } from '../../../../gpa-backend/src/utils/qass.model'
 import EmptyState from '../EmptyState'
 import toast from '../toast'
 
@@ -91,8 +91,8 @@ const qassWeightSchema = z.object({
   groupSpread: z
     .number({ required_error: 'Group spread is required', invalid_type_error: 'Group spread must be a number' })
     .finite()
-    .min(0, { message: 'Group spread must be greater than or equal 0' })
-    .max(1, { message: 'Group spread must be less than or equal 1' }),
+    .gt(0, { message: 'Group spread must be greater than 0' })
+    .lt(1, { message: 'Group spread must be less than 1' }),
   groupScore: z
     .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
     .finite()
@@ -649,7 +649,7 @@ const WebavaliaWeightForm = ({
   })
 
   const onSubmit = async (values: z.infer<typeof webavaliaWeightSchema>) => {
-    mutation.mutate({ ...values, groupId })
+    mutation.mutate({ ...values, groupId, groupGrade: values.groupScore })
   }
 
   return (

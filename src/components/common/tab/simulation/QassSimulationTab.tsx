@@ -43,8 +43,8 @@ const formSchema = z.object({
   groupSpread: z
     .number({ required_error: 'Group spread is required', invalid_type_error: 'Group spread must be a number' })
     .finite()
-    .min(0, { message: 'Group spread must be greater than or equal 0' })
-    .max(1, { message: 'Group spread must be less than or equal 1' }),
+    .gt(0, { message: 'Group spread must be greater than 0' })
+    .lt(1, { message: 'Group spread must be less than 1' }),
   weights: z.array(
     z
       .number({ required_error: 'Please enter a weight', invalid_type_error: 'Weight must be an integer' })
