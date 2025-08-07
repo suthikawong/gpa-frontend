@@ -5,7 +5,7 @@ import { ChartContainer } from '@/components/ui/chart'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { Group } from 'gpa-backend/src/drizzle/schema'
+import { Assessment, Group } from 'gpa-backend/src/drizzle/schema'
 import { StudentScoreItem } from 'gpa-backend/src/group/dto/group.response'
 import { Pencil } from 'lucide-react'
 import { useEffect } from 'react'
@@ -14,7 +14,18 @@ import EditScoreDialog from '../../dialog/EditScoreDialog'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
 
-const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
+const model = {
+  QASS: 1,
+  WebAVALIA: 2,
+}
+
+const ScoresTab = ({
+  assessmentId,
+  groupId,
+}: {
+  assessmentId: Assessment['assessmentId']
+  groupId: Group['groupId']
+}) => {
   const {
     data: res,
     isLoading,
@@ -26,28 +37,45 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
 
   const data = res?.data
 
+  const {
+    data: assessmentRes,
+    isLoading: isLoadingAssessment,
+    error: errorAssessment,
+  } = useQuery({
+    queryKey: ['getAssessmentById', assessmentId],
+    queryFn: async () => await api.assessment.getAssessmentById({ assessmentId }),
+  })
+
+  const assessmentData = assessmentRes?.data ?? null
+  const isWebAvalia = assessmentData?.modelId === model.WebAVALIA
+
   useEffect(() => {
-    if (error) {
+    if (error || errorAssessment) {
       toast.error('Something went wrong. Please try again.')
     }
-  }, [error])
+  }, [error, errorAssessment])
 
-  const chartData = [
-    { groupScore: data?.groupScore?.score ? data.groupScore.score * 100 : '-', fill: 'var(--chart-2)' },
-  ]
+  const groupScore =
+    typeof data?.groupScore?.score === 'number'
+      ? isWebAvalia
+        ? data.groupScore.score
+        : data.groupScore.score * 100
+      : undefined
+
+  const chartData = [{ groupScore: groupScore ?? '-', fill: 'var(--chart-2)' }]
   const chartConfig = {
     groupScore: {
       label: 'Group Score',
     },
   }
 
-  const degree = (data?.groupScore?.score ?? 0) * 360
+  const degree = isWebAvalia ? ((data?.groupScore?.score ?? 0) / 20) * 360 : (data?.groupScore?.score ?? 0) * 360
   const offset = (360 - degree) / 2
 
   const groupScoreUpdatedDate = data?.groupScore?.updatedDate || data?.groupScore?.createdDate
 
   return (
-    <SuspenseArea loading={isLoading}>
+    <SuspenseArea loading={isLoading || isLoadingAssessment}>
       <div className="flex flex-col flex-grow gap-4">
         <EditScoreDialog
           groupId={groupId}
@@ -62,7 +90,9 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
         <div className="flex flex-col md:flex-row gap-4">
           <Card className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8 h-fit md:w-fit">
             <CardContent className="gap-0 px-4! sm:pl-8! md:pl-6! sm:pr-0!">
-              <CardTitle className="text-xl text-center sm:text-left">Group score</CardTitle>
+              <CardTitle className="text-xl text-center sm:text-left">
+                {isWebAvalia ? 'Group grade' : 'Group score'}
+              </CardTitle>
               <CardDescription>{`Last update: ${groupScoreUpdatedDate ? format(groupScoreUpdatedDate, 'PPP') : '-'}`}</CardDescription>
             </CardContent>
             <CardContent className="pl-4! sm:pr-8! md:pr-6! sm:pl-0!">
@@ -109,14 +139,14 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
                                 y={viewBox.cy}
                                 className="fill-foreground text-3xl font-bold"
                               >
-                                {chartData[0].groupScore}%
+                                {groupScore ? (isWebAvalia ? groupScore : `${groupScore.toFixed(0)}%`) : '-'}
                               </tspan>
                               <tspan
                                 x={viewBox.cx}
                                 y={(viewBox.cy || 0) + 24}
                                 className="fill-muted-foreground"
                               >
-                                Group Score
+                                {isWebAvalia ? 'Group grade' : 'Group score'}
                               </tspan>
                             </text>
                           )
@@ -134,7 +164,10 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
               <CardTitle className="text-2xl">Student scores</CardTitle>
             </CardHeader>
             <CardContent>
-              <StudentTable studentScores={data?.studentScores ?? []} />
+              <StudentTable
+                studentScores={data?.studentScores ?? []}
+                isWebAvalia={isWebAvalia}
+              />
             </CardContent>
           </Card>
         </div>
@@ -145,7 +178,13 @@ const ScoresTab = ({ groupId }: { groupId: Group['groupId'] }) => {
 
 export default ScoresTab
 
-const StudentTable = ({ studentScores }: { studentScores: Array<StudentScoreItem> }) => {
+const StudentTable = ({
+  studentScores,
+  isWebAvalia,
+}: {
+  studentScores: Array<StudentScoreItem>
+  isWebAvalia: boolean
+}) => {
   return (
     <Table className="flex-grow">
       {studentScores.length === 0 && (
@@ -162,7 +201,11 @@ const StudentTable = ({ studentScores }: { studentScores: Array<StudentScoreItem
         {studentScores.map((item) => {
           let score = '-'
           if (typeof item?.studentScore?.score === 'number') {
-            score = (item.studentScore.score * 100).toFixed(2) + '%'
+            if (isWebAvalia) {
+              score = item.studentScore.score.toFixed(2)
+            } else {
+              score = (item.studentScore.score * 100).toFixed(2) + '%'
+            }
           }
           return (
             <TableRow key={item.userId}>

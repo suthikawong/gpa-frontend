@@ -125,7 +125,10 @@ function RouteComponent() {
                 value={GroupTabs.Scores}
                 className="flex flex-col flex-grow"
               >
-                <ScoresTab groupId={groupId} />
+                <ScoresTab
+                  assessmentId={assessmentId}
+                  groupId={groupId}
+                />
               </TabsContent>
               <TabsContent
                 value={GroupTabs.PeerRatings}

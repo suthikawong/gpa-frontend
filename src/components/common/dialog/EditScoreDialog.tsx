@@ -48,12 +48,7 @@ const model = {
   WebAVALIA: 2,
 }
 
-const formSchema = z.object({
-  groupScore: z
-    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
-    .finite()
-    .gt(0, { message: 'Group score must be greater than 0' })
-    .lt(1, { message: 'Group score must be less than 1' }),
+const scoresSchema = z.object({
   studentScores: z.array(
     z.object({
       studentUserId: z.number(),
@@ -72,9 +67,37 @@ const formSchema = z.object({
   ),
 })
 
-type FormType = z.infer<typeof formSchema>
+const qassFormSchema = scoresSchema.extend({
+  groupScore: z
+    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
+    .finite()
+    .gt(0, { message: 'Group score must be greater than 0' })
+    .lt(1, { message: 'Group score must be less than 1' }),
+})
 
-const qassWeightSchema = z.object({
+const webavaliaFormSchema = scoresSchema.extend({
+  groupScore: z
+    .number({ required_error: 'Group grade is required', invalid_type_error: 'Group grade must be an integer' })
+    .int()
+    .min(0, { message: 'Group grade must be greater than or equal to 0' })
+    .max(20, { message: 'Group grade must be less than or equal to 20' }),
+})
+
+const dynamicFormSchemas = {
+  [model.QASS]: qassFormSchema,
+  [model.WebAVALIA]: webavaliaFormSchema,
+} as const
+
+type DynamicFormSchemaMap = typeof dynamicFormSchemas
+type DynamicFormSchemaKeys = keyof DynamicFormSchemaMap
+
+type FormSchemaByModel = {
+  [K in DynamicFormSchemaKeys]: z.infer<DynamicFormSchemaMap[K]>
+}
+
+type FormSchemaType = FormSchemaByModel[(typeof model)[keyof typeof model]]
+
+const qassReviewSchema = z.object({
   mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
   polishingFactor: z
     .number({ required_error: 'Polishing factor is required', invalid_type_error: 'Polishing factor must be a number' })
@@ -109,12 +132,12 @@ const qassWeightSchema = z.object({
   ),
 })
 
-const webavaliaWeightSchema = z.object({
-  groupScore: z
-    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
-    .finite()
-    .gt(0, { message: 'Group score must be greater than 0' })
-    .lt(1, { message: 'Group score must be less than 1' }),
+const webavaliaReviewSchema = z.object({
+  groupGrade: z
+    .number({ required_error: 'Group grade is required', invalid_type_error: 'Group grade must be an integer' })
+    .int()
+    .min(0, { message: 'Group grade must be greater than or equal to 0' })
+    .max(20, { message: 'Group grade must be less than or equal to 20' }),
   selfWeight: z
     .number({
       required_error: 'Self-assessment weight is required.',
@@ -187,14 +210,17 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
               assessmentData={assessmentData}
             />
           ) : null
-        ) : (
+        ) : assessmentData?.modelId ? (
           <EditScoreForm
             data={data}
             groupId={groupId}
             open={open}
+            modelId={assessmentData.modelId}
             setOpen={setOpen}
             setDialogState={setDialogState}
           />
+        ) : (
+          <div>No model selected</div>
         )}
       </DialogContent>
     </Dialog>
@@ -207,12 +233,14 @@ const EditScoreForm = ({
   data,
   groupId,
   open,
+  modelId,
   setOpen,
   setDialogState,
 }: {
   data: GetScoresResponse | undefined
   groupId: number
   open: boolean
+  modelId: number
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
   setDialogState: React.Dispatch<React.SetStateAction<DialogState>>
 }) => {
@@ -226,7 +254,14 @@ const EditScoreForm = ({
       remark: student?.studentScore?.remark ?? '',
     })),
   }
-  const form = useForm<FormType>({
+
+  const getSchemaByModelId = <T extends DynamicFormSchemaKeys>(modelId: number): DynamicFormSchemaMap[T] => {
+    return dynamicFormSchemas[modelId]
+  }
+
+  const formSchema = getSchemaByModelId(modelId)
+
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues,
   })
@@ -243,7 +278,7 @@ const EditScoreForm = ({
     },
   })
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormSchemaType) => {
     const studentPayload: {
       studentUserId: User['userId']
       score: StudentScore['score']
@@ -287,7 +322,9 @@ const EditScoreForm = ({
             name="groupScore"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg mb-2">Group [product] score</FormLabel>
+                <FormLabel className="text-lg mb-2">
+                  {modelId === model.WebAVALIA ? 'Group grade' : 'Group [product] score'}
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -367,7 +404,7 @@ const QassWeightForm = ({
   assessmentData: GetAssessmentByIdResponse
 }) => {
   const queryClient = useQueryClient()
-  const modelConfigQASS = qassWeightSchema
+  const modelConfigQASS = qassReviewSchema
     .omit({ groupScore: true, studentWeights: true })
     .parse(assessmentData.modelConfig)
   const defaultValues = {
@@ -378,8 +415,8 @@ const QassWeightForm = ({
     groupScore: data?.groupScore?.score,
     studentWeights: data?.studentScores.map((item) => ({ userId: item.userId, weight: 1 })),
   }
-  const form = useForm<z.infer<typeof qassWeightSchema>>({
-    resolver: zodResolver(qassWeightSchema),
+  const form = useForm<z.infer<typeof qassReviewSchema>>({
+    resolver: zodResolver(qassReviewSchema),
     defaultValues,
   })
 
@@ -395,7 +432,7 @@ const QassWeightForm = ({
     },
   })
 
-  const onSubmit = async (values: z.infer<typeof qassWeightSchema>) => {
+  const onSubmit = async (values: z.infer<typeof qassReviewSchema>) => {
     const enumMode =
       values.mode === mode.Bijunction ? QASSMode.B : values.mode === mode.Conjunction ? QASSMode.C : QASSMode.D
     mutation.mutate({ ...values, mode: enumMode, groupId, weights: values.studentWeights })
@@ -611,12 +648,12 @@ const WebavaliaWeightForm = ({
   const defaultSelfWeight = modelConfig.selfWeight
   const groupSize = data?.studentScores.length ?? 0
   const defaultValues = {
-    groupScore: data?.groupScore?.score,
+    groupGrade: data?.groupScore?.score,
     selfWeight: defaultSelfWeight,
     peerWeight: (1 - defaultSelfWeight) / (groupSize - 1),
   }
-  const form = useForm<z.infer<typeof webavaliaWeightSchema>>({
-    resolver: zodResolver(webavaliaWeightSchema),
+  const form = useForm<z.infer<typeof webavaliaReviewSchema>>({
+    resolver: zodResolver(webavaliaReviewSchema),
     defaultValues,
   })
 
@@ -648,8 +685,8 @@ const WebavaliaWeightForm = ({
     },
   })
 
-  const onSubmit = async (values: z.infer<typeof webavaliaWeightSchema>) => {
-    mutation.mutate({ ...values, groupId, groupGrade: values.groupScore })
+  const onSubmit = async (values: z.infer<typeof webavaliaReviewSchema>) => {
+    mutation.mutate({ ...values, groupId })
   }
 
   return (
@@ -669,22 +706,22 @@ const WebavaliaWeightForm = ({
         <div className="grid w-full items-center gap-4">
           <FormField
             control={form.control}
-            name="groupScore"
+            name="groupGrade"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Group score</FormLabel>
+                <FormLabel>Group grade</FormLabel>
                 <div className="space-y-2">
                   <FormControl>
                     <Input
                       {...field}
                       onChange={(e) => field.onChange(parseFloat(e.target.value))}
                       type="number"
-                      placeholder="Enter group score"
+                      placeholder="Enter group grade"
                       step="0.1"
                     />
                   </FormControl>
                   <FormDescription>
-                    This group score will replace the previous one. Please review it before proceeding with the
+                    This group grade will replace the previous one. Please review it before proceeding with the
                     calculation.
                   </FormDescription>
                 </div>
@@ -770,7 +807,7 @@ const StudentScoreCollapsible = ({
 }: {
   index: number
   studentScore: StudentScoreItem
-  form: UseFormReturn<FormType, any, FormType>
+  form: UseFormReturn<FormSchemaType, any, FormSchemaType>
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   return (
