@@ -29,30 +29,30 @@ import { QASSMode } from '../../../../../gpa-backend/src/utils/qass.model'
 const formSchema = z.object({
   mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
   polishingFactor: z
-    .number({ required_error: 'Polishing factor is required', invalid_type_error: 'Polishing factor must be a number' })
+    .number({ required_error: 'Polishing factor is required', invalid_type_error: 'Polishing factor is required' })
     .finite()
     .gt(0, { message: 'Polishing factor must be greater than 0' })
     .lt(0.5, { message: 'Polishing factor must be less than 0.5' }),
   peerRatingImpact: z
     .number({
       required_error: 'Peer rating impact is required',
-      invalid_type_error: 'Peer rating impact must be a number',
+      invalid_type_error: 'Peer rating impact is required',
     })
     .finite()
     .min(0, { message: 'Peer rating impact must be greater than or equal 0' }),
   groupSpread: z
-    .number({ required_error: 'Group spread is required', invalid_type_error: 'Group spread must be a number' })
+    .number({ required_error: 'Group spread is required', invalid_type_error: 'Group spread is required' })
     .finite()
     .gt(0, { message: 'Group spread must be greater than 0' })
     .lt(1, { message: 'Group spread must be less than 1' }),
   weights: z.array(
     z
-      .number({ required_error: 'Please enter a weight', invalid_type_error: 'Weight must be an integer' })
+      .number({ required_error: 'Student weight is required', invalid_type_error: 'Weight must be an integer' })
       .int()
       .min(0, { message: 'Weights must be greater than or equal 0' })
   ),
   groupScore: z
-    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
+    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score is required' })
     .finite()
     .gt(0, { message: 'Group score must be greater than 0' })
     .lt(1, { message: 'Group score must be less than 1' }),
@@ -213,7 +213,10 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
                 <FormControl>
                   <Input
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value))
+                      form.trigger('polishingFactor')
+                    }}
                     type="number"
                     placeholder="Enter polishing factor"
                     step="0.1"
@@ -232,7 +235,10 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
                 <FormControl>
                   <Input
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value))
+                      form.trigger('peerRatingImpact')
+                    }}
                     type="number"
                     placeholder="Enter peer rating impact"
                     step="0.1"
@@ -260,7 +266,10 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
                 <FormControl>
                   <Input
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value))
+                      form.trigger('groupScore')
+                    }}
                     type="number"
                     placeholder="Enter group score"
                     step="0.1"
@@ -279,7 +288,10 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
                 <FormControl>
                   <Input
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value))
+                      form.trigger('groupSpread')
+                    }}
                     type="number"
                     placeholder="Enter group spread"
                     step="0.1"
@@ -308,7 +320,10 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
                   <FormControl>
                     <Input
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onChange={(e) => {
+                        field.onChange(parseFloat(e.target.value))
+                        form.trigger(`weights.${i}`)
+                      }}
                       type="number"
                       placeholder="Enter weight"
                     />

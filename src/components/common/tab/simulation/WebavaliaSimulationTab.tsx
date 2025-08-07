@@ -32,11 +32,11 @@ const formSchema = z.object({
     .min(0, { message: 'Peer assessment weight must be greater than or equal to 0' })
     .max(1, { message: 'Peer assessment weight must be less than or equal to 1' })
     .optional(),
-  groupScore: z
-    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
+  groupGrade: z
+    .number({ required_error: 'Group grade is required', invalid_type_error: 'Group grade must be a number' })
     .finite()
-    .min(0, { message: 'Group score must be greater than or equal to 0' })
-    .max(20, { message: 'Group score must be less than or equal to 20' }),
+    .min(0, { message: 'Group grade must be greater than or equal to 0' })
+    .max(20, { message: 'Group grade must be less than or equal to 20' }),
   peerMatrix: z.array(z.array(z.union([z.number().int().min(0).max(100), z.nan()]).optional())),
 })
 
@@ -83,7 +83,7 @@ const WebavaliaSimulationTab = ({ scrollToBottom }: WebavaliaSimulationTabProps)
     if (!valid) return
     setLoading(true)
     setErrorMatrix(null)
-    mutation.mutate({ ...payload, groupGrade: payload.groupScore })
+    mutation.mutate({ ...payload, groupGrade: payload.groupGrade })
   }
 
   const validatePeerMatrix = (values: (number | undefined)[][]) => {
@@ -174,7 +174,10 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
                 <FormControl>
                   <Input
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value))
+                      form.trigger('selfWeight')
+                    }}
                     type="number"
                     placeholder="Enter self assessment weight"
                     step="0.1"
@@ -193,7 +196,10 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
                 <FormControl>
                   <Input
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value))
+                      form.trigger('peerWeight')
+                    }}
                     type="number"
                     placeholder="Enter peer assessment weight"
                     step="0.1"
@@ -214,14 +220,17 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
         <div className="grid md:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
           <FormField
             control={form.control}
-            name="groupScore"
+            name="groupGrade"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Group score</FormLabel>
+                <FormLabel>Group grade</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                    onChange={(e) => {
+                      field.onChange(parseInt(e.target.value))
+                      form.trigger('groupGrade')
+                    }}
                     type="number"
                     placeholder="Enter group score"
                   />
