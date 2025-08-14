@@ -20,6 +20,9 @@ export interface PaginationControlledProps {
 
 export function PaginationControlled({ pageSize, totalCount, page, onPageChange }: PaginationControlledProps) {
   const totalPageCount = Math.ceil(totalCount / pageSize)
+  console.log('TLOG ~ totalPageCount:', totalPageCount === 0)
+  console.log(page === totalPageCount)
+  console.log('final : ', page === totalPageCount || totalPageCount === 0)
 
   const renderPageNumbers = () => {
     const items: React.ReactNode[] = []
@@ -103,7 +106,6 @@ export function PaginationControlled({ pageSize, totalCount, page, onPageChange 
         <PaginationContent className="max-sm:gap-0">
           <PaginationItem>
             <PaginationPrevious
-              aria-disabled={page === 1}
               tabIndex={page === 1 ? -1 : undefined}
               onClick={() => onPageChange(Math.max(page - 1, 1))}
               className={page === 1 ? 'pointer-events-none opacity-50' : undefined}
@@ -114,10 +116,9 @@ export function PaginationControlled({ pageSize, totalCount, page, onPageChange 
 
           <PaginationItem>
             <PaginationNext
-              aria-disabled={page === totalPageCount || totalPageCount === 0}
               tabIndex={page === totalPageCount ? -1 : undefined}
               onClick={() => onPageChange(Math.min(page + 1, totalPageCount))}
-              className={page === totalPageCount ? 'pointer-events-none opacity-50' : undefined}
+              className={page === totalPageCount || totalPageCount === 0 ? 'pointer-events-none opacity-50' : undefined}
             ></PaginationNext>
           </PaginationItem>
         </PaginationContent>
