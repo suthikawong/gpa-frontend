@@ -29,6 +29,7 @@ const formSchema = z
   .object({
     name: z.string().min(1, { message: 'Please enter your name.' }),
     email: z.string().min(1, { message: 'Please enter your email address.' }).email('This is not a valid email.'),
+    userNumber: z.string().optional(),
     password: z
       .string()
       .min(1, { message: 'Please enter your password.' })
@@ -136,6 +137,7 @@ const SignUpForm = ({ formType }: { formType: Roles }) => {
     defaultValues: {
       name: '',
       email: '',
+      userNumber: '',
       password: '',
       confirmPassword: '',
     },
@@ -152,7 +154,11 @@ const SignUpForm = ({ formType }: { formType: Roles }) => {
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    createMutation.mutate({ ...values, roleId: formType })
+    createMutation.mutate({
+      ...values,
+      roleId: formType,
+      userNumber: values?.userNumber === '' ? undefined : values.userNumber,
+    })
   }
 
   return (
@@ -199,6 +205,23 @@ const SignUpForm = ({ formType }: { formType: Roles }) => {
                     )}
                   />
                 </div>
+                {formType === Roles.Student && (
+                  <div className="flex flex-col space-y-1.5">
+                    <FormField
+                      control={form.control}
+                      name="userNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Student ID</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
                 <div className="flex flex-col space-y-1.5">
                   <FormField
                     control={form.control}

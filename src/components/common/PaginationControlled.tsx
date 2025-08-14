@@ -20,9 +20,6 @@ export interface PaginationControlledProps {
 
 export function PaginationControlled({ pageSize, totalCount, page, onPageChange }: PaginationControlledProps) {
   const totalPageCount = Math.ceil(totalCount / pageSize)
-  console.log('TLOG ~ totalPageCount:', totalPageCount === 0)
-  console.log(page === totalPageCount)
-  console.log('final : ', page === totalPageCount || totalPageCount === 0)
 
   const renderPageNumbers = () => {
     const items: React.ReactNode[] = []

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Roles } from '@/config/app'
 import { useAuth } from '@/hooks/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -29,6 +30,7 @@ export const Route = createFileRoute('/profile')({
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Please enter your name.' }),
   email: z.string().min(1, { message: 'Please enter your email address.' }).email('This is not a valid email.'),
+  userNumber: z.string().optional(),
 })
 
 function RouteComponent() {
@@ -39,6 +41,7 @@ function RouteComponent() {
     defaultValues: {
       name: user?.name ?? '',
       email: user?.email ?? '',
+      userNumber: user?.userNumber ?? undefined,
     },
   })
 
@@ -55,7 +58,11 @@ function RouteComponent() {
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    mutation.mutate({ userId: user?.userId!, name: values.name })
+    mutation.mutate({
+      userId: user?.userId!,
+      name: values.name,
+      userNumber: values?.userNumber === '' ? undefined : values.userNumber,
+    })
   }
 
   return (
@@ -104,6 +111,21 @@ function RouteComponent() {
                       </FormItem>
                     )}
                   />
+                  {user?.roleId === Roles.Student && (
+                    <FormField
+                      control={form.control}
+                      name="userNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Student ID</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
               </div>
               <div className="flex justify-end gap-2">
