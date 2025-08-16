@@ -69,6 +69,20 @@ export const mode = {
   Disjunction: 'D',
 }
 
+export const ScaleType = {
+  PercentageScale: 'Percentage scale',
+  FourPointScale: '4-point scale',
+  FivePointScale: '5-point scale',
+  TenPointScale: '10-point scale',
+}
+
+export const ScaleSteps = {
+  [ScaleType.PercentageScale]: 1,
+  [ScaleType.FourPointScale]: 25,
+  [ScaleType.FivePointScale]: 20,
+  [ScaleType.TenPointScale]: 10,
+}
+
 export enum Roles {
   Student = 1,
   Instructor = 2,

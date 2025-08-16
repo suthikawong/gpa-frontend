@@ -7,7 +7,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { mode } from '@/config/app'
+import { mode, ScaleSteps, ScaleType } from '@/config/app'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -59,6 +59,7 @@ const formSchema = z.object({
     .gt(0, { message: 'Group score must be greater than 0' })
     .lt(1, { message: 'Group score must be less than 1' }),
   isTotalScoreConstrained: z.boolean(),
+  scaleType: z.string({ required_error: 'Scale is required', invalid_type_error: 'Scale is required' }),
   peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(1), z.nan()]).optional())),
 })
 
@@ -84,7 +85,18 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
       groupSpread: undefined,
       weights: Array(groupSize).fill(1),
       isTotalScoreConstrained: false,
+      scaleType: ScaleType.PercentageScale,
     },
+  })
+
+  const isTotalScoreConstrained = useWatch({
+    control: form.control,
+    name: 'isTotalScoreConstrained',
+  })
+
+  const selectedScaleType = useWatch({
+    control: form.control,
+    name: 'scaleType',
   })
 
   useEffect(() => {
@@ -107,12 +119,11 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
 
   const onSubmit = async (values: FormSchema) => {
     const payload = formSchema.parse(values)
-    if (payload.isTotalScoreConstrained) {
-      const valid = validatePeerMatrix(payload.peerMatrix)
-      if (!valid) return
-      setErrorMatrix(null)
-    }
+    const valid = validatePeerMatrix(payload.peerMatrix)
+    if (!valid) return
+    setErrorMatrix(null)
     setLoading(true)
+
     const enumMode =
       payload.mode === mode.Bijunction ? QASSMode.B : payload.mode === mode.Conjunction ? QASSMode.C : QASSMode.D
     mutation.mutate({
@@ -125,19 +136,25 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
 
   const validatePeerMatrix = (values: (number | undefined)[][]) => {
     const tolerance = 0.001
+    const step = ScaleSteps[selectedScaleType]
     for (let i = 0; i < values.length; i++) {
       let sum = 0
+      // check ratings in each cell
       for (let j = 0; j < values.length; j++) {
-        // if (values[j][i] !== undefined && values[j][i]! % 5 !== 0) {
-        //   setErrorMatrix('Votings must be divisible by 5.')
-        //   return false
-        // }
+        if (
+          values[j][i] !== undefined &&
+          selectedScaleType !== ScaleType.PercentageScale &&
+          (values[j][i]! * 100) % step !== 0
+        ) {
+          setErrorMatrix(`Ratings must be divisible by 0.${step}`)
+          return false
+        }
         sum += values[j][i] ?? 0
       }
-      if (Math.abs(1 - sum) > tolerance) {
-        console.log(sum)
+      // check sum of ratings in vertical line
+      if (isTotalScoreConstrained && Math.abs(1 - sum) > tolerance) {
         setErrorMatrix(
-          'The sum of scores in each column must equal 1. Please adjust the values so that each vertical line adds up to 1.'
+          `The sum of scores in each column must equal 1. Please adjust the values so that each vertical line adds up to 1.`
         )
         return false
       }
@@ -450,6 +467,16 @@ const PeerMatrix = ({
     name: 'mode',
   })
 
+  const isTotalScoreConstrained = useWatch({
+    control: form.control,
+    name: 'isTotalScoreConstrained',
+  })
+
+  const selectedScaleType = useWatch({
+    control: form.control,
+    name: 'scaleType',
+  })
+
   useEffect(() => {
     if (selectedMode === mode.Conjunction) {
       setDiagonalValues(1)
@@ -466,7 +493,6 @@ const PeerMatrix = ({
   }
 
   const randomPeerMatrix = () => {
-    const isTotalScoreConstrained = form.getValues('isTotalScoreConstrained')
     if (isTotalScoreConstrained) {
       return randomConstraintPeerMatrix()
     }
@@ -486,7 +512,9 @@ const PeerMatrix = ({
           peerMatrix[i].push(0)
           continue
         }
-        const randomScore = Math.round(Math.random() * 100) / 100
+        const step = ScaleSteps[selectedScaleType]
+        const scale = 100 / step
+        const randomScore = (Math.round(Math.random() * scale) * step) / 100
         peerMatrix[i].push(randomScore)
       }
     }
@@ -510,14 +538,14 @@ const PeerMatrix = ({
   }
 
   const generateRandomConstraintRating = () => {
-    const steps = 100
-    const parts = Array(groupSize).fill(1)
-    let remaining = steps - groupSize
+    const steps = ScaleSteps[selectedScaleType]
+    const parts = Array(groupSize).fill(0)
+    let remaining = 100
 
     while (remaining > 0) {
       const index = Math.floor(Math.random() * groupSize)
-      parts[index]++
-      remaining--
+      parts[index] = parts[index] + steps
+      remaining = remaining - steps
     }
 
     return parts.map((n) => n * 0.01)
@@ -560,6 +588,8 @@ const PeerMatrix = ({
     setGroupSize(newSize)
   }
 
+  const scaleTypeOptions = Object.values(ScaleType).map((type) => ({ label: type, value: type }))
+
   return (
     <>
       <div className="flex items-center gap-4 border-t my-6" />
@@ -570,6 +600,37 @@ const PeerMatrix = ({
       <Form {...form}>
         <form className="space-y-4 flex flex-col">
           <div className="grid sm:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
+            <FormField
+              control={form.control}
+              name="scaleType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Scale</FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select scale" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {scaleTypeOptions.map((option) => (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}
+                        >
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div />
             <FormField
               control={form.control}
               name="isTotalScoreConstrained"
@@ -594,6 +655,7 @@ const PeerMatrix = ({
               )}
             />
           </div>
+          <div className="flex items-center gap-4 border-t mt-4 mb-8" />
           <div className="flex flex-col gap-8 items-center">
             <div className="max-w-[796px] w-full md:w-auto overflow-x-auto md:overflow-x-visible">
               {/* Peer matrix */}

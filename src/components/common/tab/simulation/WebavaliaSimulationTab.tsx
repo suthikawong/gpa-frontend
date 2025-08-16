@@ -8,7 +8,16 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
-import { Calculator, ChartSpline, CircleMinus, CirclePlus, RotateCw, SettingsIcon, UsersRound } from 'lucide-react'
+import {
+  Calculator,
+  ChartSpline,
+  CircleMinus,
+  CirclePlus,
+  NotebookPen,
+  RotateCw,
+  SettingsIcon,
+  UsersRound,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
@@ -112,7 +121,7 @@ const WebavaliaSimulationTab = ({ scrollToBottom }: WebavaliaSimulationTabProps)
         <CardHeader>
           <CardTitle className="text-xl flex gap-2 items-center">
             <SettingsIcon className="w-6 h-6 text-primary" />
-            Configuration
+            Model configuration
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col">
@@ -351,7 +360,10 @@ const PeerMatrix = ({
   return (
     <>
       <div className="flex items-center gap-4 border-t my-6" />
-      <h2 className="font-semibold text-lg mb-12">Peer Matrix</h2>
+      <div className="flex items-center gap-2 mb-8">
+        <NotebookPen className="w-6 h-6 text-primary" />
+        <h2 className="font-semibold text-lg">Peer Matrix</h2>
+      </div>
       <Form {...form}>
         <form className="flex flex-col gap-8 items-center">
           <div className="max-w-[796px] w-full md:w-auto overflow-x-auto md:overflow-x-visible">
