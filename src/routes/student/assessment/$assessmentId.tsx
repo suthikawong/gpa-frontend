@@ -74,7 +74,7 @@ const formSchema = z.object({
 
 const configSchema = z.object({
   isTotalScoreConstrained: z.boolean(),
-  scaleType: z.string(),
+  scaleSteps: z.string(),
 })
 
 function RouteComponent() {
@@ -472,7 +472,9 @@ const PeerRatingPage = ({
                                     <Slider
                                       max={100}
                                       step={
-                                        assessmentData?.modelId === model.WebAVALIA ? 5 : ScaleSteps[config.scaleType]
+                                        assessmentData?.modelId === model.WebAVALIA
+                                          ? 5
+                                          : ScaleSteps[config.scaleSteps as keyof typeof ScaleSteps]
                                       }
                                       value={[field.value]}
                                       onValueChange={(value) => field.onChange(value[0])}

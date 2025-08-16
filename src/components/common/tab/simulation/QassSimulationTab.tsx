@@ -7,7 +7,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { mode, ScaleSteps, ScaleType } from '@/config/app'
+import { mode, ScaleSteps } from '@/config/app'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -59,7 +59,7 @@ const formSchema = z.object({
     .gt(0, { message: 'Group score must be greater than 0' })
     .lt(1, { message: 'Group score must be less than 1' }),
   isTotalScoreConstrained: z.boolean(),
-  scaleType: z.string({ required_error: 'Scale is required', invalid_type_error: 'Scale is required' }),
+  scaleSteps: z.string({ required_error: 'Steps is required', invalid_type_error: 'Steps is required' }),
   peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(1), z.nan()]).optional())),
 })
 
@@ -85,7 +85,7 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
       groupSpread: undefined,
       weights: Array(groupSize).fill(1),
       isTotalScoreConstrained: false,
-      scaleType: ScaleType.PercentageScale,
+      scaleSteps: '1',
     },
   })
 
@@ -96,8 +96,8 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
 
   const selectedScaleType = useWatch({
     control: form.control,
-    name: 'scaleType',
-  })
+    name: 'scaleSteps',
+  }) as keyof typeof ScaleSteps
 
   useEffect(() => {
     if (result) scrollToBottom()
@@ -141,11 +141,7 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
       let sum = 0
       // check ratings in each cell
       for (let j = 0; j < values.length; j++) {
-        if (
-          values[j][i] !== undefined &&
-          selectedScaleType !== ScaleType.PercentageScale &&
-          (values[j][i]! * 100) % step !== 0
-        ) {
+        if (values[j][i] !== undefined && selectedScaleType !== '1' && (values[j][i]! * 100) % step !== 0) {
           setErrorMatrix(`Ratings must be divisible by 0.${step}`)
           return false
         }
@@ -474,8 +470,8 @@ const PeerMatrix = ({
 
   const selectedScaleType = useWatch({
     control: form.control,
-    name: 'scaleType',
-  })
+    name: 'scaleSteps',
+  }) as keyof typeof ScaleSteps
 
   useEffect(() => {
     if (selectedMode === mode.Conjunction) {
@@ -588,7 +584,7 @@ const PeerMatrix = ({
     setGroupSize(newSize)
   }
 
-  const scaleTypeOptions = Object.values(ScaleType).map((type) => ({ label: type, value: type }))
+  const scaleStepsOptions = Object.keys(ScaleSteps).map((step) => ({ label: step, value: step }))
 
   return (
     <>
@@ -602,21 +598,21 @@ const PeerMatrix = ({
           <div className="grid sm:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
             <FormField
               control={form.control}
-              name="scaleType"
+              name="scaleSteps"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Scale</FormLabel>
+                  <FormLabel>Steps</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select scale" />
+                        <SelectValue placeholder="Select steps" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {scaleTypeOptions.map((option) => (
+                      {scaleStepsOptions.map((option) => (
                         <SelectItem
                           key={option.value}
                           value={option.value}

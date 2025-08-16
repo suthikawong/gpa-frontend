@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { mode, ScaleType } from '@/config/app'
+import { mode, ScaleSteps } from '@/config/app'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
@@ -52,7 +52,7 @@ const qassSchema = z.object({
     .gt(0, { message: 'Group spread must be greater than 0' })
     .lt(1, { message: 'Group spread must be less than 1' }),
   isTotalScoreConstrained: z.boolean(),
-  scaleType: z.string({ required_error: 'Scale is required', invalid_type_error: 'Scale is required' }),
+  scaleSteps: z.string({ required_error: 'Steps is required', invalid_type_error: 'Steps is required' }),
 })
 
 const webavaliaSchema = z.object({
@@ -95,7 +95,7 @@ const ModelTab = ({
             peerRatingImpact: undefined,
             groupSpread: undefined,
             isTotalScoreConstrained: false,
-            scaleType: ScaleType.PercentageScale,
+            scaleSteps: undefined,
           }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
@@ -153,6 +153,7 @@ const ModelTab = ({
         peerRatingImpact: 1,
         groupSpread: 0.5,
         isTotalScoreConstrained: false,
+        scaleSteps: '1',
       }
       setFormValues(values)
     } else if (selectedModel === model.WebAVALIA) {
@@ -165,10 +166,7 @@ const ModelTab = ({
   }
 
   const setFormValues = (values: Partial<ModelFormSchema>) => {
-    for (const key in values) {
-      const field = key as keyof typeof values
-      form.setValue(field, values[field]!)
-    }
+    form.reset(values)
   }
 
   const onSubmit = async (values: ModelFormSchema) => {
@@ -181,7 +179,7 @@ const ModelTab = ({
     updateMutation.mutate(payload)
   }
 
-  const scaleTypeOptions = Object.values(ScaleType).map((type) => ({ label: type, value: type }))
+  const scaleStepsOptions = Object.keys(ScaleSteps).map((step) => ({ label: step, value: step }))
 
   return (
     <>
@@ -317,21 +315,21 @@ const ModelTab = ({
                           <CardTitle className="text-xl flex gap-2 items-center">Peer Rating Configuration</CardTitle>
                           <FormField
                             control={form.control}
-                            name="scaleType"
+                            name="scaleSteps"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Scale</FormLabel>
+                                <FormLabel>Steps</FormLabel>
                                 <Select
                                   value={field.value}
                                   onValueChange={field.onChange}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select scale" />
+                                      <SelectValue placeholder="Select steps" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {scaleTypeOptions.map((option) => (
+                                    {scaleStepsOptions.map((option) => (
                                       <SelectItem
                                         key={option.value}
                                         value={option.value}
@@ -353,12 +351,11 @@ const ModelTab = ({
                                 <FormControl>
                                   <div className="flex items-start gap-3">
                                     <Checkbox
-                                      id="terms-2"
                                       checked={field.value ?? false}
                                       onCheckedChange={field.onChange}
                                     />
                                     <div className="grid gap-2">
-                                      <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
+                                      <FormLabel>Apply total score constraint</FormLabel>
                                       <FormDescription>
                                         Students must follow the total score constraint when allocating peer assessment
                                         scores.
