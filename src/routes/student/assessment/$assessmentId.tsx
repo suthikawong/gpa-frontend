@@ -72,6 +72,10 @@ const formSchema = z.object({
   studentScores: z.array(studentScore),
 })
 
+const configSchema = z.object({
+  isTotalScoreConstrained: z.boolean(),
+})
+
 function RouteComponent() {
   const params = Route.useParams()
   const assessmentId = parseInt(params.assessmentId)
@@ -421,6 +425,8 @@ const PeerRatingPage = ({
 
   const remainScores = 100 - studentScores.reduce((prev, curr) => prev + curr.score, 0)
 
+  const config = configSchema.parse(assessmentData?.modelConfig)
+
   return (
     <>
       <div className="flex flex-col gap-8 flex-grow">
@@ -496,7 +502,8 @@ const PeerRatingPage = ({
               </div>
             </form>
           </Form>
-          {assessmentData?.modelId === model.WebAVALIA && (
+          {(assessmentData?.modelId === model.WebAVALIA ||
+            (assessmentData?.modelId === model.QASS && config?.isTotalScoreConstrained)) && (
             <Card className="w-full">
               <CardContent className="flex justify-end gap-2">
                 <div className="font-semibold">Remaining scores :</div>
@@ -519,6 +526,7 @@ const PeerRatingPage = ({
                 type="button"
                 className="w-fit ml-auto"
                 loading={mutation.isPending}
+                disabled={remainScores !== 0}
               >
                 Submit
               </Button>

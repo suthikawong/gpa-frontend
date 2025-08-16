@@ -2,7 +2,8 @@ import { api } from '@/api'
 import toast from '@/components/common/toast'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -16,6 +17,7 @@ import {
   ChartSpline,
   CircleMinus,
   CirclePlus,
+  NotebookPen,
   RotateCw,
   SettingsIcon,
   UsersRound,
@@ -56,6 +58,7 @@ const formSchema = z.object({
     .finite()
     .gt(0, { message: 'Group score must be greater than 0' })
     .lt(1, { message: 'Group score must be less than 1' }),
+  isTotalScoreConstrained: z.boolean(),
   peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(1), z.nan()]).optional())),
 })
 
@@ -69,6 +72,7 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
   const ref = useRef<HTMLDivElement | null>(null)
   const [groupSize, setGroupSize] = useState(5)
   const [result, setResult] = useState<CalcualteScoresByQASSResponse | null>(null)
+  const [errorMatrix, setErrorMatrix] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const form = useForm<FormSchema>({
@@ -79,6 +83,7 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
       peerRatingImpact: undefined,
       groupSpread: undefined,
       weights: Array(groupSize).fill(1),
+      isTotalScoreConstrained: false,
     },
   })
 
@@ -101,8 +106,13 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
   })
 
   const onSubmit = async (values: FormSchema) => {
-    setLoading(true)
     const payload = formSchema.parse(values)
+    if (payload.isTotalScoreConstrained) {
+      const valid = validatePeerMatrix(payload.peerMatrix)
+      if (!valid) return
+      setErrorMatrix(null)
+    }
+    setLoading(true)
     const enumMode =
       payload.mode === mode.Bijunction ? QASSMode.B : payload.mode === mode.Conjunction ? QASSMode.C : QASSMode.D
     mutation.mutate({
@@ -111,6 +121,28 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
       groupProductScore: payload.groupScore,
       peerRatingWeights: payload.weights,
     })
+  }
+
+  const validatePeerMatrix = (values: (number | undefined)[][]) => {
+    const tolerance = 0.001
+    for (let i = 0; i < values.length; i++) {
+      let sum = 0
+      for (let j = 0; j < values.length; j++) {
+        // if (values[j][i] !== undefined && values[j][i]! % 5 !== 0) {
+        //   setErrorMatrix('Votings must be divisible by 5.')
+        //   return false
+        // }
+        sum += values[j][i] ?? 0
+      }
+      if (Math.abs(1 - sum) > tolerance) {
+        console.log(sum)
+        setErrorMatrix(
+          'The sum of scores in each column must equal 1. Please adjust the values so that each vertical line adds up to 1.'
+        )
+        return false
+      }
+    }
+    return true
   }
 
   return (
@@ -135,6 +167,9 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
             groupSize={groupSize}
             setGroupSize={setGroupSize}
           />
+          <div className="w-full max-w-[400px] md:m-auto mt-8!">
+            <div className="text-destructive text-sm text-center">{errorMatrix}</div>
+          </div>
 
           <div className="flex self-end gap-2 mt-16">
             <Button
@@ -431,6 +466,14 @@ const PeerMatrix = ({
   }
 
   const randomPeerMatrix = () => {
+    const isTotalScoreConstrained = form.getValues('isTotalScoreConstrained')
+    if (isTotalScoreConstrained) {
+      return randomConstraintPeerMatrix()
+    }
+    return randomUnconstraintPeerMatrix()
+  }
+
+  const randomUnconstraintPeerMatrix = () => {
     const peerMatrix: number[][] = []
     for (let i = 0; i < groupSize; i++) {
       peerMatrix.push([])
@@ -448,6 +491,36 @@ const PeerMatrix = ({
       }
     }
     return peerMatrix
+  }
+
+  const randomConstraintPeerMatrix = () => {
+    const peerMatrix: number[][] = []
+    const temp: number[][] = []
+    for (let i = 0; i < groupSize; i++) {
+      temp.push(generateRandomConstraintRating())
+    }
+    for (let i = 0; i < groupSize; i++) {
+      const newRow = []
+      for (let j = 0; j < groupSize; j++) {
+        newRow.push(temp[j][i])
+      }
+      peerMatrix.push(newRow)
+    }
+    return peerMatrix
+  }
+
+  const generateRandomConstraintRating = () => {
+    const steps = 100
+    const parts = Array(groupSize).fill(1)
+    let remaining = steps - groupSize
+
+    while (remaining > 0) {
+      const index = Math.floor(Math.random() * groupSize)
+      parts[index]++
+      remaining--
+    }
+
+    return parts.map((n) => n * 0.01)
   }
 
   useEffect(() => {
@@ -490,113 +563,143 @@ const PeerMatrix = ({
   return (
     <>
       <div className="flex items-center gap-4 border-t my-6" />
-      <h2 className="font-semibold text-lg mb-12">Peer Matrix</h2>
+      <div className="flex items-center gap-2 mb-8">
+        <NotebookPen className="w-6 h-6 text-primary" />
+        <h2 className="font-semibold text-lg">Peer Matrix</h2>
+      </div>
       <Form {...form}>
-        <form className="flex flex-col gap-8 items-center">
-          <div className="max-w-[796px] w-full md:w-auto overflow-x-auto md:overflow-x-visible">
-            {/* Peer matrix */}
-            <div className="w-fit">
-              <div className="flex flex-row">
-                <div className="w-22" />
-                <div>
-                  <div className="flex flex-grow justify-center text-lg font-semibold">Rater</div>
-                  <div className="flex mb-3 mt-4 gap-1">
+        <form className="space-y-4 flex flex-col">
+          <div className="grid sm:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
+            <FormField
+              control={form.control}
+              name="isTotalScoreConstrained"
+              render={({ field }) => (
+                <FormItem className="flex items-start gap-3">
+                  <FormControl>
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="terms-2"
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                      />
+                      <div className="grid gap-2">
+                        <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
+                        <FormDescription>
+                          Students must follow the total score constraint when allocating peer assessment scores.
+                        </FormDescription>
+                      </div>
+                    </div>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="flex flex-col gap-8 items-center">
+            <div className="max-w-[796px] w-full md:w-auto overflow-x-auto md:overflow-x-visible">
+              {/* Peer matrix */}
+              <div className="w-fit">
+                <div className="flex flex-row">
+                  <div className="w-22" />
+                  <div>
+                    <div className="flex flex-grow justify-center text-lg font-semibold">Rater</div>
+                    <div className="flex mb-3 mt-4 gap-1">
+                      {groupSizeList.map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-center font-semibold w-15"
+                        >
+                          <span>{i + 1}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-row items-center">
+                  <div className="h-fit rotate-270 text-lg font-semibold">Ratee</div>
+                  <div className="mx-4 space-y-1">
                     {groupSizeList.map((_, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-center font-semibold w-15"
+                        className="flex items-center justify-center h-15 font-semibold"
                       >
                         <span>{i + 1}</span>
                       </div>
                     ))}
                   </div>
-                </div>
-              </div>
-              <div className="flex flex-row items-center">
-                <div className="h-fit rotate-270 text-lg font-semibold">Ratee</div>
-                <div className="mx-4 space-y-1">
-                  {groupSizeList.map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-center h-15 font-semibold"
-                    >
-                      <span>{i + 1}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex flex-col gap-1">
-                  {groupSizeList.map((_, i) => {
-                    return (
-                      <div
-                        key={i}
-                        className="flex flex-row gap-1"
-                      >
-                        {groupSizeList.map((_, j) => (
-                          <FormField
-                            control={form.control}
-                            name={`peerMatrix.${i}.${j}`}
-                            key={j}
-                            render={({ field }) => {
-                              let value = field.value
-                              if (i === j) {
-                                if (selectedMode === mode.Conjunction) {
-                                  value = 1
-                                } else if (selectedMode === mode.Disjunction) {
-                                  value = 0
+                  <div className="flex flex-col gap-1">
+                    {groupSizeList.map((_, i) => {
+                      return (
+                        <div
+                          key={i}
+                          className="flex flex-row gap-1"
+                        >
+                          {groupSizeList.map((_, j) => (
+                            <FormField
+                              control={form.control}
+                              name={`peerMatrix.${i}.${j}`}
+                              key={j}
+                              render={({ field }) => {
+                                let value = field.value
+                                if (i === j) {
+                                  if (selectedMode === mode.Conjunction) {
+                                    value = 1
+                                  } else if (selectedMode === mode.Disjunction) {
+                                    value = 0
+                                  }
                                 }
-                              }
-                              return (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      value={value}
-                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                      disabled={selectedMode !== mode.Bijunction && i === j ? true : false}
-                                      type="number"
-                                      step="0.1"
-                                      className={cn(
-                                        'matrix-input size-15 text-center bg-white',
-                                        i == j && 'bg-secondary'
-                                      )}
-                                    />
-                                  </FormControl>
-                                </FormItem>
-                              )
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )
-                  })}
-                </div>
-                <div className="flex flex-col gap-2 ml-4">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="rounded-full size-9 p-0! bg-success-foreground hover:bg-success text-success hover:text-success-foreground"
-                    disabled={groupSize >= 10}
-                    onClick={onClickAddStudent}
-                  >
-                    <CirclePlus className="size-6" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="rounded-full size-9 p-0! bg-destructive-foreground hover:bg-destructive text-destructive hover:text-destructive-foreground"
-                    onClick={onClickRemoveStudent}
-                    disabled={groupSize <= 2}
-                  >
-                    <CircleMinus className="size-6" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="rounded-full size-9 p-0! bg-primary-foreground hover:bg-primary text-primary hover:text-primary-foreground"
-                    onClick={onClickRandomPeerMatrix}
-                  >
-                    <RotateCw className="size-6" />
-                  </Button>
+                                return (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        value={value}
+                                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                        disabled={selectedMode !== mode.Bijunction && i === j ? true : false}
+                                        type="number"
+                                        step="0.1"
+                                        className={cn(
+                                          'matrix-input size-15 text-center bg-white',
+                                          i == j && 'bg-secondary'
+                                        )}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="flex flex-col gap-2 ml-4">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="rounded-full size-9 p-0! bg-success-foreground hover:bg-success text-success hover:text-success-foreground"
+                      disabled={groupSize >= 10}
+                      onClick={onClickAddStudent}
+                    >
+                      <CirclePlus className="size-6" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="rounded-full size-9 p-0! bg-destructive-foreground hover:bg-destructive text-destructive hover:text-destructive-foreground"
+                      onClick={onClickRemoveStudent}
+                      disabled={groupSize <= 2}
+                    >
+                      <CircleMinus className="size-6" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="rounded-full size-9 p-0! bg-primary-foreground hover:bg-primary text-primary hover:text-primary-foreground"
+                      onClick={onClickRandomPeerMatrix}
+                    >
+                      <RotateCw className="size-6" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

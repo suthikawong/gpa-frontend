@@ -427,8 +427,12 @@ const QassWeightForm = ({
       toast.success('Scores were updated successfully')
       queryClient.invalidateQueries({ queryKey: ['getScores', groupId] })
     },
-    onError: () => {
-      toast.error('Failed to update scores.')
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (error.response?.status === 400 || error.response?.status === 403) {
+        toast.error(error.response?.data?.message)
+      } else {
+        toast.error('Failed to update scores.')
+      }
     },
   })
 

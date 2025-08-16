@@ -1,6 +1,7 @@
 import { api } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -50,6 +51,7 @@ const qassSchema = z.object({
     .finite()
     .gt(0, { message: 'Group spread must be greater than 0' })
     .lt(1, { message: 'Group spread must be less than 1' }),
+  isTotalScoreConstrained: z.boolean(),
 })
 
 const webavaliaSchema = z.object({
@@ -91,6 +93,7 @@ const ModelTab = ({
             polishingFactor: undefined,
             peerRatingImpact: undefined,
             groupSpread: undefined,
+            isTotalScoreConstrained: false,
           }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
@@ -147,6 +150,7 @@ const ModelTab = ({
         polishingFactor: 0.001,
         peerRatingImpact: 1,
         groupSpread: 0.5,
+        isTotalScoreConstrained: false,
       }
       setFormValues(values)
     } else if (selectedModel === model.WebAVALIA) {
@@ -305,6 +309,32 @@ const ModelTab = ({
                               </FormItem>
                             )}
                           />
+                          <div className="flex items-center gap-4 border-t mt-2" />
+                          <CardTitle className="text-xl flex gap-2 items-center">Peer Rating Configuration</CardTitle>
+                          <FormField
+                            control={form.control}
+                            name="isTotalScoreConstrained"
+                            render={({ field }) => (
+                              <FormItem className="flex items-start gap-3">
+                                <FormControl>
+                                  <div className="flex items-start gap-3">
+                                    <Checkbox
+                                      id="terms-2"
+                                      checked={field.value ?? false}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                    <div className="grid gap-2">
+                                      <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
+                                      <FormDescription>
+                                        Students must follow the total score constraint when allocating peer assessment
+                                        scores.
+                                      </FormDescription>
+                                    </div>
+                                  </div>
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
                         </>
                       )}
 
@@ -339,6 +369,7 @@ const ModelTab = ({
                       )}
                     </div>
                   </div>
+
                   <div className="flex justify-end gap-2">
                     <Button
                       type="button"
