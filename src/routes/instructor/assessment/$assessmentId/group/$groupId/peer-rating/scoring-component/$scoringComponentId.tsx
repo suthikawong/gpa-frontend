@@ -235,7 +235,10 @@ const PeerMatrixToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponen
             <div className="flex flex-grow justify-center text-lg font-semibold">Rater</div>
             <div className="flex mb-3 mt-4">
               {matrixData.map((_, i) => (
-                <div className="flex items-center justify-center font-semibold w-15">
+                <div
+                  key={i}
+                  className="flex items-center justify-center font-semibold w-15"
+                >
                   <span>{i + 1}</span>
                 </div>
               ))}
@@ -246,7 +249,10 @@ const PeerMatrixToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponen
           <div className="h-fit rotate-270 text-lg font-semibold">Ratee</div>
           <div className="mx-4">
             {matrixData.map((_, i) => (
-              <div className="flex items-center justify-center h-15 font-semibold">
+              <div
+                key={i}
+                className="flex items-center justify-center h-15 font-semibold"
+              >
                 <span>{i + 1}</span>
               </div>
             ))}
@@ -278,7 +284,10 @@ const PeerMatrixToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponen
       {/* Name list */}
       <div className="bg-white rounded-sm gap-y-2 p-8 border-2 flex flex-col">
         {data.map((item, i) => (
-          <div className="flex gap-3">
+          <div
+            key={i}
+            className="flex gap-3"
+          >
             <span>{i + 1}</span>
             <span>=</span>
             <span>{item.name}</span>

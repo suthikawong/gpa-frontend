@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { mode } from '@/config/app'
+import { mode, ScaleType } from '@/config/app'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
@@ -52,6 +52,7 @@ const qassSchema = z.object({
     .gt(0, { message: 'Group spread must be greater than 0' })
     .lt(1, { message: 'Group spread must be less than 1' }),
   isTotalScoreConstrained: z.boolean(),
+  scaleType: z.string({ required_error: 'Scale is required', invalid_type_error: 'Scale is required' }),
 })
 
 const webavaliaSchema = z.object({
@@ -94,6 +95,7 @@ const ModelTab = ({
             peerRatingImpact: undefined,
             groupSpread: undefined,
             isTotalScoreConstrained: false,
+            scaleType: ScaleType.PercentageScale,
           }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
@@ -178,6 +180,8 @@ const ModelTab = ({
     }
     updateMutation.mutate(payload)
   }
+
+  const scaleTypeOptions = Object.values(ScaleType).map((type) => ({ label: type, value: type }))
 
   return (
     <>
@@ -313,6 +317,36 @@ const ModelTab = ({
                           <CardTitle className="text-xl flex gap-2 items-center">Peer Rating Configuration</CardTitle>
                           <FormField
                             control={form.control}
+                            name="scaleType"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Scale</FormLabel>
+                                <Select
+                                  value={field.value}
+                                  onValueChange={field.onChange}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select scale" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {scaleTypeOptions.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
                             name="isTotalScoreConstrained"
                             render={({ field }) => (
                               <FormItem className="flex items-start gap-3">
@@ -370,6 +404,7 @@ const ModelTab = ({
                     </div>
                   </div>
 
+                  <div className="flex items-center gap-4 border-t mt-2" />
                   <div className="flex justify-end gap-2">
                     <Button
                       type="button"

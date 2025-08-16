@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
-import { Roles } from '@/config/app'
+import { Roles, ScaleSteps } from '@/config/app'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
@@ -74,6 +74,7 @@ const formSchema = z.object({
 
 const configSchema = z.object({
   isTotalScoreConstrained: z.boolean(),
+  scaleType: z.string(),
 })
 
 function RouteComponent() {
@@ -380,7 +381,7 @@ const PeerRatingPage = ({
   const defaultValues = {
     scoringComponentId,
     groupId: groupData?.groupId!,
-    studentScores: ratees.map((ratee) => ({ rateeStudentUserId: ratee.userId, score: 50, comment: '' })),
+    studentScores: ratees.map((ratee) => ({ rateeStudentUserId: ratee.userId, score: 100, comment: '' })),
   }
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -470,7 +471,9 @@ const PeerRatingPage = ({
                                   <div className="flex gap-4">
                                     <Slider
                                       max={100}
-                                      step={assessmentData?.modelId === model.WebAVALIA ? 5 : 1}
+                                      step={
+                                        assessmentData?.modelId === model.WebAVALIA ? 5 : ScaleSteps[config.scaleType]
+                                      }
                                       value={[field.value]}
                                       onValueChange={(value) => field.onChange(value[0])}
                                     />
