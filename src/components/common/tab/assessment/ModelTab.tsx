@@ -5,7 +5,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { mode, ScaleSteps } from '@/config/app'
+import { mode, ScaleSteps, ScaleType } from '@/config/app'
+import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
@@ -51,8 +52,9 @@ const qassSchema = z.object({
     .finite()
     .gt(0, { message: 'Group spread must be greater than 0' })
     .lt(1, { message: 'Group spread must be less than 1' }),
+  scaleType: z.string({ required_error: 'Scale is required', invalid_type_error: 'Scale is required' }),
+  scaleSteps: z.string({ required_error: 'Steps is required', invalid_type_error: 'Steps is required' }).optional(),
   isTotalScoreConstrained: z.boolean(),
-  scaleSteps: z.string({ required_error: 'Steps is required', invalid_type_error: 'Steps is required' }),
 })
 
 const webavaliaSchema = z.object({
@@ -94,8 +96,9 @@ const ModelTab = ({
             polishingFactor: undefined,
             peerRatingImpact: undefined,
             groupSpread: undefined,
-            isTotalScoreConstrained: false,
+            scaleType: undefined,
             scaleSteps: undefined,
+            isTotalScoreConstrained: false,
           }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
@@ -139,10 +142,26 @@ const ModelTab = ({
     name: 'modelId',
   })
 
+  const selectedScaleType = useWatch({
+    control: form.control,
+    name: 'scaleType',
+  })
+
   useEffect(() => {
     const values = getDefaultValues(selectedModel)
     setFormValues(values)
   }, [selectedModel])
+
+  useEffect(() => {
+    if (selectedScaleType === ScaleType.PercentageScale) {
+      form.setValue('scaleSteps', '1')
+    } else if (selectedScaleType === ScaleType.FivePointScale) {
+      form.setValue('scaleSteps', '20')
+    } else if (selectedScaleType === ScaleType.FourPointScale) {
+      form.setValue('scaleSteps', '25')
+    }
+    form.setValue('isTotalScoreConstrained', false)
+  }, [selectedScaleType])
 
   const onClickUseRecommended = () => {
     if (selectedModel === model.QASS) {
@@ -152,8 +171,9 @@ const ModelTab = ({
         polishingFactor: 0.001,
         peerRatingImpact: 1,
         groupSpread: 0.5,
-        isTotalScoreConstrained: false,
+        scaleType: ScaleType.PercentageScale,
         scaleSteps: '1',
+        isTotalScoreConstrained: false,
       }
       setFormValues(values)
     } else if (selectedModel === model.WebAVALIA) {
@@ -180,6 +200,8 @@ const ModelTab = ({
   }
 
   const scaleStepsOptions = Object.keys(ScaleSteps).map((step) => ({ label: step, value: step }))
+
+  const scaleTypeOptions = Object.values(ScaleType).map((value) => ({ label: value, value }))
 
   return (
     <>
@@ -315,21 +337,21 @@ const ModelTab = ({
                           <CardTitle className="text-xl flex gap-2 items-center">Peer Rating Configuration</CardTitle>
                           <FormField
                             control={form.control}
-                            name="scaleSteps"
+                            name="scaleType"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Steps</FormLabel>
+                                <FormLabel>Scale</FormLabel>
                                 <Select
                                   value={field.value}
                                   onValueChange={field.onChange}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select steps" />
+                                      <SelectValue placeholder="Select scale" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {scaleStepsOptions.map((option) => (
+                                    {scaleTypeOptions.map((option) => (
                                       <SelectItem
                                         key={option.value}
                                         value={option.value}
@@ -343,29 +365,66 @@ const ModelTab = ({
                               </FormItem>
                             )}
                           />
-                          <FormField
-                            control={form.control}
-                            name="isTotalScoreConstrained"
-                            render={({ field }) => (
-                              <FormItem className="flex items-start gap-3">
-                                <FormControl>
-                                  <div className="flex items-start gap-3">
-                                    <Checkbox
-                                      checked={field.value ?? false}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                    <div className="grid gap-2">
-                                      <FormLabel>Apply total score constraint</FormLabel>
-                                      <FormDescription>
-                                        Students must follow the total score constraint when allocating peer assessment
-                                        scores.
-                                      </FormDescription>
-                                    </div>
-                                  </div>
-                                </FormControl>
-                              </FormItem>
+                          <div
+                            className={cn(
+                              'hidden',
+                              selectedScaleType === ScaleType.PercentageScale && 'grid w-full items-center gap-4'
                             )}
-                          />
+                          >
+                            <FormField
+                              control={form.control}
+                              name="scaleSteps"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Steps</FormLabel>
+                                  <Select
+                                    value={field.value}
+                                    onValueChange={field.onChange}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select steps" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {scaleStepsOptions.map((option) => (
+                                        <SelectItem
+                                          key={option.value}
+                                          value={option.value}
+                                        >
+                                          {option.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="isTotalScoreConstrained"
+                              render={({ field }) => (
+                                <FormItem className="flex items-start gap-3">
+                                  <FormControl>
+                                    <div className="flex items-start gap-3">
+                                      <Checkbox
+                                        checked={field.value ?? false}
+                                        onCheckedChange={field.onChange}
+                                      />
+                                      <div className="grid gap-2">
+                                        <FormLabel>Apply total score constraint</FormLabel>
+                                        <FormDescription>
+                                          Students must follow the total score constraint when allocating peer
+                                          assessment scores.
+                                        </FormDescription>
+                                      </div>
+                                    </div>
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </>
                       )}
 

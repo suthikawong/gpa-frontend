@@ -17,6 +17,7 @@ interface AlertDialogProps {
   content?: React.ReactNode
   onConfirm?: () => void
   onCancel?: () => void
+  beforeOpen?: () => Promise<boolean>
   className?: string
   confirmButtonText?: string
   showCancelButton?: boolean
@@ -29,6 +30,7 @@ const AlertDialog = ({
   content,
   onConfirm,
   onCancel,
+  beforeOpen,
   className,
   confirmButtonText,
   showCancelButton = true,
@@ -48,7 +50,10 @@ const AlertDialog = ({
   return (
     <Dialog
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={async (value) => {
+        const valid = await beforeOpen?.()
+        if (valid) setOpen(value)
+      }}
     >
       <DialogTrigger asChild>{triggerButton}</DialogTrigger>
       <DialogContent className={className}>

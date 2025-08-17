@@ -12,9 +12,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
-import { Roles, ScaleSteps } from '@/config/app'
+import { Roles, ScaleSteps, ScaleType } from '@/config/app'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
@@ -26,9 +27,10 @@ import {
   GroupWithGroupMembers,
 } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { Assessment, Group, ScoringComponent } from 'gpa-backend/src/drizzle/schema'
+import { UserProtected } from 'gpa-backend/src/user/user.interface'
 import { ChevronLeft, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 export const Route = createFileRoute('/student/assessment/$assessmentId')({
@@ -63,7 +65,13 @@ const model = {
 }
 
 const studentScore = z.object({
-  score: z.number().max(100).min(0),
+  score: z.coerce
+    .number({
+      invalid_type_error: 'Rating is required',
+      required_error: 'Rating is required',
+    })
+    .max(100)
+    .min(0),
   comment: z.string().optional(),
   rateeStudentUserId: z.number(),
 })
@@ -74,6 +82,7 @@ const formSchema = z.object({
 
 const configSchema = z.object({
   isTotalScoreConstrained: z.boolean(),
+  scaleType: z.string(),
   scaleSteps: z.string(),
 })
 
@@ -376,12 +385,16 @@ const PeerRatingPage = ({
   scoringComponentId: ScoringComponent['scoringComponentId']
   setPageState: React.Dispatch<React.SetStateAction<State>>
 }) => {
+  if (!assessmentData?.modelId) {
+    return <div>No model selected</div>
+  }
+
   const queryClient = useQueryClient()
   const ratees = groupData?.members ?? []
   const defaultValues = {
     scoringComponentId,
     groupId: groupData?.groupId!,
-    studentScores: ratees.map((ratee) => ({ rateeStudentUserId: ratee.userId, score: 100, comment: '' })),
+    studentScores: ratees.map((ratee) => ({ rateeStudentUserId: ratee.userId, score: undefined, comment: '' })),
   }
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -424,9 +437,9 @@ const PeerRatingPage = ({
     name: 'studentScores',
   })
 
-  const remainScores = 100 - studentScores.reduce((prev, curr) => prev + curr.score, 0)
+  const config = assessmentData.modelId === model.QASS ? configSchema.parse(assessmentData?.modelConfig) : null
 
-  const config = configSchema.parse(assessmentData?.modelConfig)
+  const remainScores = 100 - studentScores.reduce((prev, curr) => prev + curr.score, 0)
 
   return (
     <>
@@ -444,104 +457,369 @@ const PeerRatingPage = ({
             <form className="space-y-6 flex flex-col">
               <div className="grid w-full items-center gap-8">
                 {ratees.map((ratee, index) => (
-                  <Card
+                  <PeerRatingCard
                     key={index}
-                    className="w-full"
-                  >
-                    <CardContent className="flex flex-col">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 w-full gap-4">
-                        <div className="flex gap-4 items-center lg:items-start">
-                          <Avatar className="size-12">
-                            {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
-                            <AvatarFallback>{ratee?.name?.[0] ?? ''}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="text-2xl font-semibold">{ratee.name}</div>
-                            <div className="text-muted-foreground">{ratee.email}</div>
-                          </div>
-                        </div>
-                        <div>
-                          <FormField
-                            control={form.control}
-                            name={`studentScores.${index}.score`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Score</FormLabel>
-                                <FormControl>
-                                  <div className="flex gap-4">
-                                    <Slider
-                                      max={100}
-                                      step={
-                                        assessmentData?.modelId === model.WebAVALIA
-                                          ? 5
-                                          : ScaleSteps[config.scaleSteps as keyof typeof ScaleSteps]
-                                      }
-                                      value={[field.value]}
-                                      onValueChange={(value) => field.onChange(value[0])}
-                                    />
-                                    <div>{field.value}</div>
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`studentScores.${index}.comment`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Comment</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    form={form}
+                    index={index}
+                    ratee={ratee}
+                    modelId={assessmentData.modelId!}
+                    config={config}
+                  />
                 ))}
               </div>
+
+              {(assessmentData?.modelId === model.WebAVALIA ||
+                (assessmentData?.modelId === model.QASS && config?.isTotalScoreConstrained)) && (
+                <Card className="w-full">
+                  <CardContent className="flex justify-end gap-2">
+                    <div className="font-semibold">Remaining scores :</div>
+                    {remainScores < 0 ? (
+                      <div className="text-destructive font-semibold">{remainScores}</div>
+                    ) : remainScores === 0 ? (
+                      <div className="text-success font-semibold">{remainScores}</div>
+                    ) : (
+                      <div className="font-semibold">{remainScores}</div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              <AlertDialog
+                dialogType="info"
+                beforeOpen={async () => await form.trigger()}
+                triggerButton={
+                  <Button
+                    size="lg"
+                    type="button"
+                    className="w-fit ml-auto"
+                    loading={mutation.isPending}
+                    disabled={
+                      (assessmentData?.modelId === model.WebAVALIA || config?.isTotalScoreConstrained) &&
+                      remainScores !== 0
+                    }
+                  >
+                    Submit
+                  </Button>
+                }
+                title="Confirm submit ratings"
+                content="Are you sure you want to submit this? You can't submit this again."
+                onConfirm={() => form.handleSubmit(onSubmit)()}
+              />
             </form>
           </Form>
-          {(assessmentData?.modelId === model.WebAVALIA ||
-            (assessmentData?.modelId === model.QASS && config?.isTotalScoreConstrained)) && (
-            <Card className="w-full">
-              <CardContent className="flex justify-end gap-2">
-                <div className="font-semibold">Remaining scores :</div>
-                {remainScores < 0 ? (
-                  <div className="text-destructive font-semibold">{remainScores}</div>
-                ) : remainScores === 0 ? (
-                  <div className="text-success font-semibold">{remainScores}</div>
-                ) : (
-                  <div className="font-semibold">{remainScores}</div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          <AlertDialog
-            dialogType="info"
-            triggerButton={
-              <Button
-                size="lg"
-                type="button"
-                className="w-fit ml-auto"
-                loading={mutation.isPending}
-                disabled={remainScores !== 0}
-              >
-                Submit
-              </Button>
-            }
-            title="Confirm submit ratings"
-            content="Are you sure you want to submit this? You can't submit this again."
-            onConfirm={() => form.handleSubmit(onSubmit)()}
-          />
         </div>
       </div>
     </>
+  )
+}
+
+const PeerRatingCard = ({
+  form,
+  index,
+  ratee,
+  modelId,
+  config,
+}: {
+  form: UseFormReturn<z.infer<typeof formSchema>>
+  index: number
+  ratee: UserProtected
+  modelId: number
+  config: z.infer<typeof configSchema> | null
+}) => {
+  if (modelId === model.WebAVALIA || config?.scaleType === ScaleType.PercentageScale) {
+    return (
+      <ScoreSliderCard
+        form={form}
+        index={index}
+        ratee={ratee}
+        modelId={modelId}
+        config={config}
+      />
+    )
+  } else if (config?.scaleType === ScaleType.FivePointScale) {
+    return (
+      <FivePointScaleCard
+        form={form}
+        index={index}
+        ratee={ratee}
+      />
+    )
+  } else if (config?.scaleType === ScaleType.FourPointScale) {
+    return (
+      <FourPointScaleCard
+        form={form}
+        index={index}
+        ratee={ratee}
+      />
+    )
+  }
+}
+
+const ScoreSliderCard = ({
+  form,
+  index,
+  ratee,
+  modelId,
+  config,
+}: {
+  form: UseFormReturn<z.infer<typeof formSchema>>
+  index: number
+  ratee: UserProtected
+  modelId: number
+  config: z.infer<typeof configSchema> | null
+}) => {
+  return (
+    <Card
+      key={index}
+      className="w-full"
+    >
+      <CardContent className="flex flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-2 w-full gap-4">
+          <div className="flex gap-4 items-center lg:items-start">
+            <Avatar className="size-12">
+              {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+              <AvatarFallback>{ratee?.name?.[0] ?? ''}</AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="text-lg md:text-2xl font-semibold">{ratee.name}</div>
+              <div className="text-muted-foreground">{ratee.email}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 border-t mt-2 lg:hidden" />
+          <div className="space-y-8">
+            <FormField
+              control={form.control}
+              name={`studentScores.${index}.score`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg font-semibold">Score</FormLabel>
+                  <FormControl>
+                    <div className="flex gap-4">
+                      <Slider
+                        max={100}
+                        step={
+                          modelId === model.WebAVALIA ? 5 : ScaleSteps[config?.scaleSteps as keyof typeof ScaleSteps]
+                        }
+                        value={[field.value ?? 100]}
+                        onValueChange={(value) => field.onChange(value[0])}
+                      />
+                      <div>{field.value ?? 100}</div>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`studentScores.${index}.comment`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">Comment</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+const FourPointScaleCard = ({
+  form,
+  index,
+  ratee,
+}: {
+  form: UseFormReturn<z.infer<typeof formSchema>>
+  index: number
+  ratee: UserProtected
+}) => {
+  return (
+    <Card
+      key={index}
+      className="w-full"
+    >
+      <CardContent className="flex flex-col">
+        <div className="grid grid-cols-1 w-full gap-4">
+          <div className="flex gap-4 items-center lg:items-start">
+            <Avatar className="size-12">
+              {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+              <AvatarFallback>{ratee?.name?.[0] ?? ''}</AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="text-lg md:text-2xl font-semibold">{ratee.name}</div>
+              <div className="text-muted-foreground">{ratee.email}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 border-t mt-2" />
+          <div className="mt-2 space-y-8">
+            <FormField
+              control={form.control}
+              name={`studentScores.${index}.score`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg font-semibold">
+                    How would you rate this person's overall contribution and performance in the group project?
+                  </FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(value) => {
+                        field.onChange(value)
+                        form.trigger(`studentScores.${index}.score`)
+                      }}
+                      className="grid md:grid-cols-2"
+                    >
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="25" />
+                        </FormControl>
+                        <FormLabel className="text-base">Needs improvement</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="50" />
+                        </FormControl>
+                        <FormLabel className="text-base">Adequate</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="75" />
+                        </FormControl>
+                        <FormLabel className="text-base">Good</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="100" />
+                        </FormControl>
+                        <FormLabel className="text-base">Excellent</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`studentScores.${index}.comment`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">Comment</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+const FivePointScaleCard = ({
+  form,
+  index,
+  ratee,
+}: {
+  form: UseFormReturn<z.infer<typeof formSchema>>
+  index: number
+  ratee: UserProtected
+}) => {
+  return (
+    <Card
+      key={index}
+      className="w-full"
+    >
+      <CardContent className="flex flex-col">
+        <div className="grid grid-cols-1 w-full gap-4">
+          <div className="flex gap-4 items-center lg:items-start">
+            <Avatar className="size-12">
+              {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+              <AvatarFallback>{ratee?.name?.[0] ?? ''}</AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="text-lg md:text-2xl font-semibold">{ratee.name}</div>
+              <div className="text-muted-foreground">{ratee.email}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 border-t mt-2" />
+          <div className="mt-2 space-y-8">
+            <FormField
+              control={form.control}
+              name={`studentScores.${index}.score`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg font-semibold">
+                    How would you rate this person's overall contribution and performance in the group project?
+                  </FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(value) => {
+                        field.onChange(value)
+                        form.trigger(`studentScores.${index}.score`)
+                      }}
+                      className="grid md:grid-cols-2"
+                    >
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="20" />
+                        </FormControl>
+                        <FormLabel className="text-base">Very Poor</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="40" />
+                        </FormControl>
+                        <FormLabel className="text-base">Poor</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="60" />
+                        </FormControl>
+                        <FormLabel className="text-base">Fair</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="80" />
+                        </FormControl>
+                        <FormLabel className="text-base">Good</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="100" />
+                        </FormControl>
+                        <FormLabel className="text-base">Excellent</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`studentScores.${index}.comment`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">Comment</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
