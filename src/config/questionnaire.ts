@@ -6,13 +6,46 @@ export interface QuestionnaireCoverItem {
   image: string
 }
 
-export interface QuestionnaireQuestionItem {
-  type: 'question'
-  question: string
-  options: { answer: string; value?: number }[]
+export interface QuestionnaireModelSelectionQuestionOption {
+  answer: string
+  values: number[]
+  description: string
 }
 
-export const modelSelectionSet: Array<QuestionnaireCoverItem | QuestionnaireQuestionItem> = [
+export interface QuestionnaireModelSelectionQuestionItem {
+  type: 'question'
+  question: string
+  options: QuestionnaireModelSelectionQuestionOption[]
+}
+
+export interface QuestionnaireModelConfigurationQuestionOption {
+  answer: string
+  values: string
+}
+
+export interface QuestionnaireModelConfigurationQuestionItem {
+  type: 'question'
+  question: string
+  options: QuestionnaireModelConfigurationQuestionOption[]
+}
+
+export interface QuestionnaireSummaryrItem {
+  type: 'summary'
+  title: string
+  description1: string
+  description2: string
+  image: string
+}
+
+export type QuestionnaireModelSelectionItem = Array<
+  QuestionnaireCoverItem | QuestionnaireModelSelectionQuestionItem | QuestionnaireSummaryrItem
+>
+
+export type QuestionnaireModelConfigurationItem = Array<
+  QuestionnaireCoverItem | QuestionnaireModelConfigurationQuestionItem
+>
+
+export const modelSelectionSet: QuestionnaireModelSelectionItem = [
   {
     type: 'cover',
     title: 'Find Your Perfect Assessment Model',
@@ -21,122 +54,107 @@ export const modelSelectionSet: Array<QuestionnaireCoverItem | QuestionnaireQues
   },
   {
     type: 'question',
-    question: 'What kind of scale do you prefer for the peer assessments?',
+    question: 'What scale do you prefer for the peer assessments?',
     options: [
       {
-        answer: 'percentage scale',
+        answer: '0%, 1%, ... , 99%, 100%',
+        values: [1, 0],
+        description: 'Use percentage scale',
       },
       {
-        answer: 'n-point scale',
-      },
-      {
-        answer: 'no preference',
+        answer: '0, 5, ... , 95, 100',
+        values: [1, 1],
+        description: 'Use 21-point scale',
       },
     ],
   },
   {
     type: 'question',
-    question: 'Do you want to pose a restriction peer assessments that a student may assign to his peers?',
-    options: [
-      {
-        answer: 'no',
-      },
-      {
-        answer: 'yes',
-      },
-      {
-        answer: 'undecided',
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'Do you want to force self-assessments, i.e., the peer rater should also rate himself?',
+    question: 'Should the sum of peer assessments be constant?',
     options: [
       {
         answer: 'no',
+        values: [1, 0],
+        description: `Sum of peer assessments aren't constant`,
       },
       {
         answer: 'yes',
-      },
-      {
-        answer: 'undecided',
+        values: [0, 1],
+        description: 'Sum of peer assessments are constant',
       },
     ],
   },
   {
     type: 'question',
-    question:
-      'Do you want to be able to specify how much impact the peer assessments will have on the final student score?',
+    question: 'Should the rater also rate himself (self-assessment)?',
     options: [
       {
         answer: 'no',
+        values: [1, 0],
+        description: 'No self-assessment',
       },
       {
-        answer: 'yes',
+        answer: 'yes, for calibration (column-wise)',
+        values: [1, 0],
+        description: 'Self-assessment is allowed for calibration (column-wise)',
       },
       {
-        answer: "can't decide",
+        answer: 'yes, for weighting (row-wise)',
+        values: [0, 1],
+        description: 'Self-assessment is allowed for weighting (row-wise)',
       },
     ],
   },
   {
     type: 'question',
-    question: 'Do you want to be able to specify the spread of final scores around the group score?',
+    question: 'Do you want to specify the impact of peer assessments on the final student score?',
     options: [
       {
         answer: 'no',
+        values: [0, 1],
+        description: `Can't specify the impact of peer assessments`,
       },
       {
         answer: 'yes',
-      },
-      {
-        answer: "can't decide",
+        values: [1, 0],
+        description: `Can specify the impact of peer assessments`,
       },
     ],
   },
   {
     type: 'question',
-    question: 'What kind of scale do you prefer for the final student scores?',
+    question: 'Do you want to specify the spread of final scores around the group score?',
     options: [
       {
-        answer: 'percentage scale',
+        answer: 'no',
+        values: [0, 1],
+        description: `Can't specify the spread of peer assessments`,
       },
       {
-        answer: 'n-point scale',
-      },
-      {
-        answer: 'no preference',
+        answer: 'yes',
+        values: [1, 0],
+        description: `Can specify the spread of peer assessments`,
       },
     ],
   },
   {
     type: 'question',
-    question: 'Are peer assessments treated as rewards, as penalties, or mixed rewards and penalties?',
+    question: 'Are peer assessments treated as rewards, as penalties, or rewards and penalties?',
     options: [
       {
         answer: 'only rewards',
+        values: [1, 0],
+        description: `Peer assessments treated as rewards only`,
       },
       {
-        answer: 'only penalies',
+        answer: 'only penalties',
+        values: [1, 1],
+        description: `Peer assessments treated as penalties only`,
       },
       {
         answer: 'both rewards and penalties',
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'How do you want self-ratings to be used in your assessment model?',
-    options: [
-      {
-        answer: 'to set weightings',
-      },
-      {
-        answer: 'to enable calibration',
-      },
-      {
-        answer: "can't decide",
+        values: [1, 0],
+        description: `Peer assessments treated as both rewards and penalties`,
       },
     ],
   },
@@ -146,25 +164,49 @@ export const modelSelectionSet: Array<QuestionnaireCoverItem | QuestionnaireQues
     options: [
       {
         answer: 'less than 3',
+        values: [1, 0],
+        description: `Can run complete peer assessment with less than 3 times`,
       },
       {
         answer: '3',
+        values: [1, 1],
+        description: `Can run complete peer assessment with exactly 3 times`,
       },
       {
         answer: 'more than 3',
+        values: [1, 0],
+        description: `Can run complete peer assessment with more than 3 times`,
       },
     ],
   },
   {
-    type: 'cover',
+    type: 'question',
+    question: 'What scale do you prefer for the final student scores?',
+    options: [
+      {
+        answer: '0%, 1%, ... , 99%, 100%',
+        values: [1, 0],
+        description: 'Final student scores will be in percentage scale',
+      },
+      {
+        answer: '0, 1, ... , 19, 20',
+        values: [0, 1],
+        description: 'Final student scores will be in 21-point scale',
+      },
+    ],
+  },
+  {
+    type: 'summary',
     title: "You've Found Your Match!",
-    description1: "You've Found Your Match!",
-    description2: 'Click Next to proceed and configure this model to suit your needs.',
+    description1:
+      'Your preferences best match ${selectedModel}. You can switch to a different assessment model by clicking "Click to select" and then "Use selected model" to continue.',
+    description2:
+      'Your preferences align most closely with ${selectedModel}, though some may not be fully supported (see table below). You can switch to another model by clicking "Click to select" and then "Use selected model" to continue.',
     image: 'checked.png',
   },
 ]
 
-export const qassConfigurationSet: Array<QuestionnaireCoverItem | QuestionnaireQuestionItem> = [
+export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
   {
     type: 'cover',
     title: 'Customize Your Assessment Model',
@@ -177,15 +219,19 @@ export const qassConfigurationSet: Array<QuestionnaireCoverItem | QuestionnaireQ
     options: [
       {
         answer: 'Not at all',
+        values: '0',
       },
       {
         answer: 'A little',
+        values: '0.5',
       },
       {
         answer: 'Moderately',
+        values: '1',
       },
       {
         answer: 'A lot',
+        values: '2',
       },
     ],
   },
@@ -195,16 +241,18 @@ export const qassConfigurationSet: Array<QuestionnaireCoverItem | QuestionnaireQ
     options: [
       {
         answer: 'Very similar',
+        values: '0.2',
       },
       {
         answer: 'Balanced',
+        values: '0.5',
       },
       {
         answer: 'Very different',
+        values: '1',
       },
     ],
   },
-
   {
     type: 'cover',
     title: 'All Set!',
@@ -215,116 +263,50 @@ export const qassConfigurationSet: Array<QuestionnaireCoverItem | QuestionnaireQ
   },
 ]
 
-export const webavaliaConfigurationSet: Array<QuestionnaireCoverItem | QuestionnaireQuestionItem> = [
+export const webavaliaConfigurationSet: QuestionnaireModelConfigurationItem = [
   {
     type: 'cover',
-    title: 'Set 2: Customize Your Assessment Model',
+    title: 'Customize Your Assessment Model',
     description1: 'Fine-tune the chosen model to match your style and preferences.',
     image: 'gear.png',
   },
   {
     type: 'question',
-    question: 'What kind of scale do you prefer for the peer assessments?',
+    question: 'How much should peer ratings influence individual scores?',
     options: [
       {
-        answer: 'percentage scale',
+        answer: 'Not at all',
+        values: '0',
       },
       {
-        answer: 'n-point scale',
+        answer: 'A little',
+        values: '0.5',
       },
       {
-        answer: 'no preference',
+        answer: 'Moderately',
+        values: '1',
+      },
+      {
+        answer: 'A lot',
+        values: '2',
       },
     ],
   },
   {
     type: 'question',
-    question: 'Do you want to pose a restriction on the sum of ratings/votes that a student may assign to his peers?',
+    question: 'How much should individual scores differ based on peer ratings?',
     options: [
       {
-        answer: 'no',
+        answer: 'Very similar',
+        values: '0.2',
       },
       {
-        answer: 'yes',
+        answer: 'Balanced',
+        values: '0.5',
       },
       {
-        answer: 'undecided',
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'How many times do you want to run a complete peer assessment?',
-    options: [
-      {
-        answer: 'less than 3',
-      },
-      {
-        answer: '3',
-      },
-      {
-        answer: 'more than 3',
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question:
-      'Do you want to be able to specify how much impact the peer assessments will have on the final student score?',
-    options: [
-      {
-        answer: 'no',
-      },
-      {
-        answer: 'yes',
-      },
-      {
-        answer: "can't decide",
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'Do you want to be able to specify the spread of final scores around the group score?',
-    options: [
-      {
-        answer: 'no',
-      },
-      {
-        answer: 'yes',
-      },
-      {
-        answer: "can't decide",
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'What kind of scale do you prefer for the final student scores?',
-    options: [
-      {
-        answer: 'percentage scale',
-      },
-      {
-        answer: 'n-point scale',
-      },
-      {
-        answer: 'no preference',
-      },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'Are peer assessments treated as rewards, as penalties, or mixed rewards and penalties?',
-    options: [
-      {
-        answer: 'only rewards',
-      },
-      {
-        answer: 'only penalies',
-      },
-      {
-        answer: 'both rewards and penalties',
+        answer: 'Very different',
+        values: '1',
       },
     ],
   },
