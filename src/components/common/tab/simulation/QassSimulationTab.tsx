@@ -7,7 +7,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { mode, ScaleSteps } from '@/config/app'
+import { mode, ScaleType } from '@/config/app'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -28,40 +28,98 @@ import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { QASSMode } from '../../../../../gpa-backend/src/utils/qass.model'
 
-const formSchema = z.object({
-  mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
-  polishingFactor: z
-    .number({ required_error: 'Polishing factor is required', invalid_type_error: 'Polishing factor is required' })
-    .finite()
-    .gt(0, { message: 'Polishing factor must be greater than 0' })
-    .lt(0.5, { message: 'Polishing factor must be less than 0.5' }),
-  peerRatingImpact: z
-    .number({
-      required_error: 'Peer rating impact is required',
-      invalid_type_error: 'Peer rating impact is required',
-    })
-    .finite()
-    .min(0, { message: 'Peer rating impact must be greater than or equal 0' }),
-  groupSpread: z
-    .number({ required_error: 'Group spread is required', invalid_type_error: 'Group spread is required' })
-    .finite()
-    .gt(0, { message: 'Group spread must be greater than 0' })
-    .lt(1, { message: 'Group spread must be less than 1' }),
-  weights: z.array(
-    z
-      .number({ required_error: 'Student weight is required', invalid_type_error: 'Weight must be an integer' })
-      .int()
-      .min(0, { message: 'Weights must be greater than or equal 0' })
-  ),
-  groupScore: z
-    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score is required' })
-    .finite()
-    .gt(0, { message: 'Group score must be greater than 0' })
-    .lt(1, { message: 'Group score must be less than 1' }),
-  isTotalScoreConstrained: z.boolean(),
-  scaleSteps: z.string({ required_error: 'Steps is required', invalid_type_error: 'Steps is required' }),
-  peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(1), z.nan()]).optional())),
-})
+const formSchema = z
+  .object({
+    mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
+    polishingFactor: z
+      .number({ required_error: 'Polishing factor is required', invalid_type_error: 'Polishing factor is required' })
+      .finite()
+      .gt(0, { message: 'Polishing factor must be greater than 0' })
+      .lt(0.5, { message: 'Polishing factor must be less than 0.5' }),
+    peerRatingImpact: z
+      .number({
+        required_error: 'Peer rating impact is required',
+        invalid_type_error: 'Peer rating impact is required',
+      })
+      .finite()
+      .min(0, { message: 'Peer rating impact must be greater than or equal 0' }),
+    groupSpread: z
+      .number({ required_error: 'Group spread is required', invalid_type_error: 'Group spread is required' })
+      .finite()
+      .gt(0, { message: 'Group spread must be greater than 0' })
+      .lt(1, { message: 'Group spread must be less than 1' }),
+    weights: z.array(
+      z
+        .number({ required_error: 'Student weight is required', invalid_type_error: 'Weight must be an integer' })
+        .int()
+        .min(0, { message: 'Weights must be greater than or equal 0' })
+    ),
+    groupScore: z
+      .number({ required_error: 'Group score is required', invalid_type_error: 'Group score is required' })
+      .finite()
+      .gt(0, { message: 'Group score must be greater than 0' })
+      .lt(1, { message: 'Group score must be less than 1' }),
+    scaleType: z.string({ required_error: 'Scale is required', invalid_type_error: 'Scale is required' }),
+    lowerBound: z
+      .number({ required_error: 'Lower bound is required', invalid_type_error: 'Lower bound is required' })
+      .finite()
+      .min(0, { message: 'Lower bound must be greater than or equal 0' }),
+    upperBound: z
+      .number({ required_error: 'Upper bound is required', invalid_type_error: 'Upper bound is required' })
+      .finite()
+      .max(100, { message: 'Upper bound must be lower than or equal 100' }),
+    isTotalScoreConstrained: z.boolean(),
+    scoreConstraint: z
+      .number()
+      .finite()
+      .max(100, { message: 'Upper bound must be lower than or equal 100' })
+      .optional(),
+    peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(100), z.nan()]).optional())),
+  })
+  .refine((data) => validateBoundConflict(data.lowerBound, data.upperBound), {
+    message: 'Lower bound must be less than upper bound',
+    path: ['lowerBound'],
+  })
+  .refine((data) => validateScoreConstraint(data.isTotalScoreConstrained, data.scoreConstraint), {
+    message: 'Constraint is required',
+    path: ['scoreConstraint'],
+  })
+  .refine(
+    (data) =>
+      validateConstraintConflict(
+        data.lowerBound,
+        data.upperBound,
+        data.peerMatrix.length,
+        data.isTotalScoreConstrained,
+        data.scoreConstraint
+      ),
+    {
+      message: 'Constraint conflicts with lower or upper bound.',
+      path: ['scoreConstraint'],
+    }
+  )
+
+const validateBoundConflict = (lowerBound: number, upperBound: number) => lowerBound < upperBound
+
+const validateScoreConstraint = (isTotalScoreConstrained: boolean, scoreConstraint?: number) => {
+  if (isTotalScoreConstrained && scoreConstraint === undefined) {
+    return false
+  }
+  return true
+}
+
+const validateConstraintConflict = (
+  lowerBound: number,
+  upperBound: number,
+  groupSize: number,
+  isTotalScoreConstrained: boolean,
+  scoreConstraint?: number
+) => {
+  if (isTotalScoreConstrained) {
+    return upperBound * groupSize >= scoreConstraint! && scoreConstraint! >= lowerBound * groupSize
+  }
+  return true
+}
 
 type FormSchema = z.infer<typeof formSchema>
 
@@ -82,10 +140,13 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
       mode: undefined,
       polishingFactor: undefined,
       peerRatingImpact: undefined,
+      groupScore: undefined,
       groupSpread: undefined,
       weights: Array(groupSize).fill(1),
       isTotalScoreConstrained: false,
-      scaleSteps: '1',
+      scoreConstraint: 1,
+      lowerBound: 0,
+      upperBound: 0,
     },
   })
 
@@ -96,8 +157,23 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
 
   const selectedScaleType = useWatch({
     control: form.control,
-    name: 'scaleSteps',
-  }) as keyof typeof ScaleSteps
+    name: 'scaleType',
+  }) as keyof typeof ScaleType
+
+  const lowerBound = useWatch({
+    control: form.control,
+    name: 'lowerBound',
+  })
+
+  const upperBound = useWatch({
+    control: form.control,
+    name: 'upperBound',
+  })
+
+  const scoreConstraint = useWatch({
+    control: form.control,
+    name: 'scoreConstraint',
+  })
 
   useEffect(() => {
     if (result) scrollToBottom()
@@ -135,22 +211,26 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
   }
 
   const validatePeerMatrix = (values: (number | undefined)[][]) => {
-    const tolerance = 0.001
-    const step = ScaleSteps[selectedScaleType]
+    const tolerance = 0.01
     for (let i = 0; i < values.length; i++) {
       let sum = 0
       // check ratings in each cell
       for (let j = 0; j < values.length; j++) {
-        if (values[j][i] !== undefined && selectedScaleType !== '1' && (values[j][i]! * 100) % step !== 0) {
-          setErrorMatrix(`Ratings must be divisible by 0.${step}`)
+        if (values[j][i] === undefined) continue
+        if (values[j][i]! > upperBound || values[j][i]! < lowerBound) {
+          setErrorMatrix(`Ratings are lower than ${lowerBound} or higher than ${upperBound}`)
+          return false
+        }
+        if (selectedScaleType !== ScaleType.PercentageScale && !Number.isInteger(values[j][i])) {
+          setErrorMatrix(`Ratings of ${selectedScaleType} must be integer`)
           return false
         }
         sum += values[j][i] ?? 0
       }
       // check sum of ratings in vertical line
-      if (isTotalScoreConstrained && Math.abs(1 - sum) > tolerance) {
+      if (isTotalScoreConstrained && Math.abs(scoreConstraint! - sum) > tolerance) {
         setErrorMatrix(
-          `The sum of scores in each column must equal 1. Please adjust the values so that each vertical line adds up to 1.`
+          `The sum of scores in each column must equal ${scoreConstraint}. Please adjust the values so that each vertical line adds up to ${scoreConstraint}.`
         )
         return false
       }
@@ -468,10 +548,25 @@ const PeerMatrix = ({
     name: 'isTotalScoreConstrained',
   })
 
+  const lowerBound = useWatch({
+    control: form.control,
+    name: 'lowerBound',
+  })
+
+  const upperBound = useWatch({
+    control: form.control,
+    name: 'upperBound',
+  })
+
+  const scoreConstraint = useWatch({
+    control: form.control,
+    name: 'scoreConstraint',
+  })
+
   const selectedScaleType = useWatch({
     control: form.control,
-    name: 'scaleSteps',
-  }) as keyof typeof ScaleSteps
+    name: 'scaleType',
+  }) as keyof typeof ScaleType
 
   useEffect(() => {
     if (selectedMode === mode.Conjunction) {
@@ -480,6 +575,21 @@ const PeerMatrix = ({
       setDiagonalValues(0)
     }
   }, [selectedMode])
+
+  useEffect(() => {
+    if (selectedScaleType === ScaleType.PercentageScale) {
+      form.setValue('lowerBound', 0)
+      form.setValue('upperBound', 1)
+      form.setValue('scoreConstraint', 1)
+    } else if (selectedScaleType === ScaleType.FivePointScale) {
+      form.setValue('lowerBound', 1)
+      form.setValue('upperBound', 5)
+    } else if (selectedScaleType === ScaleType.FourPointScale) {
+      form.setValue('lowerBound', 1)
+      form.setValue('upperBound', 4)
+    }
+    form.setValue('isTotalScoreConstrained', false)
+  }, [selectedScaleType])
 
   const setDiagonalValues = (value: number) => {
     const peerMatrix = form.getValues('peerMatrix') || []
@@ -496,6 +606,13 @@ const PeerMatrix = ({
   }
 
   const randomUnconstraintPeerMatrix = () => {
+    if (selectedScaleType === ScaleType.PercentageScale) {
+      return randomUnconstraintPercentageScale()
+    }
+    return randomUnconstraintNPointScale()
+  }
+
+  const randomUnconstraintPercentageScale = () => {
     const peerMatrix: number[][] = []
     for (let i = 0; i < groupSize; i++) {
       peerMatrix.push([])
@@ -508,9 +625,30 @@ const PeerMatrix = ({
           peerMatrix[i].push(0)
           continue
         }
-        const step = ScaleSteps[selectedScaleType]
-        const scale = 100 / step
-        const randomScore = (Math.round(Math.random() * scale) * step) / 100
+        const random = Math.random() * (upperBound - lowerBound) + lowerBound
+        const randomScore = parseFloat(random.toFixed(2))
+        peerMatrix[i].push(randomScore)
+      }
+    }
+    return peerMatrix
+  }
+
+  const randomUnconstraintNPointScale = () => {
+    const peerMatrix: number[][] = []
+    for (let i = 0; i < groupSize; i++) {
+      peerMatrix.push([])
+      for (let j = 0; j < groupSize; j++) {
+        if (i === j && selectedMode === mode.Conjunction) {
+          peerMatrix[i].push(1)
+          continue
+        }
+        if (i === j && selectedMode === mode.Disjunction) {
+          peerMatrix[i].push(0)
+          continue
+        }
+        const min = Math.ceil(lowerBound)
+        const max = Math.floor(upperBound)
+        const randomScore = Math.floor(Math.random() * (max - min + 1)) + min
         peerMatrix[i].push(randomScore)
       }
     }
@@ -534,17 +672,23 @@ const PeerMatrix = ({
   }
 
   const generateRandomConstraintRating = () => {
-    const steps = ScaleSteps[selectedScaleType]
-    const parts = Array(groupSize).fill(0)
-    let remaining = 100
-
+    const steps = 0.01
+    const parts = Array(groupSize).fill(lowerBound)
+    let remaining = scoreConstraint! - lowerBound * groupSize
+    const indexList = parts.map((_, j) => j)
     while (remaining > 0) {
-      const index = Math.floor(Math.random() * groupSize)
-      parts[index] = parts[index] + steps
-      remaining = remaining - steps
+      const j = Math.floor(Math.random() * indexList.length)
+      const index = indexList[j]
+      if (parts[index] === upperBound) {
+        const j = indexList.indexOf(index)
+        if (j !== -1) indexList.splice(j, 1)
+        continue
+      }
+      parts[index] = parseFloat((parts[index] + steps).toFixed(2))
+      remaining = parseFloat((remaining - steps).toFixed(2))
     }
 
-    return parts.map((n) => n * 0.01)
+    return parts
   }
 
   useEffect(() => {
@@ -584,7 +728,7 @@ const PeerMatrix = ({
     setGroupSize(newSize)
   }
 
-  const scaleStepsOptions = Object.keys(ScaleSteps).map((step) => ({ label: step, value: step }))
+  const scaleTypeOptions = Object.values(ScaleType).map((value) => ({ label: value, value }))
 
   return (
     <>
@@ -595,24 +739,24 @@ const PeerMatrix = ({
       </div>
       <Form {...form}>
         <form className="space-y-4 flex flex-col">
-          <div className="grid sm:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
+          <div className="grid md:grid-cols-2 w-full items-center gap-y-4 gap-x-8">
             <FormField
               control={form.control}
-              name="scaleSteps"
+              name="scaleType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Steps</FormLabel>
+                  <FormLabel>Scale</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select steps" />
+                        <SelectValue placeholder="Select scale" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {scaleStepsOptions.map((option) => (
+                      {scaleTypeOptions.map((option) => (
                         <SelectItem
                           key={option.value}
                           value={option.value}
@@ -627,11 +771,14 @@ const PeerMatrix = ({
               )}
             />
             <div />
+
             <FormField
               control={form.control}
               name="isTotalScoreConstrained"
               render={({ field }) => (
-                <FormItem className="flex items-start gap-3">
+                <FormItem
+                  className={cn('flex items-start gap-3', selectedScaleType !== ScaleType.PercentageScale && 'hidden')}
+                >
                   <FormControl>
                     <div className="flex items-start gap-3">
                       <Checkbox
@@ -647,6 +794,80 @@ const PeerMatrix = ({
                       </div>
                     </div>
                   </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="scoreConstraint"
+              render={({ field }) => (
+                <FormItem className={cn('mb-4', selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                  <FormLabel>Constraint</FormLabel>
+
+                  <FormControl>
+                    <Input
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(parseFloat(e.target.value))
+                        if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                      }}
+                      disabled={!isTotalScoreConstrained}
+                      type="number"
+                      placeholder="Enter score constraint"
+                      step="0.1"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This constraint will be applied when "Apply total score constraint" is checked.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lowerBound"
+              render={({ field }) => (
+                <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                  <FormLabel>Lower bound</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(parseFloat(e.target.value))
+                        form.trigger('lowerBound')
+                        if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                      }}
+                      type="number"
+                      placeholder="Enter lower bound"
+                      step="0.1"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="upperBound"
+              render={({ field }) => (
+                <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                  <FormLabel>Upper bound</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(parseFloat(e.target.value))
+                        form.trigger('upperBound')
+                        form.trigger('lowerBound')
+                        if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                      }}
+                      type="number"
+                      placeholder="Enter upper bound"
+                      step="0.1"
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -754,6 +975,19 @@ const PeerMatrix = ({
                       variant="ghost"
                       className="rounded-full size-9 p-0! bg-primary-foreground hover:bg-primary text-primary hover:text-primary-foreground"
                       onClick={onClickRandomPeerMatrix}
+                      disabled={
+                        selectedScaleType === ScaleType.PercentageScale &&
+                        ((!isTotalScoreConstrained && !validateBoundConflict(lowerBound, upperBound)) ||
+                          (isTotalScoreConstrained &&
+                            (!validateBoundConflict(lowerBound, upperBound) ||
+                              !validateConstraintConflict(
+                                lowerBound,
+                                upperBound,
+                                groupSize,
+                                isTotalScoreConstrained,
+                                scoreConstraint
+                              ))))
+                      }
                     >
                       <RotateCw className="size-6" />
                     </Button>
