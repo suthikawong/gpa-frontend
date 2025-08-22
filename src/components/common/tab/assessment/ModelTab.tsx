@@ -191,7 +191,9 @@ const ModelTab = ({
 
   useEffect(() => {
     const values = getDefaultValues(selectedModel)
-    setFormValues(values)
+    setTimeout(() => {
+      setFormValues(values)
+    }, 10)
   }, [selectedModel])
 
   useEffect(() => {
