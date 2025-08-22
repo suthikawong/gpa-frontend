@@ -198,7 +198,7 @@ const StudentTable = ({
           let score = '-'
           if (typeof item?.studentScore?.score === 'number') {
             if (isWebAvalia) {
-              score = item.studentScore.score.toFixed(2)
+              score = item.studentScore.score.toString()
             } else {
               score = (item.studentScore.score * 100).toFixed(2) + '%'
             }
