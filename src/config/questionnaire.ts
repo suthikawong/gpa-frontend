@@ -1,3 +1,5 @@
+import { mode, ScaleType } from './app'
+
 export interface QuestionnaireCoverItem {
   type: 'cover'
   title: string
@@ -20,29 +22,30 @@ export interface QuestionnaireModelSelectionQuestionItem {
 
 export interface QuestionnaireModelConfigurationQuestionOption {
   answer: string
-  values: string
+  values: { [key: string]: any }
 }
 
 export interface QuestionnaireModelConfigurationQuestionItem {
   type: 'question'
   question: string
+  condition?: { [key: string]: any }
   options: QuestionnaireModelConfigurationQuestionOption[]
 }
 
-export interface QuestionnaireSummaryrItem {
+export interface QuestionnaireSummaryItem {
   type: 'summary'
   title: string
   description1: string
-  description2: string
-  image: string
+  description2?: string
+  image?: string
 }
 
 export type QuestionnaireModelSelectionItem = Array<
-  QuestionnaireCoverItem | QuestionnaireModelSelectionQuestionItem | QuestionnaireSummaryrItem
+  QuestionnaireCoverItem | QuestionnaireModelSelectionQuestionItem | QuestionnaireSummaryItem
 >
 
 export type QuestionnaireModelConfigurationItem = Array<
-  QuestionnaireCoverItem | QuestionnaireModelConfigurationQuestionItem
+  QuestionnaireCoverItem | QuestionnaireModelConfigurationQuestionItem | QuestionnaireSummaryItem
 >
 
 export const modelSelectionSet: QuestionnaireModelSelectionItem = [
@@ -59,12 +62,12 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: '0%, 1%, ... , 99%, 100%',
         values: [1, 0],
-        description: 'Use percentage scale',
+        description: 'Use a percentage scale',
       },
       {
         answer: '0, 5, ... , 95, 100',
         values: [1, 1],
-        description: 'Use 21-point scale',
+        description: 'Use a 21-point scale',
       },
     ],
   },
@@ -75,12 +78,12 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'no',
         values: [1, 0],
-        description: `Sum of peer assessments aren't constant`,
+        description: `The sum of peer assessments isn't constant`,
       },
       {
         answer: 'yes',
         values: [0, 1],
-        description: 'Sum of peer assessments are constant',
+        description: 'The sum of peer assessments is constant',
       },
     ],
   },
@@ -91,7 +94,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'no',
         values: [1, 0],
-        description: 'No self-assessment',
+        description: 'No self-assessments',
       },
       {
         answer: 'yes, for calibration (column-wise)',
@@ -112,12 +115,12 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'no',
         values: [0, 1],
-        description: `Can't specify the impact of peer assessments`,
+        description: `The impact of peer assessments cannot be specified`,
       },
       {
         answer: 'yes',
         values: [1, 0],
-        description: `Can specify the impact of peer assessments`,
+        description: `The impact of peer assessments can be specified`,
       },
     ],
   },
@@ -128,12 +131,12 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'no',
         values: [0, 1],
-        description: `Can't specify the spread of peer assessments`,
+        description: `The spread of peer assessments cannot be specified`,
       },
       {
         answer: 'yes',
         values: [1, 0],
-        description: `Can specify the spread of peer assessments`,
+        description: `The spread of peer assessments can be specified`,
       },
     ],
   },
@@ -144,7 +147,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'only rewards',
         values: [1, 0],
-        description: `Peer assessments treated as rewards only`,
+        description: `Peer assessments are treated as rewards only`,
       },
       {
         answer: 'only penalties',
@@ -154,7 +157,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'both rewards and penalties',
         values: [1, 0],
-        description: `Peer assessments treated as both rewards and penalties`,
+        description: `Peer assessments are treated as both rewards and penalties`,
       },
     ],
   },
@@ -165,17 +168,17 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'less than 3',
         values: [1, 0],
-        description: `Can run complete peer assessment with less than 3 times`,
+        description: `A complete peer assessment can be done in less than 3 times`,
       },
       {
         answer: '3',
         values: [1, 1],
-        description: `Can run complete peer assessment with exactly 3 times`,
+        description: `A complete peer assessment can be done in exactly 3 times`,
       },
       {
         answer: 'more than 3',
         values: [1, 0],
-        description: `Can run complete peer assessment with more than 3 times`,
+        description: `A complete peer assessment can be done in more than 3 times`,
       },
     ],
   },
@@ -186,12 +189,12 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: '0%, 1%, ... , 99%, 100%',
         values: [1, 0],
-        description: 'Final student scores will be in percentage scale',
+        description: 'Final student scores will be in a percentage scale',
       },
       {
         answer: '0, 1, ... , 19, 20',
         values: [0, 1],
-        description: 'Final student scores will be in 21-point scale',
+        description: 'Final student scores will be on a 21-point scale',
       },
     ],
   },
@@ -215,51 +218,106 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
   },
   {
     type: 'question',
-    question: 'How much should peer ratings influence individual scores?',
+    question: 'How do you want peer assessments to be applied?',
     options: [
       {
-        answer: 'Not at all',
-        values: '0',
+        answer: 'As rewards (scores are added to the group score)',
+        values: { mode: mode.Conjunction, polishingFactor: 0.001 },
       },
       {
-        answer: 'A little',
-        values: '0.5',
+        answer: 'As penalties (scores are deducted from the group score)',
+        values: { mode: mode.Disjunction, polishingFactor: 0.001 },
       },
       {
-        answer: 'Moderately',
-        values: '1',
-      },
-      {
-        answer: 'A lot',
-        values: '2',
+        answer: 'As both rewards and penalties (scores may be higher or lower than the group score)',
+        values: { mode: mode.Bijunction, polishingFactor: 0.001 },
       },
     ],
   },
   {
     type: 'question',
-    question: 'How much should individual scores differ based on peer ratings?',
+    question: 'How much should peer ratings affect the scores?',
     options: [
       {
-        answer: 'Very similar',
-        values: '0.2',
+        answer: 'Low',
+        values: { peerRatingImpact: 0.5 },
       },
       {
-        answer: 'Balanced',
-        values: '0.5',
+        answer: 'Medium',
+        values: { peerRatingImpact: 1 },
       },
       {
-        answer: 'Very different',
-        values: '1',
+        answer: 'High',
+        values: { peerRatingImpact: 2 },
       },
     ],
   },
   {
-    type: 'cover',
+    type: 'question',
+    question: 'How much should the scores be spread out?',
+    options: [
+      {
+        answer: 'Low',
+        values: { groupSpread: 0.2 },
+      },
+      {
+        answer: 'Medium',
+        values: { groupSpread: 0.5 },
+      },
+      {
+        answer: 'High',
+        values: { groupSpread: 0.8 },
+      },
+    ],
+  },
+  {
+    type: 'question',
+    question: 'How do you want students to give their ratings?',
+    options: [
+      {
+        answer: 'Using a score slider',
+        values: { scaleType: ScaleType.PercentageScale, lowerBound: 0, upperBound: 1 },
+      },
+      {
+        answer: 'Using a 4-point Likert scale questionnaire',
+        values: {
+          scaleType: ScaleType.FourPointScale,
+          lowerBound: 1,
+          upperBound: 4,
+          isTotalScoreConstrained: false,
+        },
+      },
+      {
+        answer: 'Using a 5-point Likert scale questionnaire',
+        values: {
+          scaleType: ScaleType.FivePointScale,
+          lowerBound: 1,
+          upperBound: 5,
+          isTotalScoreConstrained: false,
+        },
+      },
+    ],
+  },
+  {
+    type: 'question',
+    question: 'Do you want to limit the points students can allocate in the peer assessment?',
+    condition: { scaleType: ScaleType.PercentageScale },
+    options: [
+      {
+        answer: 'Yes',
+        values: { isTotalScoreConstrained: true, scoreConstraint: 1 },
+      },
+      {
+        answer: 'No',
+        values: { isTotalScoreConstrained: false, scoreConstraint: 1 },
+      },
+    ],
+  },
+  {
+    type: 'summary',
     title: 'All Set!',
     description1:
       "You've completed the questionnaire. Below is a summary of your selected model and its configuration.",
-    description2: "When you're ready, click the Apply button to automatically insert the results into the form.",
-    image: 'gold-medal.png',
   },
 ]
 
@@ -272,50 +330,40 @@ export const webavaliaConfigurationSet: QuestionnaireModelConfigurationItem = [
   },
   {
     type: 'question',
-    question: 'How much should peer ratings influence individual scores?',
+    question: 'Do you want to include self-assessment in calculating student scores?',
     options: [
       {
-        answer: 'Not at all',
-        values: '0',
+        answer: 'Yes',
+        values: { selfWeight: 1 },
       },
       {
-        answer: 'A little',
-        values: '0.5',
-      },
-      {
-        answer: 'Moderately',
-        values: '1',
-      },
-      {
-        answer: 'A lot',
-        values: '2',
+        answer: 'No',
+        values: { selfWeight: 0 },
       },
     ],
   },
+  // {
+  //   type: 'question',
+  //   question: 'How much should self-assessment affect the student scores compared to peer assessment?',
+  //   options: [
+  //     {
+  //       answer: 'Less impact',
+  //       values: {selfWeight: 0},
+  //     },
+  //     {
+  //       answer: 'Equal impact',
+  //       values: {selfWeight: 1},
+  //     },
+  //     {
+  //       answer: 'Greater impact',
+  //       values: {selfWeight: 0},
+  //     },
+  //   ],
+  // },
   {
-    type: 'question',
-    question: 'How much should individual scores differ based on peer ratings?',
-    options: [
-      {
-        answer: 'Very similar',
-        values: '0.2',
-      },
-      {
-        answer: 'Balanced',
-        values: '0.5',
-      },
-      {
-        answer: 'Very different',
-        values: '1',
-      },
-    ],
-  },
-  {
-    type: 'cover',
+    type: 'summary',
     title: 'All Set!',
     description1:
       "You've completed the questionnaire. Below is a summary of your selected model and its configuration.",
-    description2: "When you're ready, click the Apply button to automatically insert the results into the form.",
-    image: 'gold-medal.png',
   },
 ]

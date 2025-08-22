@@ -16,7 +16,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { AssessmentModel, mode, ScaleType } from '@/config/app'
+import { AssessmentModel, mode, model, ScaleType } from '@/config/app'
 import { cn } from '@/lib/utils'
 import {
   calculateMaxGroupSize,
@@ -50,11 +50,6 @@ interface EditScoreDialogProps {
 enum DialogState {
   Edit,
   ReviewWeights,
-}
-
-const model = {
-  QASS: 1,
-  WebAVALIA: 2,
 }
 
 const scoresSchema = z.object({

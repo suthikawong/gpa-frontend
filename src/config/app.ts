@@ -63,6 +63,11 @@ export const GroupTabs = {
   PeerRatings: 'peer-ratings',
 }
 
+export const model = {
+  QASS: 1,
+  WebAVALIA: 2,
+}
+
 export const mode = {
   Bijunction: 'B',
   Conjunction: 'C',

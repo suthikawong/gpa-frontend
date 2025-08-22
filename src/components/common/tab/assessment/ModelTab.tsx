@@ -19,25 +19,20 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { SettingsIcon } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import AlertDialog from '../../AlertDialog'
-import QuestionnaireDialog from '../../dialog/QuestionnaireDialog'
+import QuestionnaireDialog, { ResultModelParametersType } from '../../dialog/QuestionnaireDialog'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
-
-const model = {
-  QASS: '1',
-  WebAVALIA: '2',
-}
 
 const baseSchema = z.object({
   modelId: z.literal('0'),
 })
 
 const qassSchema = z.object({
-  modelId: z.literal(model.QASS),
+  modelId: z.literal(AssessmentModel.QASS),
   mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
   polishingFactor: z
     .number({
@@ -78,7 +73,7 @@ const qassSchema = z.object({
 })
 
 const webavaliaSchema = z.object({
-  modelId: z.literal(model.WebAVALIA),
+  modelId: z.literal(AssessmentModel.WebAVALIA),
   selfWeight: z
     .number({
       required_error: 'Self-assessment weight is required.',
@@ -104,14 +99,15 @@ const ModelTab = ({
 }) => {
   const queryClient = useQueryClient()
   const modelIdStr = data?.modelId?.toString() ?? '0'
+  const [parameters, setParameters] = useState<ModelFormSchema | null>(null)
 
   const getDefaultValues = (modelId: string): Partial<ModelFormSchema> => {
     switch (modelId) {
       // generate default value for QASS
-      case model.QASS:
-        if (data?.modelId?.toString() !== model.QASS) {
+      case AssessmentModel.QASS:
+        if (data?.modelId?.toString() !== AssessmentModel.QASS) {
           return {
-            modelId: model.QASS,
+            modelId: AssessmentModel.QASS,
             mode: undefined,
             polishingFactor: undefined,
             peerRatingImpact: undefined,
@@ -124,17 +120,17 @@ const ModelTab = ({
           }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
-        return { ...modelConfigQASS, modelId: model.QASS }
+        return { ...modelConfigQASS, modelId: AssessmentModel.QASS }
       //generate default value for WebAVALIA
-      case model.WebAVALIA:
-        if (data?.modelId?.toString() !== model.WebAVALIA) {
+      case AssessmentModel.WebAVALIA:
+        if (data?.modelId?.toString() !== AssessmentModel.WebAVALIA) {
           return {
-            modelId: model.WebAVALIA,
+            modelId: AssessmentModel.WebAVALIA,
             selfWeight: undefined,
           }
         }
         const modelConfigWeb = webavaliaSchema.omit({ modelId: true }).parse(data.modelConfig)
-        return { ...modelConfigWeb, modelId: model.WebAVALIA }
+        return { ...modelConfigWeb, modelId: AssessmentModel.WebAVALIA }
       // select none
       default:
         return { modelId: '0' }
@@ -189,16 +185,28 @@ const ModelTab = ({
     name: 'upperBound',
   })
 
-  useEffect(() => {
-    const values = getDefaultValues(selectedModel)
+  const setModelParameters = (parameters: ModelFormSchema) => {
     setTimeout(() => {
-      setFormValues(values)
+      setFormValues(parameters)
+      if (parameters.modelId === AssessmentModel.QASS && typeof parameters.isTotalScoreConstrained === 'boolean') {
+        setTimeout(() => form.setValue('isTotalScoreConstrained', parameters.isTotalScoreConstrained), 10)
+      }
+      setParameters(null)
     }, 10)
+  }
+
+  useEffect(() => {
+    if (parameters) {
+      setModelParameters(parameters)
+    } else {
+      const values = getDefaultValues(selectedModel)
+      setTimeout(() => setFormValues(values), 10)
+    }
   }, [selectedModel])
 
   useEffect(() => {
     if (selectedScaleType === ScaleType.PercentageScale) {
-      if (data?.modelId?.toString() === model.QASS) {
+      if (data?.modelId?.toString() === AssessmentModel.QASS) {
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
         if (modelConfigQASS.scaleType === ScaleType.PercentageScale) {
           form.setValue('lowerBound', modelConfigQASS.lowerBound)
@@ -229,9 +237,9 @@ const ModelTab = ({
   }, [selectedScaleType])
 
   const onClickUseRecommended = () => {
-    if (selectedModel === model.QASS) {
+    if (selectedModel === AssessmentModel.QASS) {
       const values = {
-        modelId: model.QASS,
+        modelId: AssessmentModel.QASS,
         mode: mode.Bijunction,
         polishingFactor: 0.001,
         peerRatingImpact: 1,
@@ -243,9 +251,9 @@ const ModelTab = ({
         upperBound: 1,
       }
       setFormValues(values)
-    } else if (selectedModel === model.WebAVALIA) {
+    } else if (selectedModel === AssessmentModel.WebAVALIA) {
       const values = {
-        modelId: model.WebAVALIA,
+        modelId: AssessmentModel.WebAVALIA,
         selfWeight: 0,
       }
       setFormValues(values)
@@ -317,6 +325,37 @@ const ModelTab = ({
     return null
   }
 
+  useEffect(() => {
+    if (parameters) {
+      form.setValue('modelId', parameters.modelId)
+      setModelParameters(parameters)
+    }
+  }, [parameters])
+
+  const onApplyModelParameter = (parameters: ResultModelParametersType) => {
+    if (parameters.modelId === AssessmentModel.QASS) {
+      const values = {
+        modelId: parameters.modelId,
+        mode: parameters.mode!,
+        polishingFactor: parameters.polishingFactor!,
+        peerRatingImpact: parameters.peerRatingImpact!,
+        groupSpread: parameters.groupSpread!,
+        scaleType: parameters.scaleType!,
+        isTotalScoreConstrained: parameters.isTotalScoreConstrained!,
+        scoreConstraint: parameters.scoreConstraint!,
+        lowerBound: parameters.lowerBound!,
+        upperBound: parameters.upperBound!,
+      }
+      setParameters(values)
+    } else if (parameters.modelId === AssessmentModel.WebAVALIA) {
+      const values = {
+        modelId: parameters.modelId,
+        selfWeight: parameters.selfWeight!,
+      }
+      setParameters(values)
+    }
+  }
+
   return (
     <>
       <div className="flex flex-col-reverse md:grid md:grid-cols-2 lg:grid-cols-[3fr_2fr] gap-8 h-full">
@@ -353,8 +392,8 @@ const ModelTab = ({
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="0">Select a model</SelectItem>
-                                <SelectItem value={model.QASS}>QASS</SelectItem>
-                                <SelectItem value={model.WebAVALIA}>WebAVALIA</SelectItem>
+                                <SelectItem value={AssessmentModel.QASS}>QASS</SelectItem>
+                                <SelectItem value={AssessmentModel.WebAVALIA}>WebAVALIA</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -363,7 +402,7 @@ const ModelTab = ({
                       />
 
                       {/* QASS */}
-                      {selectedModel === model.QASS && (
+                      {selectedModel === AssessmentModel.QASS && (
                         <>
                           <FormField
                             control={form.control}
@@ -589,7 +628,7 @@ const ModelTab = ({
                       )}
 
                       {/* WebAVALIA */}
-                      {selectedModel === model.WebAVALIA && (
+                      {selectedModel === AssessmentModel.WebAVALIA && (
                         <>
                           <FormField
                             control={form.control}
@@ -669,6 +708,7 @@ const ModelTab = ({
             </div>
             <div className="text-sm">Don't worry, this questionnarie will help you find the right model for you!</div>
             <QuestionnaireDialog
+              onClickApply={onApplyModelParameter}
               triggerButton={
                 <Button className="w-full bg-linear-65 from-purple-500 to-pink-500 sm:max-w-50 md:max-w-full xl:max-w-50">
                   Start Questionnaire!

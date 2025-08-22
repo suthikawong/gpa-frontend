@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
-import { AssessmentModel, Roles, ScaleType } from '@/config/app'
+import { AssessmentModel, model, Roles, ScaleType } from '@/config/app'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
@@ -57,11 +57,6 @@ export const Route = createFileRoute('/student/assessment/$assessmentId')({
 enum State {
   Assessment = 1,
   PeerRating,
-}
-
-const model = {
-  QASS: 1,
-  WebAVALIA: 2,
 }
 
 const studentScore = z.object({

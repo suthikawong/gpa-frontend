@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer } from '@/components/ui/chart'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { model } from '@/config/app'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Assessment, Group } from 'gpa-backend/src/drizzle/schema'
@@ -13,11 +14,6 @@ import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from 're
 import EditScoreDialog from '../../dialog/EditScoreDialog'
 import SuspenseArea from '../../SuspenseArea'
 import toast from '../../toast'
-
-const model = {
-  QASS: 1,
-  WebAVALIA: 2,
-}
 
 const ScoresTab = ({
   assessmentId,
