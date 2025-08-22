@@ -210,11 +210,11 @@ const ModelConfigurationPageContainer = ({
     }
   }
 
-  const onClickChooseAgain = () => {
-    setResult([])
-    setSelectedChoice(null)
-    setStep(0)
-  }
+  // const onClickChooseAgain = () => {
+  //   setResult([])
+  //   setSelectedChoice(null)
+  //   setStep(0)
+  // }
 
   const onChoiceSelected = (selectedIndex: number) => {
     setSelectedChoice(selectedIndex)
