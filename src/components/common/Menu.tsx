@@ -131,7 +131,7 @@ export default function Menu() {
 }
 
 const AppLogo = ({ className }: { className?: string }) => {
-  return <div className={cn('text-xl font-bold text-primary', className)}>ScoreUnity</div>
+  return <div className={cn('text-xl font-bold text-primary', className)}>UT-GPA</div>
 }
 
 const MenuItem = ({

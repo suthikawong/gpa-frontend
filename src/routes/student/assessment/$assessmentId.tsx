@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
-import { Roles, ScaleSteps, ScaleType } from '@/config/app'
+import { AssessmentModel, Roles, ScaleType } from '@/config/app'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
@@ -65,13 +65,10 @@ const model = {
 }
 
 const studentScore = z.object({
-  score: z.coerce
-    .number({
-      invalid_type_error: 'Rating is required',
-      required_error: 'Rating is required',
-    })
-    .max(100)
-    .min(0),
+  score: z.coerce.number({
+    invalid_type_error: 'Rating is required',
+    required_error: 'Rating is required',
+  }),
   comment: z.string().optional(),
   rateeStudentUserId: z.number(),
 })
@@ -83,7 +80,9 @@ const formSchema = z.object({
 const configSchema = z.object({
   isTotalScoreConstrained: z.boolean(),
   scaleType: z.string(),
-  scaleSteps: z.string(),
+  scoreConstraint: z.number(),
+  lowerBound: z.number(),
+  upperBound: z.number(),
 })
 
 function RouteComponent() {
@@ -196,7 +195,12 @@ const AssessmentDetailPage = ({
         </Button>
         {assessmentData && <AssessmentCard data={assessmentData} />}
       </div>
-      {myScoreData && <MyScoreCard myScoreData={myScoreData} />}
+      {typeof myScoreData?.score === 'number' && assessmentData?.modelId && (
+        <MyScoreCard
+          myScoreData={myScoreData}
+          modelId={assessmentData.modelId}
+        />
+      )}
       {assessmentData && (
         <MyGroupCard
           groupData={groupData}
@@ -250,15 +254,19 @@ const AssessmentCard = ({ data }: { data: AssessmentWithInstructor }) => {
   )
 }
 
-const MyScoreCard = ({ myScoreData }: { myScoreData: GetMyScoreResponse }) => {
+const MyScoreCard = ({ myScoreData, modelId }: { myScoreData: GetMyScoreResponse; modelId: number }) => {
+  let score = null
+  if (modelId.toString() === AssessmentModel.QASS) {
+    score = myScoreData?.score ? `${(myScoreData.score * 100).toFixed(2)}/100` : '-'
+  } else {
+    score = myScoreData?.score ? `${myScoreData.score.toFixed(2)}/20` : '-'
+  }
   return (
     <Card className="w-full py-4!">
       <CardContent className="flex-col">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg md:text-xl md:mb-1">My Score</CardTitle>
-          <CardTitle className="text-lg md:text-xl md:mb-1">
-            {myScoreData?.score ? myScoreData.score * 100 : '-'}/100
-          </CardTitle>
+          <CardTitle className="text-lg md:text-xl md:mb-1">{score}</CardTitle>
         </div>
       </CardContent>
     </Card>
@@ -391,10 +399,12 @@ const PeerRatingPage = ({
 
   const queryClient = useQueryClient()
   const ratees = groupData?.members ?? []
+  const config = assessmentData.modelId === model.QASS ? configSchema.parse(assessmentData?.modelConfig) : null
+  const maxScore = assessmentData.modelId === model.WebAVALIA ? 100 : (config?.upperBound ?? 0) * 100
   const defaultValues = {
     scoringComponentId,
     groupId: groupData?.groupId!,
-    studentScores: ratees.map((ratee) => ({ rateeStudentUserId: ratee.userId, score: undefined, comment: '' })),
+    studentScores: ratees.map((ratee) => ({ rateeStudentUserId: ratee.userId, score: maxScore, comment: '' })),
   }
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -417,14 +427,14 @@ const PeerRatingPage = ({
   })
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    if (assessmentData?.modelId === model.WebAVALIA && remainScores !== 0) {
-      toast.error('Remaining scores must be exactly zero. Please redistribute your rating.')
-      return
+    let studentScores = values?.studentScores ?? []
+    if (config?.scaleType === ScaleType.PercentageScale) {
+      studentScores = studentScores.map((item) => ({ ...item, score: item.score / 100 }))
     }
     mutation.mutate({
       scoringComponentId,
       groupId: groupData?.groupId!,
-      studentScores: values?.studentScores,
+      studentScores,
     })
   }
 
@@ -437,9 +447,7 @@ const PeerRatingPage = ({
     name: 'studentScores',
   })
 
-  const config = assessmentData.modelId === model.QASS ? configSchema.parse(assessmentData?.modelConfig) : null
-
-  const remainScores = 100 - studentScores.reduce((prev, curr) => prev + curr.score, 0)
+  const remainScores = maxScore - studentScores.reduce((prev, curr) => prev + curr.score, 0)
 
   return (
     <>
@@ -590,25 +598,32 @@ const ScoreSliderCard = ({
             <FormField
               control={form.control}
               name={`studentScores.${index}.score`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base sm:text-lg font-semibold">Score</FormLabel>
-                  <FormControl>
-                    <div className="flex gap-4">
-                      <Slider
-                        max={100}
-                        step={
-                          modelId === model.WebAVALIA ? 5 : ScaleSteps[config?.scaleSteps as keyof typeof ScaleSteps]
-                        }
-                        value={[field.value ?? 100]}
-                        onValueChange={(value) => field.onChange(value[0])}
-                      />
-                      <div>{field.value ?? 100}</div>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const currValue =
+                  field.value !== undefined
+                    ? field.value
+                    : modelId === model.WebAVALIA
+                      ? 100
+                      : 100 * (config?.upperBound ?? 1)
+                return (
+                  <FormItem>
+                    <FormLabel className="text-base sm:text-lg font-semibold">Score</FormLabel>
+                    <FormControl>
+                      <div className="flex gap-4">
+                        <Slider
+                          max={100 * (config?.upperBound ?? 1)}
+                          min={100 * (config?.lowerBound ?? 0)}
+                          step={modelId === model.WebAVALIA ? 5 : 1}
+                          value={[currValue]}
+                          onValueChange={(value) => field.onChange(value[0])}
+                        />
+                        <div>{currValue}</div>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
             />
             <FormField
               control={form.control}
@@ -676,25 +691,25 @@ const FourPointScaleCard = ({
                     >
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="25" />
+                          <RadioGroupItem value="1" />
                         </FormControl>
                         <FormLabel className="text-base">Needs improvement</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="50" />
+                          <RadioGroupItem value="2" />
                         </FormControl>
                         <FormLabel className="text-base">Adequate</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="75" />
+                          <RadioGroupItem value="3" />
                         </FormControl>
                         <FormLabel className="text-base">Good</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="100" />
+                          <RadioGroupItem value="4" />
                         </FormControl>
                         <FormLabel className="text-base">Excellent</FormLabel>
                       </FormItem>
@@ -770,31 +785,31 @@ const FivePointScaleCard = ({
                     >
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="20" />
+                          <RadioGroupItem value="1" />
                         </FormControl>
                         <FormLabel className="text-base">Very Poor</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="40" />
+                          <RadioGroupItem value="2" />
                         </FormControl>
                         <FormLabel className="text-base">Poor</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="60" />
+                          <RadioGroupItem value="3" />
                         </FormControl>
                         <FormLabel className="text-base">Fair</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="80" />
+                          <RadioGroupItem value="4" />
                         </FormControl>
                         <FormLabel className="text-base">Good</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="100" />
+                          <RadioGroupItem value="5" />
                         </FormControl>
                         <FormLabel className="text-base">Excellent</FormLabel>
                       </FormItem>

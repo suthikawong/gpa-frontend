@@ -15,9 +15,10 @@ interface PeerRatingDialogProps {
   data: PeerRatingItem
   ratee: UserWithPeerRating
   rater: UserWithPeerRating | undefined
+  multiplier: number
 }
 
-const PeerRatingDialog = ({ triggerButton, data, ratee, rater }: PeerRatingDialogProps) => {
+const PeerRatingDialog = ({ triggerButton, data, ratee, rater, multiplier }: PeerRatingDialogProps) => {
   const [open, setOpen] = useState(false)
 
   return (
@@ -54,11 +55,11 @@ const PeerRatingDialog = ({ triggerButton, data, ratee, rater }: PeerRatingDialo
           </div>
           <div>
             <DialogDescription>Score</DialogDescription>
-            <div className="font-semibold">{data?.score || '-'}</div>
+            <div className="font-semibold">{data?.score ? data.score * multiplier : '-'}</div>
           </div>
           <div>
             <DialogDescription>Comment</DialogDescription>
-            <div className="font-semibold">{data?.comment || '-'}</div>
+            <div className="font-semibold">{data?.comment ?? '-'}</div>
           </div>
         </div>
       </DialogContent>

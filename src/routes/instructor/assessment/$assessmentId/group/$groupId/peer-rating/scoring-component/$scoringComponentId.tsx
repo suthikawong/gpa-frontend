@@ -11,11 +11,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Roles } from '@/config/app'
+import { AssessmentModel, Roles, ScaleType } from '@/config/app'
 import { cn } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { format } from 'date-fns'
+import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import {
   GetPeerRatingsByScoringComponentIdResponse,
   UserWithPeerRating,
@@ -23,6 +24,7 @@ import {
 import { GetScoringComponentByIdResponse } from 'gpa-backend/src/scoring-component/dto/scoring-component.response'
 import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { z } from 'zod'
 
 export const Route = createFileRoute(
   '/instructor/assessment/$assessmentId/group/$groupId/peer-rating/scoring-component/$scoringComponentId'
@@ -51,6 +53,14 @@ enum Toggle {
   Summary = 'summary',
   PeerMatrix = 'peer-matrix',
 }
+
+const configSchema = z.object({
+  isTotalScoreConstrained: z.boolean(),
+  scaleType: z.string(),
+  scoreConstraint: z.number(),
+  lowerBound: z.number(),
+  upperBound: z.number(),
+})
 
 function RouteComponent() {
   const params = Route.useParams()
@@ -140,7 +150,10 @@ function RouteComponent() {
               (toggle === Toggle.PeerMatrix ? (
                 <PeerMatrixToggleGroup data={peerRatingData} />
               ) : (
-                <SummaryToggleGroup data={peerRatingData} />
+                <SummaryToggleGroup
+                  data={peerRatingData}
+                  assessmentId={assessmentId}
+                />
               ))}
           </div>
         )}
@@ -171,7 +184,14 @@ const ScoringComponentCard = ({ data }: { data: GetScoringComponentByIdResponse 
   )
 }
 
-const SummaryToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponentIdResponse }) => {
+const SummaryToggleGroup = ({
+  data,
+  assessmentId,
+}: {
+  data: GetPeerRatingsByScoringComponentIdResponse
+  assessmentId: Assessment['assessmentId']
+}) => {
+  const [multiplier, setMultiplier] = useState(1)
   if (data.length === 0) {
     return (
       <EmptyState
@@ -181,6 +201,29 @@ const SummaryToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponentId
       />
     )
   }
+
+  const { data: res, error } = useQuery({
+    queryKey: ['getAssessmentById', assessmentId],
+    queryFn: async () => await api.assessment.getAssessmentById({ assessmentId }),
+  })
+
+  const assessmentData = res?.data ?? null
+
+  useEffect(() => {
+    if (assessmentData?.modelId?.toString() === AssessmentModel.QASS) {
+      const config = configSchema.parse(assessmentData?.modelConfig)
+      if (config.scaleType === ScaleType.PercentageScale) {
+        setMultiplier(100)
+      }
+    }
+  }, [assessmentData])
+
+  useEffect(() => {
+    if (error) {
+      toast.error('Something went wrong. Please try again.')
+    }
+  }, [error])
+
   return (
     <div className="grid gap-4">
       {data.map((item, i) => (
@@ -188,6 +231,7 @@ const SummaryToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponentId
           key={i}
           peerRatingData={data}
           data={item}
+          multiplier={multiplier}
         />
       ))}
     </div>
@@ -301,9 +345,11 @@ const PeerMatrixToggleGroup = ({ data }: { data: GetPeerRatingsByScoringComponen
 const PeerRatingCollapsible = ({
   data,
   peerRatingData,
+  multiplier,
 }: {
   data: UserWithPeerRating
   peerRatingData: GetPeerRatingsByScoringComponentIdResponse
+  multiplier: number
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -335,7 +381,6 @@ const PeerRatingCollapsible = ({
             >
               <div className="flex items-center gap-2">
                 <div className="text-black/70 font-semibold">{rater?.name ?? '-'}</div>
-                {/* <div className="text-muted-foreground text-sm">{`( Given score : ${rating.score ?? '-'} )`}</div> */}
                 {rater?.userId === data?.userId && (
                   <Badge
                     variant="secondary"
@@ -350,6 +395,7 @@ const PeerRatingCollapsible = ({
                 data={rating}
                 ratee={data}
                 rater={rater}
+                multiplier={multiplier}
                 triggerButton={<ChevronRight className="text-primary/80 cursor-pointer" />}
               />
             </div>

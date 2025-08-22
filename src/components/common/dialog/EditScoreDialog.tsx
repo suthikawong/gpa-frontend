@@ -1,6 +1,7 @@
 import { api } from '@/api'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Dialog,
@@ -15,7 +16,15 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { mode } from '@/config/app'
+import { AssessmentModel, mode, ScaleType } from '@/config/app'
+import { cn } from '@/lib/utils'
+import {
+  calculateMaxGroupSize,
+  calculateMinGroupSize,
+  validateBoundConflict,
+  validateConstraintConflict,
+  validateScoreConstraint,
+} from '@/utils/qass'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
@@ -100,7 +109,10 @@ type FormSchemaType = FormSchemaByModel[(typeof model)[keyof typeof model]]
 const qassReviewSchema = z.object({
   mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
   polishingFactor: z
-    .number({ required_error: 'Polishing factor is required', invalid_type_error: 'Polishing factor must be a number' })
+    .number({
+      required_error: 'Polishing factor is required',
+      invalid_type_error: 'Polishing factor must be a number',
+    })
     .finite()
     .gt(0, { message: 'Polishing factor must be greater than 0' })
     .lt(0.5, { message: 'Polishing factor must be less than 0.5' }),
@@ -116,6 +128,22 @@ const qassReviewSchema = z.object({
     .finite()
     .gt(0, { message: 'Group spread must be greater than 0' })
     .lt(1, { message: 'Group spread must be less than 1' }),
+  scaleType: z.string({ required_error: 'Scale is required', invalid_type_error: 'Scale is required' }),
+  isTotalScoreConstrained: z.boolean(),
+  scoreConstraint: z
+    .number({ required_error: 'Constraint is required', invalid_type_error: 'Constraint is required' })
+    .finite()
+    .gt(0, { message: 'Constraint must be greater than 0' })
+    .max(100, { message: 'Constraint must be lower than or equal 100' })
+    .optional(),
+  lowerBound: z
+    .number({ required_error: 'Lower bound is required', invalid_type_error: 'Lower bound is required' })
+    .finite()
+    .min(0, { message: 'Lower bound must be greater than or equal 0' }),
+  upperBound: z
+    .number({ required_error: 'Upper bound is required', invalid_type_error: 'Upper bound is required' })
+    .finite()
+    .max(100, { message: 'Upper bound must be lower than or equal 100' }),
   groupScore: z
     .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
     .finite()
@@ -413,7 +441,12 @@ const QassWeightForm = ({
     peerRatingImpact: modelConfigQASS.peerRatingImpact,
     groupSpread: modelConfigQASS.groupSpread,
     groupScore: data?.groupScore?.score,
-    studentWeights: data?.studentScores.map((item) => ({ userId: item.userId, weight: 1 })),
+    scaleType: modelConfigQASS.scaleType,
+    isTotalScoreConstrained: modelConfigQASS.isTotalScoreConstrained,
+    scoreConstraint: modelConfigQASS.scoreConstraint,
+    lowerBound: modelConfigQASS.lowerBound,
+    upperBound: modelConfigQASS.upperBound,
+    studentWeights: data?.studentScores?.map((item) => ({ userId: item.userId, weight: 1 })) ?? [],
   }
   const form = useForm<z.infer<typeof qassReviewSchema>>({
     resolver: zodResolver(qassReviewSchema),
@@ -436,10 +469,87 @@ const QassWeightForm = ({
     },
   })
 
+  const selectedScaleType = useWatch({
+    control: form.control,
+    name: 'scaleType',
+  })
+
+  const isTotalScoreConstrained = useWatch({
+    control: form.control,
+    name: 'isTotalScoreConstrained',
+  })
+
+  const validate = (values: z.infer<typeof qassReviewSchema>) => {
+    if (!validateBoundConflict(values.lowerBound, values.upperBound)) {
+      form.setError('lowerBound', { type: 'custom', message: 'Lower bound must be less than upper bound' })
+      return false
+    }
+    if (!validateScoreConstraint(values.isTotalScoreConstrained, values.scoreConstraint)) {
+      form.setError('scoreConstraint', { type: 'custom', message: 'Constraint is required' })
+      return false
+    }
+    if (
+      !validateConstraintConflict(
+        values.lowerBound,
+        values.upperBound,
+        values.studentWeights.length,
+        values.isTotalScoreConstrained,
+        values.scoreConstraint
+      )
+    ) {
+      form.setError('lowerBound', { type: 'custom', message: 'Constraint conflicts with lower or upper bound' })
+      return false
+    }
+    return true
+  }
+
   const onSubmit = async (values: z.infer<typeof qassReviewSchema>) => {
+    const valid = validate(values)
+    if (!valid) return
     const enumMode =
       values.mode === mode.Bijunction ? QASSMode.B : values.mode === mode.Conjunction ? QASSMode.C : QASSMode.D
     mutation.mutate({ ...values, mode: enumMode, groupId, weights: values.studentWeights })
+  }
+
+  const scaleTypeOptions = Object.values(ScaleType).map((value) => ({ label: value, value }))
+
+  const renderGroupMessage = () => {
+    if (isTotalScoreConstrained) {
+      const minGroupSize = calculateMinGroupSize(
+        AssessmentModel.QASS,
+        modelConfigQASS.scoreConstraint,
+        modelConfigQASS.upperBound
+      )
+      const maxGroupSize = calculateMaxGroupSize(
+        AssessmentModel.QASS,
+        modelConfigQASS.scoreConstraint,
+        modelConfigQASS.lowerBound
+      )
+      if (
+        !validateConstraintConflict(
+          modelConfigQASS.lowerBound,
+          modelConfigQASS.upperBound,
+          data?.studentScores?.length ?? 0,
+          modelConfigQASS.isTotalScoreConstrained,
+          modelConfigQASS.scoreConstraint
+        )
+      ) {
+        return (
+          <div className="mt-4 flex w-full gap-2 bg-destructive/10 border border-destructive rounded-lg p-4">
+            <div className="text-left text-sm text-destructive">
+              <span>
+                The number of students in the group does not meet the condition. The group size should be less than or
+                equal to{' '}
+              </span>
+              <span className="font-semibold">{maxGroupSize}</span>
+              <span> and greater than or equal to </span>
+              <span className="font-semibold">{minGroupSize}</span>
+            </div>
+          </div>
+        )
+      }
+    }
+    return null
   }
 
   return (
@@ -565,6 +675,141 @@ const QassWeightForm = ({
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="scaleType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Scale</FormLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select scale" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {scaleTypeOptions.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="isTotalScoreConstrained"
+            render={({ field }) => (
+              <FormItem
+                className={cn(
+                  'flex items-start gap-3 mt-4',
+                  selectedScaleType !== ScaleType.PercentageScale && 'hidden'
+                )}
+              >
+                <FormControl>
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="terms-2"
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                      disabled
+                    />
+                    <div className="grid gap-2">
+                      <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
+                      <FormDescription>
+                        Students must follow the total score constraint when allocating peer assessment scores.
+                      </FormDescription>
+                    </div>
+                  </div>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="scoreConstraint"
+            render={({ field }) => (
+              <FormItem className={cn('mb-4', selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                <FormLabel>Constraint</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value))
+                      if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                    }}
+                    type="number"
+                    placeholder="Enter score constraint"
+                    step="0.1"
+                    disabled
+                  />
+                </FormControl>
+                <FormDescription>
+                  This constraint will be applied when "Apply total score constraint" is checked.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lowerBound"
+            render={({ field }) => (
+              <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                <FormLabel>Lower bound</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value))
+                      form.trigger('lowerBound')
+                      if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                    }}
+                    type="number"
+                    placeholder="Enter lower bound"
+                    step="0.1"
+                    disabled
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="upperBound"
+            render={({ field }) => (
+              <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                <FormLabel>Upper bound</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value))
+                      form.trigger('upperBound')
+                      form.trigger('lowerBound')
+                      if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                    }}
+                    type="number"
+                    placeholder="Enter upper bound"
+                    step="0.1"
+                    disabled
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <div className="flex items-center gap-4 border-t mt-2" />
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-lg">Student Weights</h2>
@@ -615,6 +860,7 @@ const QassWeightForm = ({
             </div>
           ))}
         </div>
+        {isTotalScoreConstrained && renderGroupMessage()}
 
         <DialogFooter>
           <Button

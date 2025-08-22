@@ -5,8 +5,15 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { mode, ScaleSteps, ScaleType } from '@/config/app'
+import { AssessmentModel, mode, ScaleType } from '@/config/app'
 import { cn } from '@/lib/utils'
+import {
+  calculateMaxGroupSize,
+  calculateMinGroupSize,
+  validateBoundConflict,
+  validateGroupSizeConflict,
+  validateScoreConstraint,
+} from '@/utils/qass'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
@@ -53,8 +60,21 @@ const qassSchema = z.object({
     .gt(0, { message: 'Group spread must be greater than 0' })
     .lt(1, { message: 'Group spread must be less than 1' }),
   scaleType: z.string({ required_error: 'Scale is required', invalid_type_error: 'Scale is required' }),
-  scaleSteps: z.string({ required_error: 'Steps is required', invalid_type_error: 'Steps is required' }).optional(),
   isTotalScoreConstrained: z.boolean(),
+  scoreConstraint: z
+    .number({ required_error: 'Constraint is required', invalid_type_error: 'Constraint is required' })
+    .finite()
+    .gt(0, { message: 'Constraint must be greater than 0' })
+    .max(10, { message: 'Constraint must be lower than or equal 10' })
+    .optional(),
+  lowerBound: z
+    .number({ required_error: 'Lower bound is required', invalid_type_error: 'Lower bound is required' })
+    .finite()
+    .min(0, { message: 'Lower bound must be greater than or equal 0' }),
+  upperBound: z
+    .number({ required_error: 'Upper bound is required', invalid_type_error: 'Upper bound is required' })
+    .finite()
+    .max(1, { message: 'Upper bound must be lower than or equal 1' }),
 })
 
 const webavaliaSchema = z.object({
@@ -97,8 +117,10 @@ const ModelTab = ({
             peerRatingImpact: undefined,
             groupSpread: undefined,
             scaleType: undefined,
-            scaleSteps: undefined,
             isTotalScoreConstrained: false,
+            scoreConstraint: undefined,
+            lowerBound: undefined,
+            upperBound: undefined,
           }
         }
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
@@ -147,6 +169,26 @@ const ModelTab = ({
     name: 'scaleType',
   })
 
+  const isTotalScoreConstrained = useWatch({
+    control: form.control,
+    name: 'isTotalScoreConstrained',
+  })
+
+  const scoreConstraint = useWatch({
+    control: form.control,
+    name: 'scoreConstraint',
+  })
+
+  const lowerBound = useWatch({
+    control: form.control,
+    name: 'lowerBound',
+  })
+
+  const upperBound = useWatch({
+    control: form.control,
+    name: 'upperBound',
+  })
+
   useEffect(() => {
     const values = getDefaultValues(selectedModel)
     setFormValues(values)
@@ -154,13 +196,34 @@ const ModelTab = ({
 
   useEffect(() => {
     if (selectedScaleType === ScaleType.PercentageScale) {
-      form.setValue('scaleSteps', '1')
+      if (data?.modelId?.toString() === model.QASS) {
+        const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
+        if (modelConfigQASS.scaleType === ScaleType.PercentageScale) {
+          form.setValue('lowerBound', modelConfigQASS.lowerBound)
+          form.setValue('upperBound', modelConfigQASS.upperBound)
+          form.setValue('scoreConstraint', modelConfigQASS.scoreConstraint)
+          form.setValue('isTotalScoreConstrained', modelConfigQASS.isTotalScoreConstrained)
+        } else {
+          form.setValue('lowerBound', 0)
+          form.setValue('upperBound', 1)
+          form.setValue('scoreConstraint', 1)
+          form.setValue('isTotalScoreConstrained', false)
+        }
+      } else {
+        form.setValue('lowerBound', 0)
+        form.setValue('upperBound', 1)
+        form.setValue('scoreConstraint', 1)
+        form.setValue('isTotalScoreConstrained', false)
+      }
     } else if (selectedScaleType === ScaleType.FivePointScale) {
-      form.setValue('scaleSteps', '20')
+      form.setValue('lowerBound', 1)
+      form.setValue('upperBound', 5)
+      form.setValue('isTotalScoreConstrained', false)
     } else if (selectedScaleType === ScaleType.FourPointScale) {
-      form.setValue('scaleSteps', '25')
+      form.setValue('lowerBound', 1)
+      form.setValue('upperBound', 4)
+      form.setValue('isTotalScoreConstrained', false)
     }
-    form.setValue('isTotalScoreConstrained', false)
   }, [selectedScaleType])
 
   const onClickUseRecommended = () => {
@@ -172,8 +235,10 @@ const ModelTab = ({
         peerRatingImpact: 1,
         groupSpread: 0.5,
         scaleType: ScaleType.PercentageScale,
-        scaleSteps: '1',
         isTotalScoreConstrained: false,
+        scoreConstraint: 1,
+        lowerBound: 0,
+        upperBound: 1,
       }
       setFormValues(values)
     } else if (selectedModel === model.WebAVALIA) {
@@ -191,6 +256,23 @@ const ModelTab = ({
 
   const onSubmit = async (values: ModelFormSchema) => {
     const { modelId, ...modelConfig } = values
+    if (values.modelId === AssessmentModel.QASS) {
+      const qassConfig = qassSchema.parse(values)
+      if (!validateBoundConflict(qassConfig.lowerBound, qassConfig.upperBound)) {
+        form.setError('lowerBound', { type: 'custom', message: 'Lower bound must be less than upper bound' })
+        return
+      }
+      if (!validateScoreConstraint(qassConfig.isTotalScoreConstrained, qassConfig.scoreConstraint)) {
+        form.setError('scoreConstraint', { type: 'custom', message: 'Constraint is required' })
+        return
+      }
+      const minGroupSize = calculateMinGroupSize(selectedModel, scoreConstraint, upperBound)
+      const maxGroupSize = calculateMaxGroupSize(selectedModel, scoreConstraint, lowerBound)
+      if (!validateGroupSizeConflict(qassConfig.isTotalScoreConstrained, minGroupSize!, maxGroupSize!)) {
+        form.setError('scoreConstraint', { type: 'custom', message: 'Constraint conflicts with lower or upper bound' })
+        return
+      }
+    }
     const payload = {
       ...data,
       modelId: parseInt(modelId),
@@ -199,9 +281,39 @@ const ModelTab = ({
     updateMutation.mutate(payload)
   }
 
-  const scaleStepsOptions = Object.keys(ScaleSteps).map((step) => ({ label: step, value: step }))
-
   const scaleTypeOptions = Object.values(ScaleType).map((value) => ({ label: value, value }))
+
+  const renderGroupMessage = () => {
+    if (isTotalScoreConstrained) {
+      const minGroupSize = calculateMinGroupSize(selectedModel, scoreConstraint, upperBound)
+      const maxGroupSize = calculateMaxGroupSize(selectedModel, scoreConstraint, lowerBound)
+      if (!validateGroupSizeConflict(isTotalScoreConstrained, minGroupSize!, maxGroupSize!)) {
+        return (
+          <div className="mt-4 flex w-full gap-2 bg-destructive/10 border border-destructive rounded-lg p-4">
+            <div className="text-left text-sm text-destructive">
+              <p>The constraint conflicts with the lower and upper bounds. Please correct these values.</p>
+            </div>
+          </div>
+        )
+      } else {
+        return (
+          <div className="rounded-xl border border-gray-200 bg-muted p-5 text-sm text-muted-foreground">
+            <div>
+              <span>This configuration can only be used when the group size is less than or equal to </span>
+              <span className="font-semibold text-black">{maxGroupSize}</span>
+              <span> and greater than or equal to </span>
+              <span className="font-semibold text-black">{minGroupSize}</span>
+              <span>
+                . If the group size does not meet this condition, students in the group will not be able to perform peer
+                assessment.
+              </span>
+            </div>
+          </div>
+        )
+      }
+    }
+    return null
+  }
 
   return (
     <>
@@ -365,66 +477,112 @@ const ModelTab = ({
                               </FormItem>
                             )}
                           />
-                          <div
-                            className={cn(
-                              'hidden',
-                              selectedScaleType === ScaleType.PercentageScale && 'grid w-full items-center gap-4'
-                            )}
-                          >
-                            <FormField
-                              control={form.control}
-                              name="scaleSteps"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Steps</FormLabel>
-                                  <Select
-                                    value={field.value}
-                                    onValueChange={field.onChange}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select steps" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {scaleStepsOptions.map((option) => (
-                                        <SelectItem
-                                          key={option.value}
-                                          value={option.value}
-                                        >
-                                          {option.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="isTotalScoreConstrained"
-                              render={({ field }) => (
-                                <FormItem className="flex items-start gap-3">
-                                  <FormControl>
-                                    <div className="flex items-start gap-3">
-                                      <Checkbox
-                                        checked={field.value ?? false}
-                                        onCheckedChange={field.onChange}
-                                      />
-                                      <div className="grid gap-2">
-                                        <FormLabel>Apply total score constraint</FormLabel>
-                                        <FormDescription>
-                                          Students must follow the total score constraint when allocating peer
-                                          assessment scores.
-                                        </FormDescription>
-                                      </div>
+                          <FormField
+                            control={form.control}
+                            name="isTotalScoreConstrained"
+                            render={({ field }) => (
+                              <FormItem
+                                className={cn(
+                                  'flex items-start gap-3 mt-4',
+                                  selectedScaleType !== ScaleType.PercentageScale && 'hidden'
+                                )}
+                              >
+                                <FormControl>
+                                  <div className="flex items-start gap-3">
+                                    <Checkbox
+                                      id="terms-2"
+                                      checked={field.value ?? false}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                    <div className="grid gap-2">
+                                      <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
+                                      <FormDescription>
+                                        Students must follow the total score constraint when allocating peer assessment
+                                        scores.
+                                      </FormDescription>
                                     </div>
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                                  </div>
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="scoreConstraint"
+                            render={({ field }) => (
+                              <FormItem
+                                className={cn('mb-4', selectedScaleType !== ScaleType.PercentageScale && 'hidden')}
+                              >
+                                <FormLabel>Constraint</FormLabel>
+
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    onChange={(e) => {
+                                      field.onChange(parseFloat(e.target.value))
+                                      if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                                    }}
+                                    disabled={!isTotalScoreConstrained}
+                                    type="number"
+                                    placeholder="Enter score constraint"
+                                    step="0.1"
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  This constraint will be applied when "Apply total score constraint" is checked.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="lowerBound"
+                            render={({ field }) => (
+                              <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                                <FormLabel>Lower bound</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    onChange={(e) => {
+                                      field.onChange(parseFloat(e.target.value))
+                                      form.trigger('lowerBound')
+                                      if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                                    }}
+                                    type="number"
+                                    placeholder="Enter lower bound"
+                                    step="0.1"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="upperBound"
+                            render={({ field }) => (
+                              <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                                <FormLabel>Upper bound</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    onChange={(e) => {
+                                      field.onChange(parseFloat(e.target.value))
+                                      form.trigger('upperBound')
+                                      form.trigger('lowerBound')
+                                      if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                                    }}
+                                    type="number"
+                                    placeholder="Enter upper bound"
+                                    step="0.1"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          {isTotalScoreConstrained && renderGroupMessage()}
                         </>
                       )}
 

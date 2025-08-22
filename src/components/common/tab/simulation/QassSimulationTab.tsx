@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { mode, ScaleType } from '@/config/app'
 import { cn } from '@/lib/utils'
+import { validateBoundConflict, validateConstraintConflict, validateScoreConstraint } from '@/utils/qass'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { CalcualteScoresByQASSResponse } from 'gpa-backend/src/simulation/dto/simulation.response'
@@ -70,9 +71,10 @@ const formSchema = z
       .max(100, { message: 'Upper bound must be lower than or equal 100' }),
     isTotalScoreConstrained: z.boolean(),
     scoreConstraint: z
-      .number()
+      .number({ required_error: 'Constraint is required', invalid_type_error: 'Constraint is required' })
       .finite()
-      .max(100, { message: 'Upper bound must be lower than or equal 100' })
+      .gt(0, { message: 'Constraint must be greater than 0' })
+      .max(100, { message: 'Constraint must be lower than or equal 100' })
       .optional(),
     peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(100), z.nan()]).optional())),
   })
@@ -94,32 +96,10 @@ const formSchema = z
         data.scoreConstraint
       ),
     {
-      message: 'Constraint conflicts with lower or upper bound.',
+      message: 'Constraint conflicts with lower or upper bound',
       path: ['scoreConstraint'],
     }
   )
-
-const validateBoundConflict = (lowerBound: number, upperBound: number) => lowerBound < upperBound
-
-const validateScoreConstraint = (isTotalScoreConstrained: boolean, scoreConstraint?: number) => {
-  if (isTotalScoreConstrained && scoreConstraint === undefined) {
-    return false
-  }
-  return true
-}
-
-const validateConstraintConflict = (
-  lowerBound: number,
-  upperBound: number,
-  groupSize: number,
-  isTotalScoreConstrained: boolean,
-  scoreConstraint?: number
-) => {
-  if (isTotalScoreConstrained) {
-    return upperBound * groupSize >= scoreConstraint! && scoreConstraint! >= lowerBound * groupSize
-  }
-  return true
-}
 
 type FormSchema = z.infer<typeof formSchema>
 
