@@ -497,6 +497,7 @@ const ModelTab = ({
                                 <Select
                                   value={field.value}
                                   onValueChange={field.onChange}
+                                  disabled={!data.canEdit}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -534,6 +535,7 @@ const ModelTab = ({
                                       id="terms-2"
                                       checked={field.value ?? false}
                                       onCheckedChange={field.onChange}
+                                      disabled={!data.canEdit}
                                     />
                                     <div className="grid gap-2">
                                       <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
@@ -563,7 +565,7 @@ const ModelTab = ({
                                       field.onChange(parseFloat(e.target.value))
                                       if (isTotalScoreConstrained) form.trigger('scoreConstraint')
                                     }}
-                                    disabled={!isTotalScoreConstrained}
+                                    disabled={!isTotalScoreConstrained || !data.canEdit}
                                     type="number"
                                     placeholder="Enter score constraint"
                                     step="0.1"
@@ -593,6 +595,7 @@ const ModelTab = ({
                                     type="number"
                                     placeholder="Enter lower bound"
                                     step="0.1"
+                                    disabled={!data.canEdit}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -617,6 +620,7 @@ const ModelTab = ({
                                     type="number"
                                     placeholder="Enter upper bound"
                                     step="0.1"
+                                    disabled={!data.canEdit}
                                   />
                                 </FormControl>
                                 <FormMessage />
