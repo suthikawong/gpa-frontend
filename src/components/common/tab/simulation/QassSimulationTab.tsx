@@ -76,7 +76,7 @@ const formSchema = z
       .gt(0, { message: 'Constraint must be greater than 0' })
       .max(100, { message: 'Constraint must be lower than or equal 100' })
       .optional(),
-    peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(100), z.nan()]).optional())),
+    peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(100), z.nan()]))),
   })
   .refine((data) => validateBoundConflict(data.lowerBound, data.upperBound), {
     message: 'Lower bound must be less than upper bound',
@@ -190,13 +190,13 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
     })
   }
 
-  const validatePeerMatrix = (values: (number | undefined)[][]) => {
-    const tolerance = 0.01
+  const validatePeerMatrix = (values: number[][]) => {
+    const tolerance = 0.001
     for (let i = 0; i < values.length; i++) {
       let sum = 0
       // check ratings in each cell
       for (let j = 0; j < values.length; j++) {
-        if (values[j][i] === undefined) continue
+        if (isNaN(values[j][i])) continue
         if (values[j][i]! > upperBound || values[j][i]! < lowerBound) {
           setErrorMatrix(`Ratings are lower than ${lowerBound} or higher than ${upperBound}`)
           return false
