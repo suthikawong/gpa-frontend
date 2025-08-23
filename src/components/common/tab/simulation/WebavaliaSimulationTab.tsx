@@ -46,7 +46,7 @@ const formSchema = z.object({
     .finite()
     .min(0, { message: 'Group grade must be greater than or equal to 0' })
     .max(20, { message: 'Group grade must be less than or equal to 20' }),
-  peerMatrix: z.array(z.array(z.union([z.number().int().min(0).max(100), z.nan()]).optional())),
+  peerMatrix: z.array(z.array(z.union([z.number().int().min(0).max(100), z.nan()]))),
 })
 
 type FormSchema = z.infer<typeof formSchema>
@@ -95,17 +95,17 @@ const WebavaliaSimulationTab = ({ scrollToBottom }: WebavaliaSimulationTabProps)
     mutation.mutate({ ...payload, groupGrade: payload.groupGrade })
   }
 
-  const validatePeerMatrix = (values: (number | undefined)[][]) => {
+  const validatePeerMatrix = (values: number[][]) => {
     for (let i = 0; i < values.length; i++) {
       let sum = 0
       for (let j = 0; j < values.length; j++) {
-        if (values[j][i] !== undefined && values[j][i]! % 5 !== 0) {
+        if (!isNaN(values[j][i]) && values[j][i]! % 5 !== 0) {
           setErrorMatrix('Votings must be divisible by 5.')
           return false
         }
         sum += values[j][i] ?? 0
       }
-      if (sum !== 100) {
+      if (!isNaN(sum) && sum !== 100) {
         setErrorMatrix(
           'The sum of scores in each column must equal 100. Please adjust the values so that each vertical line adds up to 100.'
         )
