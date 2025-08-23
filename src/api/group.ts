@@ -10,6 +10,7 @@ import {
   GetGroupByIdRequest,
   GetGroupMembersRequest,
   GetScoresRequest,
+  GetStudentsWithoutPeerAssessmentRequest,
   JoinGroupRequest,
   LeaveGroupRequest,
   UpdateGroupRequest,
@@ -27,6 +28,7 @@ import {
   GetGroupByIdResponse,
   GetGroupMembersResponse,
   GetScoresResponse,
+  GetStudentsWithoutPeerAssessmentResponse,
   ImportGroupsResponse,
   JoinGroupResponse,
   LeaveGroupResponse,
@@ -128,6 +130,13 @@ const leaveGroup = async (data: LeaveGroupRequest): Promise<AppResponse<LeaveGro
   return response.data
 }
 
+const getStudentsWithoutPeerAssessment = async ({
+  groupId,
+}: GetStudentsWithoutPeerAssessmentRequest): Promise<AppResponse<GetStudentsWithoutPeerAssessmentResponse>> => {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/group/${groupId}/students/no-rating`)
+  return response.data
+}
+
 const calculateScoreByQass = async (
   data: CalculateScoreByQassRequest
 ): Promise<AppResponse<CalculateScoreByQassResponse>> => {
@@ -158,6 +167,7 @@ export const group = {
   upsertScore,
   joinGroup,
   leaveGroup,
+  getStudentsWithoutPeerAssessment,
   calculateScoreByQass,
   calculateScoreByWebavalia,
 }

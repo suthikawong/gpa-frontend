@@ -139,9 +139,10 @@ function RouteComponent() {
             title="No Assessments Yet"
             description1="It looks like you haven't created any assessments."
             icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
+            className="flex-grow"
           />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 flex-grow">
             <div className="font-semibold text-lg mb-6">
               We've found <span className="text-primary">{total}</span> assessments!
             </div>

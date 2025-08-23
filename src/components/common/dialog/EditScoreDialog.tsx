@@ -1,5 +1,7 @@
 import { api } from '@/api'
+import checked from '@/assets/checked.png'
 import NoDocuments from '@/components/svg/NoDocuments'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
@@ -29,8 +31,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { AxiosError } from 'axios'
+import { format } from 'date-fns'
 import { Group, StudentScore, User } from 'gpa-backend/src/drizzle/schema'
-import { GetScoresResponse, StudentScoreItem } from 'gpa-backend/src/group/dto/group.response'
+import {
+  GetScoresResponse,
+  GetStudentsWithoutPeerAssessmentResponse,
+  ScoringComponentWithStudents,
+  StudentScoreItem,
+} from 'gpa-backend/src/group/dto/group.response'
 import { Calculator, ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
@@ -49,7 +57,8 @@ interface EditScoreDialogProps {
 
 enum DialogState {
   Edit,
-  ReviewWeights,
+  ReveiwPeerRatings,
+  ReviewConfiguration,
 }
 
 const scoresSchema = z.object({
@@ -186,22 +195,77 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
   const params: any = route.routeTree.useParams()
   const assessmentId = parseInt(params?.assessmentId!)
 
-  const { data: res, error } = useQuery({
+  const { data: assessmentRes, error: assessmentError } = useQuery({
     queryKey: ['getAssessmentById', assessmentId],
     queryFn: async () => await api.assessment.getAssessmentById({ assessmentId }),
   })
 
-  const assessmentData = res?.data ?? null
+  const assessmentData = assessmentRes?.data ?? null
+
+  const {
+    data: studentNoRatingRes,
+    isLoading,
+    error: studentsNoRatingError,
+  } = useQuery({
+    queryKey: ['getStudentsWithoutPeerAssessment', groupId],
+    queryFn: async () => await api.group.getStudentsWithoutPeerAssessment({ groupId }),
+  })
+
+  const studentsNoRatingData = studentNoRatingRes?.data ?? []
 
   useEffect(() => {
-    if (error) {
+    if (assessmentError || studentsNoRatingError) {
       toast.error('Something went wrong. Please try again.')
     }
-  }, [error])
+  }, [assessmentError, studentsNoRatingError])
 
   useEffect(() => {
     if (open) setDialogState(DialogState.Edit)
   }, [open])
+
+  const renderPage = () => {
+    if (!assessmentData?.modelId) return <div>No model selected</div>
+    if (dialogState === DialogState.Edit) {
+      return (
+        <EditScoreForm
+          data={data}
+          groupId={groupId}
+          open={open}
+          modelId={assessmentData.modelId}
+          setOpen={setOpen}
+          setDialogState={setDialogState}
+          isCheckPeerRatingLoad={isLoading}
+        />
+      )
+    } else if (dialogState === DialogState.ReveiwPeerRatings) {
+      return (
+        <ReviewPeerRatings
+          data={studentsNoRatingData}
+          setDialogState={setDialogState}
+        />
+      )
+    } else if (dialogState === DialogState.ReviewConfiguration) {
+      if (assessmentData?.modelId === model.WebAVALIA) {
+        return (
+          <WebavaliaConfigurationForm
+            data={data}
+            groupId={groupId}
+            setOpen={setOpen}
+            assessmentData={assessmentData}
+          />
+        )
+      } else if (assessmentData?.modelId === model.QASS) {
+        return (
+          <QassConfigurationForm
+            data={data}
+            groupId={groupId}
+            setOpen={setOpen}
+            assessmentData={assessmentData}
+          />
+        )
+      }
+    }
+  }
 
   return (
     <Dialog
@@ -216,36 +280,7 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
           {triggerButton}
         </div>
       </DialogTrigger>
-      <DialogContent className="lg:max-w-4xl">
-        {dialogState === DialogState.ReviewWeights ? (
-          assessmentData?.modelId === model.WebAVALIA ? (
-            <WebavaliaWeightForm
-              data={data}
-              groupId={groupId}
-              setOpen={setOpen}
-              assessmentData={assessmentData}
-            />
-          ) : assessmentData?.modelId === model.QASS ? (
-            <QassWeightForm
-              data={data}
-              groupId={groupId}
-              setOpen={setOpen}
-              assessmentData={assessmentData}
-            />
-          ) : null
-        ) : assessmentData?.modelId ? (
-          <EditScoreForm
-            data={data}
-            groupId={groupId}
-            open={open}
-            modelId={assessmentData.modelId}
-            setOpen={setOpen}
-            setDialogState={setDialogState}
-          />
-        ) : (
-          <div>No model selected</div>
-        )}
-      </DialogContent>
+      <DialogContent className="lg:max-w-4xl">{renderPage()}</DialogContent>
     </Dialog>
   )
 }
@@ -257,6 +292,7 @@ const EditScoreForm = ({
   groupId,
   open,
   modelId,
+  isCheckPeerRatingLoad,
   setOpen,
   setDialogState,
 }: {
@@ -264,6 +300,7 @@ const EditScoreForm = ({
   groupId: number
   open: boolean
   modelId: number
+  isCheckPeerRatingLoad: boolean
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
   setDialogState: React.Dispatch<React.SetStateAction<DialogState>>
 }) => {
@@ -321,7 +358,7 @@ const EditScoreForm = ({
       return
     }
     setError(null)
-    setDialogState(DialogState.ReviewWeights)
+    setDialogState(DialogState.ReveiwPeerRatings)
   }
 
   useEffect(() => {
@@ -369,8 +406,9 @@ const EditScoreForm = ({
                 type="button"
                 onClick={onClickAutoCalculate}
                 className="w-fit"
+                loading={isCheckPeerRatingLoad}
               >
-                <Calculator />
+                {!isCheckPeerRatingLoad && <Calculator />}
                 <div className="hidden sm:block">Auto Calculate</div>
               </Button>
               {error && <FormMessage>{error}</FormMessage>}
@@ -415,7 +453,76 @@ const EditScoreForm = ({
   )
 }
 
-const QassWeightForm = ({
+const ReviewPeerRatings = ({
+  data,
+  setDialogState,
+}: {
+  data: GetStudentsWithoutPeerAssessmentResponse
+  setDialogState: React.Dispatch<React.SetStateAction<DialogState>>
+}) => {
+  const missing = data.some((item) => item.noRatingStudents.length > 0)
+  return (
+    <div className="space-y-4">
+      <DialogHeader>
+        <DialogTitle className="text-2xl">Review student's peer ratings</DialogTitle>
+        <DialogDescription className="mt-2">
+          Some components may have students who did not complete their peer assessment within the given time. Please
+          remind them to finish their evaluations. If a student is unable to submit their assessment, you may allow the
+          assessment model to handle the missing ratings automatically. In that case, click{' '}
+          <span className="font-semibold text-black">Continue</span> to proceed.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="rounded-xl border border-gray-200 bg-muted p-5 text-sm text-muted-foreground">
+        <div>
+          <span>You can allow students to submit their assessments by </span>
+          <span className="font-semibold text-black">extending the dates of that scoring component</span>
+          <span>
+            .If the group size does not meet this condition, students in the group will not be able to perform peer
+            assessment.
+          </span>
+        </div>
+      </div>
+
+      <h2 className="text-xl font-semibold mt-10 mb-6">Report missing peer ratings</h2>
+
+      <div className="grid w-full items-center gap-4">
+        {!missing ? (
+          <EmptyState
+            title="All components completed"
+            description1="You can click Continue to calculate the student scores."
+            icon={
+              <img
+                src={checked}
+                alt="checked image"
+                className="size-[80px] md:size-[100px]"
+              />
+            }
+          />
+        ) : (
+          data.map((item) => <StudentNoRatingCollapsible data={item} />)
+        )}
+      </div>
+
+      <DialogFooter>
+        <Button
+          variant="outline"
+          type="button"
+          onClick={() => setDialogState(DialogState.Edit)}
+        >
+          Back
+        </Button>
+        <Button
+          type="button"
+          onClick={() => setDialogState(DialogState.ReviewConfiguration)}
+        >
+          Continue
+        </Button>
+      </DialogFooter>
+    </div>
+  )
+}
+
+const QassConfigurationForm = ({
   data,
   groupId,
   setOpen,
@@ -877,7 +984,7 @@ const QassWeightForm = ({
   )
 }
 
-const WebavaliaWeightForm = ({
+const WebavaliaConfigurationForm = ({
   data,
   groupId,
   setOpen,
@@ -1112,6 +1219,50 @@ const StudentScoreCollapsible = ({
             </FormItem>
           )}
         />
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+const StudentNoRatingCollapsible = ({ data }: { data: ScoringComponentWithStudents }) => {
+  const [isOpen, setIsOpen] = useState(true)
+  if (data.noRatingStudents.length === 0) return null
+  return (
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className="flex flex-col gap-2"
+    >
+      <div className="flex items-center justify-between gap-4 px-4 py-2 rounded-md border">
+        <div>
+          <div className="text-sm font-semibold">
+            <span className="text-muted-foreground">Component: </span>{' '}
+            {`${format(data.startDate, 'dd/MM/y')} - ${format(data.endDate, 'dd/MM/y')}`}
+          </div>
+        </div>
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 rounded-full"
+          >
+            {isOpen ? <ChevronUp /> : <ChevronDown />}
+          </Button>
+        </CollapsibleTrigger>
+      </div>
+      <CollapsibleContent className="flex flex-col gap-2 py-2 px-4 pr-0">
+        {data.noRatingStudents.map((student, i) => (
+          <div
+            key={i}
+            className="text-sm flex items-center gap-x-2"
+          >
+            <Badge variant="destructive">Missing</Badge>
+            <div>
+              <span className="font-semibold">{student.name}</span>{' '}
+              <span className="text-muted-foreground">{`(Student ID: ${student.userNumber})`}</span>
+            </div>
+          </div>
+        ))}
       </CollapsibleContent>
     </Collapsible>
   )
