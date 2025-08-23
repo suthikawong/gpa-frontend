@@ -41,7 +41,7 @@ const AssessmentDialog = ({ triggerButton, data }: AssessmentDialogProps) => {
     onSuccess: () => {
       setOpen(false)
       toast.success('Assessment created successfully')
-      queryClient.invalidateQueries({ queryKey: ['getAssessmentsByInstructor'] })
+      queryClient.invalidateQueries({ queryKey: ['searchAssessmentsByInstructor', 1] })
       form.reset()
     },
     onError: () => {

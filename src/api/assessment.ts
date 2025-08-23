@@ -12,6 +12,7 @@ import {
   GetScoringComponentsByAssessmentIdRequest,
   GetStudentJoinedGroupRequest,
   RemoveStudentFromAssessmentRequest,
+  SearchAssessmentsByInstructorRequest,
   SearchStudentsInAssessmentRequest,
   StudentJoinAssessmentRequest,
   UpdateAssessmentRequest,
@@ -24,13 +25,13 @@ import {
   DeleteAllGroupsByAssessmentIdResponse,
   DeleteAssessmentResponse,
   GetAssessmentByIdResponse,
-  GetAssessmentsByInstructorResponse,
   GetAssessmentsByStudentResponse,
   GetGroupsByAssessmentIdResponse,
   GetMyScoreResponse,
   GetScoringComponentsByAssessmentIdResponse,
   GetStudentJoinedGroupResponse,
   RemoveStudentFromAssessmentResponse,
+  SearchAssessmentsByInstructorResponse,
   SearchStudentsInAssessmentResponse,
   StudentJoinAssessmentResponse,
   UpdateAssessmentResponse,
@@ -38,8 +39,10 @@ import {
 import { AppResponse } from '../../gpa-backend/src/app.response'
 import axios from './axios'
 
-const getAssessmentsByInstructor = async (): Promise<AppResponse<GetAssessmentsByInstructorResponse>> => {
-  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/assessment/instructor`)
+const searchAssessmentsByInstructor = async (
+  params: SearchAssessmentsByInstructorRequest
+): Promise<AppResponse<SearchAssessmentsByInstructorResponse>> => {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/assessment/instructor`, { params })
   return response.data
 }
 
@@ -158,7 +161,7 @@ const exportAssessmentScores = async ({ assessmentId }: ExportAssessmentScoresRe
 }
 
 export const assessment = {
-  getAssessmentsByInstructor,
+  searchAssessmentsByInstructor,
   getAssessmentsByStudent,
   getAssessmentById,
   createAssessment,
