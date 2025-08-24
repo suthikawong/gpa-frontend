@@ -45,10 +45,11 @@ export type ResultModelParametersType = QassSchema | WebavaliaSchema
 
 interface QuestionnaireDialogProps {
   triggerButton: React.ReactNode
+  isApplying: boolean
   onClickApply: (value: ResultModelParametersType) => void
 }
 
-const QuestionnaireDialog = ({ triggerButton, onClickApply }: QuestionnaireDialogProps) => {
+const QuestionnaireDialog = ({ triggerButton, isApplying, onClickApply }: QuestionnaireDialogProps) => {
   const [open, setOpen] = useState(false)
   const [selectedModel, setSelectedModel] = useState<AssessmentModel | null>(null)
 
@@ -78,6 +79,7 @@ const QuestionnaireDialog = ({ triggerButton, onClickApply }: QuestionnaireDialo
         {selectedModel ? (
           <ModelConfigurationPageContainer
             model={selectedModel}
+            isApplying={isApplying}
             setOpen={setOpen}
             onClickApply={onClickApply}
           />
@@ -209,10 +211,12 @@ const ModelSelectionPageContainer = ({
 
 const ModelConfigurationPageContainer = ({
   model,
+  isApplying,
   setOpen,
   onClickApply,
 }: {
   model: AssessmentModel
+  isApplying: boolean
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
   onClickApply: (value: ResultModelParametersType) => void
 }) => {
@@ -220,6 +224,7 @@ const ModelConfigurationPageContainer = ({
   const [result, setResult] = useState<QassSchema | WebavaliaSchema>({ modelId: model })
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null)
   const [previousChoice, setPreviousChoice] = useState<number | null>(null)
+  const [loading, setLoading] = useState(isApplying)
   const configurationSet = model === AssessmentModel.QASS ? qassConfigurationSet : webavaliaConfigurationSet
   const content = configurationSet[step]
 
@@ -289,8 +294,15 @@ const ModelConfigurationPageContainer = ({
 
   const onClickApplyInternal = () => {
     onClickApply(result)
-    setOpen(false)
+    setLoading(true)
   }
+
+  useEffect(() => {
+    if (loading && !isApplying) {
+      setLoading(false)
+      setOpen(false)
+    }
+  }, [isApplying, loading])
 
   return (
     <>
@@ -309,6 +321,7 @@ const ModelConfigurationPageContainer = ({
             <Button
               className="flex-grow sm:max-w-fit"
               onClick={onClickApplyInternal}
+              loading={loading}
             >
               Apply
             </Button>

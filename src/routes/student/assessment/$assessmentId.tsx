@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { AssessmentModel, model, Roles, ScaleType } from '@/config/app'
@@ -395,7 +394,12 @@ const PeerRatingPage = ({
   const queryClient = useQueryClient()
   const ratees = groupData?.members ?? []
   const config = assessmentData.modelId === model.QASS ? configSchema.parse(assessmentData?.modelConfig) : null
-  const maxScore = assessmentData.modelId === model.WebAVALIA ? 100 : (config?.upperBound ?? 0) * 100
+  const maxScore =
+    assessmentData.modelId === model.WebAVALIA
+      ? 100
+      : config?.scaleType === ScaleType.PercentageScale
+        ? (config?.upperBound ?? 0) * 100
+        : (config?.upperBound ?? 0)
   const defaultValues = {
     scoringComponentId,
     groupId: groupData?.groupId!,
@@ -442,7 +446,10 @@ const PeerRatingPage = ({
     name: 'studentScores',
   })
 
-  const remainScores = maxScore - studentScores.reduce((prev, curr) => prev + curr.score, 0)
+  const remainScores =
+    (assessmentData?.modelId === model.WebAVALIA || config?.scaleType === ScaleType.PercentageScale
+      ? 100
+      : (config?.scoreConstraint ?? 0)) - studentScores.reduce((prev, curr) => prev + curr.score, 0)
 
   return (
     <>
@@ -529,48 +536,6 @@ const PeerRatingCard = ({
   modelId: number
   config: z.infer<typeof configSchema> | null
 }) => {
-  if (modelId === model.WebAVALIA || config?.scaleType === ScaleType.PercentageScale) {
-    return (
-      <ScoreSliderCard
-        form={form}
-        index={index}
-        ratee={ratee}
-        modelId={modelId}
-        config={config}
-      />
-    )
-  } else if (config?.scaleType === ScaleType.FivePointScale) {
-    return (
-      <FivePointScaleCard
-        form={form}
-        index={index}
-        ratee={ratee}
-      />
-    )
-  } else if (config?.scaleType === ScaleType.FourPointScale) {
-    return (
-      <FourPointScaleCard
-        form={form}
-        index={index}
-        ratee={ratee}
-      />
-    )
-  }
-}
-
-const ScoreSliderCard = ({
-  form,
-  index,
-  ratee,
-  modelId,
-  config,
-}: {
-  form: UseFormReturn<z.infer<typeof formSchema>>
-  index: number
-  ratee: UserProtected
-  modelId: number
-  config: z.infer<typeof configSchema> | null
-}) => {
   return (
     <Card
       key={index}
@@ -594,21 +559,32 @@ const ScoreSliderCard = ({
               control={form.control}
               name={`studentScores.${index}.score`}
               render={({ field }) => {
-                const currValue =
-                  field.value !== undefined
-                    ? field.value
-                    : modelId === model.WebAVALIA
-                      ? 100
-                      : 100 * (config?.upperBound ?? 1)
+                let currValue = field.value
+                let min = config?.lowerBound ?? 0
+                let max = config?.upperBound ?? 1
+                let step = 1
+
+                if (modelId === model.WebAVALIA) {
+                  currValue = currValue ?? 100
+                  min = 0
+                  max = 100
+                  step = 5
+                } else {
+                  if (config?.scaleType === ScaleType.PercentageScale) {
+                    min *= 100
+                    max *= 100
+                  }
+                  currValue = currValue ?? max
+                }
                 return (
                   <FormItem>
                     <FormLabel className="text-base sm:text-lg font-semibold">Score</FormLabel>
                     <FormControl>
                       <div className="flex gap-4">
                         <Slider
-                          max={100 * (config?.upperBound ?? 1)}
-                          min={100 * (config?.lowerBound ?? 0)}
-                          step={modelId === model.WebAVALIA ? 5 : 1}
+                          max={max}
+                          min={min}
+                          step={step}
                           value={[currValue]}
                           onValueChange={(value) => field.onChange(value[0])}
                         />
@@ -619,200 +595,6 @@ const ScoreSliderCard = ({
                   </FormItem>
                 )
               }}
-            />
-            <FormField
-              control={form.control}
-              name={`studentScores.${index}.comment`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-semibold">Comment</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-const FourPointScaleCard = ({
-  form,
-  index,
-  ratee,
-}: {
-  form: UseFormReturn<z.infer<typeof formSchema>>
-  index: number
-  ratee: UserProtected
-}) => {
-  return (
-    <Card
-      key={index}
-      className="w-full"
-    >
-      <CardContent className="flex flex-col">
-        <div className="grid grid-cols-1 w-full gap-4">
-          <div className="flex gap-4 items-center lg:items-start">
-            <Avatar className="size-12">
-              {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
-              <AvatarFallback>{ratee?.name?.[0] ?? ''}</AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="text-lg md:text-2xl font-semibold">{ratee.name}</div>
-              <div className="text-muted-foreground">{ratee.email}</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 border-t mt-2" />
-          <div className="mt-2 space-y-8">
-            <FormField
-              control={form.control}
-              name={`studentScores.${index}.score`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base sm:text-lg font-semibold">
-                    How would you rate this person's overall contribution and performance in the group project?
-                  </FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={(value) => {
-                        field.onChange(value)
-                        form.trigger(`studentScores.${index}.score`)
-                      }}
-                      className="grid md:grid-cols-2"
-                    >
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
-                          <RadioGroupItem value="1" />
-                        </FormControl>
-                        <FormLabel className="text-base">Needs improvement</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
-                          <RadioGroupItem value="2" />
-                        </FormControl>
-                        <FormLabel className="text-base">Adequate</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
-                          <RadioGroupItem value="3" />
-                        </FormControl>
-                        <FormLabel className="text-base">Good</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
-                          <RadioGroupItem value="4" />
-                        </FormControl>
-                        <FormLabel className="text-base">Excellent</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name={`studentScores.${index}.comment`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-semibold">Comment</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-const FivePointScaleCard = ({
-  form,
-  index,
-  ratee,
-}: {
-  form: UseFormReturn<z.infer<typeof formSchema>>
-  index: number
-  ratee: UserProtected
-}) => {
-  return (
-    <Card
-      key={index}
-      className="w-full"
-    >
-      <CardContent className="flex flex-col">
-        <div className="grid grid-cols-1 w-full gap-4">
-          <div className="flex gap-4 items-center lg:items-start">
-            <Avatar className="size-12">
-              {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
-              <AvatarFallback>{ratee?.name?.[0] ?? ''}</AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="text-lg md:text-2xl font-semibold">{ratee.name}</div>
-              <div className="text-muted-foreground">{ratee.email}</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 border-t mt-2" />
-          <div className="mt-2 space-y-8">
-            <FormField
-              control={form.control}
-              name={`studentScores.${index}.score`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base sm:text-lg font-semibold">
-                    How would you rate this person's overall contribution and performance in the group project?
-                  </FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={(value) => {
-                        field.onChange(value)
-                        form.trigger(`studentScores.${index}.score`)
-                      }}
-                      className="grid md:grid-cols-2"
-                    >
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
-                          <RadioGroupItem value="1" />
-                        </FormControl>
-                        <FormLabel className="text-base">Very Poor</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
-                          <RadioGroupItem value="2" />
-                        </FormControl>
-                        <FormLabel className="text-base">Poor</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
-                          <RadioGroupItem value="3" />
-                        </FormControl>
-                        <FormLabel className="text-base">Fair</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
-                          <RadioGroupItem value="4" />
-                        </FormControl>
-                        <FormLabel className="text-base">Good</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
-                          <RadioGroupItem value="5" />
-                        </FormControl>
-                        <FormLabel className="text-base">Excellent</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
             />
             <FormField
               control={form.control}

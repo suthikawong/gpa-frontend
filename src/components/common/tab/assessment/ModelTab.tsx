@@ -60,16 +60,14 @@ const qassSchema = z.object({
     .number({ required_error: 'Constraint is required', invalid_type_error: 'Constraint is required' })
     .finite()
     .gt(0, { message: 'Constraint must be greater than 0' })
-    .max(10, { message: 'Constraint must be lower than or equal 10' })
+    .max(100, { message: 'Constraint must be lower than or equal 100' })
     .optional(),
   lowerBound: z
     .number({ required_error: 'Lower bound is required', invalid_type_error: 'Lower bound is required' })
-    .finite()
-    .min(0, { message: 'Lower bound must be greater than or equal 0' }),
+    .finite(),
   upperBound: z
     .number({ required_error: 'Upper bound is required', invalid_type_error: 'Upper bound is required' })
-    .finite()
-    .max(1, { message: 'Upper bound must be lower than or equal 1' }),
+    .finite(),
 })
 
 const webavaliaSchema = z.object({
@@ -140,7 +138,6 @@ const ModelTab = ({
   const form = useForm<ModelFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: getDefaultValues(modelIdStr),
-    shouldUnregister: true,
   })
 
   const updateMutation = useMutation({
@@ -185,27 +182,20 @@ const ModelTab = ({
     name: 'upperBound',
   })
 
-  const setModelParameters = (parameters: ModelFormSchema) => {
-    setTimeout(() => {
-      setFormValues(parameters)
-      if (parameters.modelId === AssessmentModel.QASS && typeof parameters.isTotalScoreConstrained === 'boolean') {
-        setTimeout(() => form.setValue('isTotalScoreConstrained', parameters.isTotalScoreConstrained), 10)
-      }
-      setParameters(null)
-    }, 10)
-  }
-
   useEffect(() => {
-    if (parameters) {
-      setModelParameters(parameters)
-    } else {
-      const values = getDefaultValues(selectedModel)
-      setTimeout(() => setFormValues(values), 10)
-    }
+    if (parameters) return
+    const values = getDefaultValues(selectedModel)
+    setFormValues(values)
   }, [selectedModel])
 
   useEffect(() => {
+    if (parameters) return
+    setDefualtPeerRatingConfig()
+  }, [selectedScaleType])
+
+  const setDefualtPeerRatingConfig = () => {
     if (selectedScaleType === ScaleType.PercentageScale) {
+      // saved qass configuration
       if (data?.modelId?.toString() === AssessmentModel.QASS) {
         const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
         if (modelConfigQASS.scaleType === ScaleType.PercentageScale) {
@@ -225,16 +215,28 @@ const ModelTab = ({
         form.setValue('scoreConstraint', 1)
         form.setValue('isTotalScoreConstrained', false)
       }
-    } else if (selectedScaleType === ScaleType.FivePointScale) {
-      form.setValue('lowerBound', 1)
-      form.setValue('upperBound', 5)
-      form.setValue('isTotalScoreConstrained', false)
-    } else if (selectedScaleType === ScaleType.FourPointScale) {
-      form.setValue('lowerBound', 1)
-      form.setValue('upperBound', 4)
-      form.setValue('isTotalScoreConstrained', false)
+    } else if (selectedScaleType === ScaleType.NPointScale) {
+      if (data?.modelId?.toString() === AssessmentModel.QASS) {
+        const modelConfigQASS = qassSchema.omit({ modelId: true }).parse(data.modelConfig)
+        if (modelConfigQASS.scaleType === ScaleType.NPointScale) {
+          form.setValue('lowerBound', modelConfigQASS.lowerBound)
+          form.setValue('upperBound', modelConfigQASS.upperBound)
+          form.setValue('scoreConstraint', modelConfigQASS.scoreConstraint)
+          form.setValue('isTotalScoreConstrained', modelConfigQASS.isTotalScoreConstrained)
+        } else {
+          form.setValue('lowerBound', 1)
+          form.setValue('upperBound', 5)
+          form.setValue('scoreConstraint', 20)
+          form.setValue('isTotalScoreConstrained', false)
+        }
+      } else {
+        form.setValue('lowerBound', 1)
+        form.setValue('upperBound', 5)
+        form.setValue('scoreConstraint', 20)
+        form.setValue('isTotalScoreConstrained', false)
+      }
     }
-  }, [selectedScaleType])
+  }
 
   const onClickUseRecommended = () => {
     if (selectedModel === AssessmentModel.QASS) {
@@ -268,6 +270,7 @@ const ModelTab = ({
     const { modelId, ...modelConfig } = values
     if (values.modelId === AssessmentModel.QASS) {
       const qassConfig = qassSchema.parse(values)
+      if (!validateInputType(qassConfig)) return
       if (!validateBoundConflict(qassConfig.lowerBound, qassConfig.upperBound)) {
         form.setError('lowerBound', { type: 'custom', message: 'Lower bound must be less than upper bound' })
         return
@@ -289,6 +292,62 @@ const ModelTab = ({
       modelConfig,
     }
     updateMutation.mutate(payload)
+  }
+
+  const validateInputType = (payload: ModelFormSchema) => {
+    if (payload.modelId !== AssessmentModel.QASS) return true
+    let error = false
+    if (payload.scaleType === ScaleType.PercentageScale) {
+      if (payload.lowerBound < 0) {
+        form.setError('lowerBound', { type: 'custom', message: 'Lower bound must be greater than or equal 0' })
+        error = true
+      }
+      if (payload.upperBound > 1) {
+        form.setError('upperBound', { type: 'custom', message: 'Upper bound must be less than 1' })
+        error = true
+      }
+      if ((payload.scoreConstraint ?? 0) > 10) {
+        form.setError('scoreConstraint', { type: 'custom', message: 'Constraint must be lower than or equal 10' })
+        error = true
+      }
+      if (payload.mode === mode.Conjunction && payload.upperBound < 1) {
+        form.setError('upperBound', { type: 'custom', message: 'Upper bound must be 1 in Conjuction mode' })
+        error = true
+      }
+      if (payload.mode === mode.Disjunction && payload.lowerBound > 0) {
+        form.setError('lowerBound', { type: 'custom', message: 'Lower bound must be 0 in Disjunction mode' })
+        error = true
+      }
+    } else {
+      if (!Number.isInteger(payload.lowerBound)) {
+        form.setError('lowerBound', { type: 'custom', message: 'Lower bound must be integer' })
+        error = true
+      }
+      if (!Number.isInteger(payload.upperBound)) {
+        form.setError('upperBound', { type: 'custom', message: 'Upper bound must be integer' })
+        error = true
+      }
+      if (!Number.isInteger(payload.scoreConstraint)) {
+        form.setError('scoreConstraint', { type: 'custom', message: 'Constraint must be integer' })
+        error = true
+      }
+      if (payload.mode === mode.Conjunction && payload.upperBound < 1) {
+        form.setError('upperBound', {
+          type: 'custom',
+          message: 'Upper bound must be greater than or equal 1 in Conjuction mode',
+        })
+        error = true
+      }
+      if (payload.mode === mode.Disjunction && payload.lowerBound > 0) {
+        form.setError('lowerBound', {
+          type: 'custom',
+          message: 'Lower bound must be less than or equal 0 in Disjunction mode',
+        })
+        error = true
+      }
+    }
+    if (error) return false
+    return true
   }
 
   const scaleTypeOptions = Object.values(ScaleType).map((value) => ({ label: value, value }))
@@ -328,7 +387,20 @@ const ModelTab = ({
   useEffect(() => {
     if (parameters) {
       form.setValue('modelId', parameters.modelId)
-      setModelParameters(parameters)
+      if (parameters.modelId === AssessmentModel.QASS) {
+        setTimeout(() => {
+          form.setValue('scaleType', parameters.scaleType)
+          setTimeout(() => {
+            setFormValues(parameters)
+            setParameters(null)
+          }, 1000)
+        }, 1000)
+      } else {
+        setTimeout(() => {
+          setFormValues(parameters)
+          setParameters(null)
+        }, 1000)
+      }
     }
   }, [parameters])
 
@@ -402,264 +474,263 @@ const ModelTab = ({
                       />
 
                       {/* QASS */}
-                      {selectedModel === AssessmentModel.QASS && (
-                        <>
-                          <FormField
-                            control={form.control}
-                            name="mode"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Mode</FormLabel>
-                                <Select
-                                  value={field.value}
-                                  onValueChange={field.onChange}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select mode" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value={mode.Bijunction}>Bijunction</SelectItem>
-                                    <SelectItem value={mode.Conjunction}>Conjuction</SelectItem>
-                                    <SelectItem value={mode.Disjunction}>Disjunction</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="polishingFactor"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Polishing Factor</FormLabel>
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="mode"
+                          render={({ field }) => (
+                            <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
+                              <FormLabel>Mode</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
                                 <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter polishing factor"
-                                    step="0.1"
-                                  />
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select mode" />
+                                  </SelectTrigger>
                                 </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="peerRatingImpact"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Peer rating impact</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter peer rating impact"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="groupSpread"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Group spread</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    type="number"
-                                    placeholder="Enter group spread"
-                                    step="0.1"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                <SelectContent>
+                                  <SelectItem value={mode.Bijunction}>Bijunction</SelectItem>
+                                  <SelectItem value={mode.Conjunction}>Conjuction</SelectItem>
+                                  <SelectItem value={mode.Disjunction}>Disjunction</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="polishingFactor"
+                          render={({ field }) => (
+                            <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
+                              <FormLabel>Polishing Factor</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                  type="number"
+                                  placeholder="Enter polishing factor"
+                                  step="0.1"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="peerRatingImpact"
+                          render={({ field }) => (
+                            <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
+                              <FormLabel>Peer rating impact</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                  type="number"
+                                  placeholder="Enter peer rating impact"
+                                  step="0.1"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="groupSpread"
+                          render={({ field }) => (
+                            <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
+                              <FormLabel>Group spread</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                  type="number"
+                                  placeholder="Enter group spread"
+                                  step="0.1"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
                           <div className="flex items-center gap-4 border-t mt-2" />
-                          <CardTitle className="text-xl flex gap-2 items-center">Peer Rating Configuration</CardTitle>
-                          <FormField
-                            control={form.control}
-                            name="scaleType"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Scale</FormLabel>
-                                <Select
-                                  value={field.value}
-                                  onValueChange={field.onChange}
-                                  disabled={!data.canEdit}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select scale" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {scaleTypeOptions.map((option) => (
-                                      <SelectItem
-                                        key={option.value}
-                                        value={option.value}
-                                      >
-                                        {option.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="isTotalScoreConstrained"
-                            render={({ field }) => (
-                              <FormItem
-                                className={cn(
-                                  'flex items-start gap-3 mt-4',
-                                  selectedScaleType !== ScaleType.PercentageScale && 'hidden'
-                                )}
+                          <CardTitle className="text-xl flex gap-2 items-center mt-4">
+                            Peer Rating Configuration
+                          </CardTitle>
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="scaleType"
+                          render={({ field }) => (
+                            <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
+                              <FormLabel>Scale</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                // disabled={!data.canEdit}
                               >
                                 <FormControl>
-                                  <div className="flex items-start gap-3">
-                                    <Checkbox
-                                      id="terms-2"
-                                      checked={field.value ?? false}
-                                      onCheckedChange={field.onChange}
-                                      disabled={!data.canEdit}
-                                    />
-                                    <div className="grid gap-2">
-                                      <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
-                                      <FormDescription>
-                                        Students must follow the total score constraint when allocating peer assessment
-                                        scores.
-                                      </FormDescription>
-                                    </div>
-                                  </div>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select scale" />
+                                  </SelectTrigger>
                                 </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="scoreConstraint"
-                            render={({ field }) => (
-                              <FormItem
-                                className={cn('mb-4', selectedScaleType !== ScaleType.PercentageScale && 'hidden')}
-                              >
-                                <FormLabel>Constraint</FormLabel>
+                                <SelectContent>
+                                  {scaleTypeOptions.map((option) => (
+                                    <SelectItem
+                                      key={option.value}
+                                      value={option.value}
+                                    >
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="isTotalScoreConstrained"
+                          render={({ field }) => (
+                            <FormItem
+                              className={cn(
+                                'flex items-start gap-3 mt-4',
+                                selectedModel !== AssessmentModel.QASS && 'hidden'
+                              )}
+                            >
+                              <FormControl>
+                                <div className="flex items-start gap-3">
+                                  <Checkbox
+                                    id="terms-2"
+                                    checked={field.value ?? false}
+                                    onCheckedChange={field.onChange}
+                                    disabled={!data.canEdit}
+                                  />
+                                  <div className="grid gap-2">
+                                    <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
+                                    <FormDescription>
+                                      Students must follow the total score constraint when allocating peer assessment
+                                      scores.
+                                    </FormDescription>
+                                  </div>
+                                </div>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="scoreConstraint"
+                          render={({ field }) => (
+                            <FormItem className={cn('mb-4', selectedModel !== AssessmentModel.QASS && 'hidden')}>
+                              <FormLabel>Constraint</FormLabel>
 
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(parseFloat(e.target.value))
+                                    if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                                  }}
+                                  // disabled={!isTotalScoreConstrained}
+                                  disabled={!isTotalScoreConstrained || !data.canEdit}
+                                  type="number"
+                                  placeholder="Enter score constraint"
+                                  step={selectedScaleType === ScaleType.PercentageScale ? '0.1' : '1'}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                This constraint will be applied when "Apply total score constraint" is checked.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="lowerBound"
+                          render={({ field }) => (
+                            <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
+                              <FormLabel>Lower bound</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(parseFloat(e.target.value))
+                                    form.trigger('lowerBound')
+                                    if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                                  }}
+                                  type="number"
+                                  placeholder="Enter lower bound"
+                                  step={selectedScaleType === ScaleType.PercentageScale ? '0.1' : '1'}
+                                  disabled={!data.canEdit}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="upperBound"
+                          render={({ field }) => (
+                            <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
+                              <FormLabel>Upper bound</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(parseFloat(e.target.value))
+                                    form.trigger('upperBound')
+                                    form.trigger('lowerBound')
+                                    if (isTotalScoreConstrained) form.trigger('scoreConstraint')
+                                  }}
+                                  type="number"
+                                  placeholder="Enter upper bound"
+                                  step={selectedScaleType === ScaleType.PercentageScale ? '0.1' : '1'}
+                                  disabled={!data.canEdit}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {isTotalScoreConstrained && renderGroupMessage()}
+                      </>
+
+                      {/* WebAVALIA */}
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="selfWeight"
+                          render={({ field }) => (
+                            <FormItem className={cn(selectedModel !== AssessmentModel.WebAVALIA && 'hidden')}>
+                              <FormLabel>Self Assessment Weight</FormLabel>
+                              <div className="space-y-2">
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    onChange={(e) => {
-                                      field.onChange(parseFloat(e.target.value))
-                                      if (isTotalScoreConstrained) form.trigger('scoreConstraint')
-                                    }}
-                                    disabled={!isTotalScoreConstrained || !data.canEdit}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                     type="number"
-                                    placeholder="Enter score constraint"
+                                    placeholder="Enter self assessment weight"
                                     step="0.1"
                                   />
                                 </FormControl>
                                 <FormDescription>
-                                  This constraint will be applied when "Apply total score constraint" is checked.
+                                  This self-assessment weight will affect the value of the peer assessment weight
                                 </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="lowerBound"
-                            render={({ field }) => (
-                              <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
-                                <FormLabel>Lower bound</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => {
-                                      field.onChange(parseFloat(e.target.value))
-                                      form.trigger('lowerBound')
-                                      if (isTotalScoreConstrained) form.trigger('scoreConstraint')
-                                    }}
-                                    type="number"
-                                    placeholder="Enter lower bound"
-                                    step="0.1"
-                                    disabled={!data.canEdit}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="upperBound"
-                            render={({ field }) => (
-                              <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
-                                <FormLabel>Upper bound</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => {
-                                      field.onChange(parseFloat(e.target.value))
-                                      form.trigger('upperBound')
-                                      form.trigger('lowerBound')
-                                      if (isTotalScoreConstrained) form.trigger('scoreConstraint')
-                                    }}
-                                    type="number"
-                                    placeholder="Enter upper bound"
-                                    step="0.1"
-                                    disabled={!data.canEdit}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          {isTotalScoreConstrained && renderGroupMessage()}
-                        </>
-                      )}
-
-                      {/* WebAVALIA */}
-                      {selectedModel === AssessmentModel.WebAVALIA && (
-                        <>
-                          <FormField
-                            control={form.control}
-                            name="selfWeight"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Self Assessment Weight</FormLabel>
-                                <div className="space-y-2">
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                      type="number"
-                                      placeholder="Enter self assessment weight"
-                                      step="0.1"
-                                    />
-                                  </FormControl>
-                                  <FormDescription>
-                                    This self-assessment weight will affect the value of the peer assessment weight
-                                  </FormDescription>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </>
-                      )}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </>
                     </div>
                   </div>
 
@@ -713,6 +784,7 @@ const ModelTab = ({
             <div className="text-sm">Don't worry, this questionnarie will help you find the right model for you!</div>
             <QuestionnaireDialog
               onClickApply={onApplyModelParameter}
+              isApplying={!!parameters}
               triggerButton={
                 <Button className="w-full bg-linear-65 from-purple-500 to-pink-500 sm:max-w-50 md:max-w-full xl:max-w-50">
                   Start Questionnaire!

@@ -192,24 +192,46 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
     let error = false
     if (payload.scaleType === ScaleType.PercentageScale) {
       if (payload.lowerBound < 0) {
-        form.setError('lowerBound', { message: 'Lower bound must be greater than or equal 0' })
+        form.setError('lowerBound', { type: 'custom', message: 'Lower bound must be greater than or equal 0' })
         error = true
       }
       if (payload.upperBound > 1) {
-        form.setError('upperBound', { message: 'Upper bound must be less than 1' })
+        form.setError('upperBound', { type: 'custom', message: 'Upper bound must be less than 1' })
+        error = true
+      }
+      if (payload.mode === mode.Conjunction && payload.upperBound < 1) {
+        form.setError('upperBound', { type: 'custom', message: 'Upper bound must be 1 in Conjuction mode' })
+        error = true
+      }
+      if (payload.mode === mode.Disjunction && payload.lowerBound > 0) {
+        form.setError('lowerBound', { type: 'custom', message: 'Lower bound must be 0 in Disjunction mode' })
         error = true
       }
     } else {
       if (!Number.isInteger(payload.lowerBound)) {
-        form.setError('lowerBound', { message: 'Lower bound must be integer' })
+        form.setError('lowerBound', { type: 'custom', message: 'Lower bound must be integer' })
         error = true
       }
       if (!Number.isInteger(payload.upperBound)) {
-        form.setError('upperBound', { message: 'Upper bound must be integer' })
+        form.setError('upperBound', { type: 'custom', message: 'Upper bound must be integer' })
         error = true
       }
       if (!Number.isInteger(payload.scoreConstraint)) {
-        form.setError('scoreConstraint', { message: 'Constraint must be integer' })
+        form.setError('scoreConstraint', { type: 'custom', message: 'Constraint must be integer' })
+        error = true
+      }
+      if (payload.mode === mode.Conjunction && payload.upperBound < 1) {
+        form.setError('upperBound', {
+          type: 'custom',
+          message: 'Upper bound must be greater than or equal 1 in Conjuction mode',
+        })
+        error = true
+      }
+      if (payload.mode === mode.Disjunction && payload.lowerBound > 0) {
+        form.setError('lowerBound', {
+          type: 'custom',
+          message: 'Lower bound must be less than or equal 0 in Disjunction mode',
+        })
         error = true
       }
     }
@@ -671,7 +693,7 @@ const PeerMatrix = ({
     const peerMatrix: number[][] = []
     const temp: number[][] = []
     for (let i = 0; i < groupSize; i++) {
-      temp.push(generateRandomConstraintRating(steps))
+      temp.push(generateRandomConstraintRating(steps, i))
     }
     for (let i = 0; i < groupSize; i++) {
       const newRow = []
@@ -683,14 +705,33 @@ const PeerMatrix = ({
     return peerMatrix
   }
 
-  const generateRandomConstraintRating = (steps: number) => {
-    const parts = Array(groupSize).fill(lowerBound)
+  const generateRandomConstraintRating = (steps: number, i: number) => {
+    const parts = Array(groupSize)
+      .fill(lowerBound)
+      .map((item, j) => {
+        if (i === j) {
+          if (selectedMode === mode.Conjunction) return 1
+          else if (selectedMode === mode.Disjunction) return 0
+          else return item
+        }
+        return item
+      })
+
     let remaining = scoreConstraint! - lowerBound * groupSize
+    if (selectedMode === mode.Conjunction) {
+      remaining = remaining - lowerBound - 1
+    } else if (selectedMode === mode.Disjunction) {
+      remaining = remaining - lowerBound
+    }
     const indexList = parts.map((_, j) => j)
+    if (selectedMode === mode.Conjunction || selectedMode === mode.Disjunction) {
+      indexList.splice(i, 1)
+    }
+
     while (remaining > 0) {
       const j = Math.floor(Math.random() * indexList.length)
       const index = indexList[j]
-      if (parts[index] === upperBound) {
+      if (parts[index] >= upperBound) {
         const j = indexList.indexOf(index)
         if (j !== -1) indexList.splice(j, 1)
         continue

@@ -82,7 +82,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       },
       {
         answer: 'yes',
-        values: [0, 1],
+        values: [1, 1],
         description: 'The sum of peer assessments is constant',
       },
     ],
@@ -281,7 +281,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
       {
         answer: 'Using a 4-point Likert scale questionnaire',
         values: {
-          scaleType: ScaleType.FourPointScale,
+          scaleType: ScaleType.NPointScale,
           lowerBound: 1,
           upperBound: 4,
           isTotalScoreConstrained: false,
@@ -290,26 +290,20 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
       {
         answer: 'Using a 5-point Likert scale questionnaire',
         values: {
-          scaleType: ScaleType.FivePointScale,
+          scaleType: ScaleType.NPointScale,
           lowerBound: 1,
           upperBound: 5,
           isTotalScoreConstrained: false,
         },
       },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'Do you want to limit the points students can allocate in the peer assessment?',
-    condition: { scaleType: ScaleType.PercentageScale },
-    options: [
       {
-        answer: 'Yes',
-        values: { isTotalScoreConstrained: true, scoreConstraint: 1 },
-      },
-      {
-        answer: 'No',
-        values: { isTotalScoreConstrained: false, scoreConstraint: 1 },
+        answer: 'Using a 7-point Likert scale questionnaire',
+        values: {
+          scaleType: ScaleType.NPointScale,
+          lowerBound: 1,
+          upperBound: 7,
+          isTotalScoreConstrained: false,
+        },
       },
     ],
   },
