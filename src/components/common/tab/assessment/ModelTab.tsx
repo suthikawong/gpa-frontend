@@ -572,7 +572,7 @@ const ModelTab = ({
                               <Select
                                 value={field.value}
                                 onValueChange={field.onChange}
-                                // disabled={!data.canEdit}
+                                disabled={!data.canEdit}
                               >
                                 <FormControl>
                                   <SelectTrigger>
