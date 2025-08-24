@@ -1,3 +1,6 @@
+import checked from '@/assets/checked.png'
+import gear from '@/assets/gear.png'
+import shuttle from '@/assets/shuttle.png'
 import { mode, ScaleType } from './app'
 
 export interface QuestionnaireCoverItem {
@@ -53,7 +56,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
     type: 'cover',
     title: 'Find Your Perfect Assessment Model',
     description1: "Tell us about your class — we'll help you pick the best peer assessment model.",
-    image: 'shuttle.png',
+    image: shuttle,
   },
   {
     type: 'question',
@@ -205,7 +208,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       'Your preferences best match ${selectedModel}. You can switch to a different assessment model by clicking "Click to select" and then "Use selected model" to continue.',
     description2:
       'Your preferences align most closely with ${selectedModel}, though some may not be fully supported (see table below). You can switch to another model by clicking "Click to select" and then "Use selected model" to continue.',
-    image: 'checked.png',
+    image: checked,
   },
 ]
 
@@ -214,7 +217,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
     type: 'cover',
     title: 'Customize Your Assessment Model',
     description1: 'Fine-tune the chosen model to match your style and preferences.',
-    image: 'gear.png',
+    image: gear,
   },
   {
     type: 'question',
@@ -320,7 +323,7 @@ export const webavaliaConfigurationSet: QuestionnaireModelConfigurationItem = [
     type: 'cover',
     title: 'Customize Your Assessment Model',
     description1: 'Fine-tune the chosen model to match your style and preferences.',
-    image: 'gear.png',
+    image: gear,
   },
   {
     type: 'question',

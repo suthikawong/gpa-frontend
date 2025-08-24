@@ -357,7 +357,7 @@ const CoverPage = ({ data }: { data: QuestionnaireCoverItem }) => {
   return (
     <div className="flex flex-col justify-center items-center h-100 md:h-120">
       <img
-        src={`/src/assets/${data.image}`}
+        src={data.image}
         alt={data.type}
         className="m-4 mb-12"
       />
