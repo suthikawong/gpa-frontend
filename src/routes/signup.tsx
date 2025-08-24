@@ -33,7 +33,7 @@ const formSchema = z
     password: z
       .string()
       .min(1, { message: 'Please enter your password.' })
-      .min(8, { message: 'password must be longer than or equal to 8 characters' }),
+      .min(8, { message: 'Password must be at least 8 characters' }),
     confirmPassword: z.string().min(1, { message: 'Please enter your password again.' }),
   })
   .refine((data) => data.password === data.confirmPassword, {

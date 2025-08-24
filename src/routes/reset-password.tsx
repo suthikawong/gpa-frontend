@@ -29,7 +29,10 @@ export const Route = createFileRoute('/reset-password')({
 
 const resetPasswordFormSchema = z
   .object({
-    password: z.string().min(1, 'Please enter your new password'),
+    password: z
+      .string()
+      .min(1, 'Please enter your new password')
+      .min(8, { message: 'Password must be at least 8 characters' }),
     confirmPassword: z.string().min(1, 'Please enter your new password again'),
   })
   .refine((data) => data.password === data.confirmPassword, {
