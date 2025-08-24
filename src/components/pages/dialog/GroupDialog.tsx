@@ -20,8 +20,8 @@ import { AlertTriangle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import toast from '../toast'
-import Uploader, { FileTypes } from '../Uploader'
+import toast from '../../common/toast'
+import Uploader, { FileTypes } from '../../common/Uploader'
 
 interface GroupDialogProps {
   triggerButton: React.ReactNode

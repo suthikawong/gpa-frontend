@@ -7,10 +7,10 @@ import { useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { Assessment, Group, ScoringComponent } from 'gpa-backend/src/drizzle/schema'
 import { useEffect } from 'react'
-import ActionCard from '../../ActionCard'
-import EmptyState from '../../EmptyState'
-import SuspenseArea from '../../SuspenseArea'
-import toast from '../../toast'
+import ActionCard from '../../../common/ActionCard'
+import EmptyState from '../../../common/EmptyState'
+import SuspenseArea from '../../../common/SuspenseArea'
+import toast from '../../../common/toast'
 
 const PeerRatingsTab = ({
   assessmentId,

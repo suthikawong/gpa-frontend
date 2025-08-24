@@ -21,7 +21,7 @@ import { GetScoringComponentByIdResponse } from 'gpa-backend/src/scoring-compone
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import toast from '../toast'
+import toast from '../../common/toast'
 
 interface ScoringComponentDialogProps {
   triggerButton: React.ReactNode

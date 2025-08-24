@@ -20,12 +20,12 @@ import { Assessment, Group, User } from 'gpa-backend/src/drizzle/schema'
 import { GetGroupMembersResponse } from 'gpa-backend/src/group/dto/group.response'
 import { Check, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import ActionCard from '../ActionCard'
-import AlertDialog from '../AlertDialog'
-import EmptyState from '../EmptyState'
-import { PaginationControlled } from '../PaginationControlled'
-import SuspenseArea from '../SuspenseArea'
-import toast from '../toast'
+import ActionCard from '../../common/ActionCard'
+import AlertDialog from '../../common/AlertDialog'
+import EmptyState from '../../common/EmptyState'
+import { PaginationControlled } from '../../common/PaginationControlled'
+import SuspenseArea from '../../common/SuspenseArea'
+import toast from '../../common/toast'
 
 interface AddMemberDialogProps {
   triggerButton: React.ReactNode

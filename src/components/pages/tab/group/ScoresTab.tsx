@@ -12,8 +12,8 @@ import { Pencil } from 'lucide-react'
 import { useEffect } from 'react'
 import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from 'recharts'
 import EditScoreDialog from '../../dialog/EditScoreDialog'
-import SuspenseArea from '../../SuspenseArea'
-import toast from '../../toast'
+import SuspenseArea from '../../../common/SuspenseArea'
+import toast from '../../../common/toast'
 
 const ScoresTab = ({
   assessmentId,

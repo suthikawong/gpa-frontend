@@ -6,12 +6,12 @@ import { format } from 'date-fns'
 import { Assessment, ScoringComponent } from 'gpa-backend/src/drizzle/schema'
 import { Plus } from 'lucide-react'
 import { useEffect } from 'react'
-import ActionCard from '../../ActionCard'
-import ConfirmDeleteDialog from '../../ConfirmDeleteDialog'
+import ActionCard from '../../../common/ActionCard'
+import ConfirmDeleteDialog from '../../../common/ConfirmDeleteDialog'
 import ScoringComponentDialog from '../../dialog/ScoringComponentDialog'
-import EmptyState from '../../EmptyState'
-import SuspenseArea from '../../SuspenseArea'
-import toast from '../../toast'
+import EmptyState from '../../../common/EmptyState'
+import SuspenseArea from '../../../common/SuspenseArea'
+import toast from '../../../common/toast'
 
 const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['assessmentId'] }) => {
   const {

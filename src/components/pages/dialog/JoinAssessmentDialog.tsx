@@ -10,7 +10,7 @@ import { AxiosError } from 'axios'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import toast from '../toast'
+import toast from '../../common/toast'
 
 interface JoinAssessmentDialogProps {
   triggerButton: React.ReactNode

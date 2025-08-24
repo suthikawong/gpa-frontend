@@ -8,14 +8,14 @@ import { SearchStudentsInAssessmentResponse } from 'gpa-backend/src/assessment/d
 import { Assessment, AssessmentStudent, User } from 'gpa-backend/src/drizzle/schema'
 import { Plus, SearchIcon, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import ActionCard from '../../ActionCard'
-import AlertDialog from '../../AlertDialog'
-import ConfirmDeleteDialog from '../../ConfirmDeleteDialog'
+import ActionCard from '../../../common/ActionCard'
+import AlertDialog from '../../../common/AlertDialog'
+import ConfirmDeleteDialog from '../../../common/ConfirmDeleteDialog'
 import AddStudentDialog from '../../dialog/AddStudentDialog'
-import EmptyState from '../../EmptyState'
-import { PaginationControlled } from '../../PaginationControlled'
-import SuspenseArea from '../../SuspenseArea'
-import toast from '../../toast'
+import EmptyState from '../../../common/EmptyState'
+import { PaginationControlled } from '../../../common/PaginationControlled'
+import SuspenseArea from '../../../common/SuspenseArea'
+import toast from '../../../common/toast'
 
 const StudentsTab = ({ assessmentId, canEdit }: { assessmentId: Assessment['assessmentId']; canEdit: boolean }) => {
   const queryClient = useQueryClient()

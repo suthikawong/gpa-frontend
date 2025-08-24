@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { ErrorResponse } from '../../../../gpa-backend/src/app.response'
-import toast from '../toast'
+import toast from '../../common/toast'
 
 interface AddStudentDialogProps {
   triggerButton: React.ReactNode

@@ -46,8 +46,8 @@ import { z } from 'zod'
 import { ErrorResponse } from '../../../../gpa-backend/src/app.response'
 import { GetAssessmentByIdResponse } from '../../../../gpa-backend/src/assessment/dto/assessment.response'
 import { QASSMode } from '../../../../gpa-backend/src/utils/qass.model'
-import EmptyState from '../EmptyState'
-import toast from '../toast'
+import EmptyState from '../../common/EmptyState'
+import toast from '../../common/toast'
 
 interface EditScoreDialogProps {
   triggerButton: React.ReactNode

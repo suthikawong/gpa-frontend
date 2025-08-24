@@ -10,7 +10,7 @@ import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import toast from '../toast'
+import toast from '../../common/toast'
 
 interface JoinGroupDialogProps {
   triggerButton: React.ReactNode

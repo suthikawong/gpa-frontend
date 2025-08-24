@@ -1,6 +1,6 @@
 import { api } from '@/api'
 import { Breadcrumbs } from '@/components/common/Breadcrumbs'
-import PeerRatingDialog from '@/components/common/dialog/PeerRatingDialog'
+import PeerRatingDialog from '@/components/pages/dialog/PeerRatingDialog'
 import EmptyState from '@/components/common/EmptyState'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'

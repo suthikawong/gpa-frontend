@@ -1,6 +1,6 @@
 import { api } from '@/api'
 import study from '@/assets/study.png'
-import AssessmentDialog from '@/components/common/dialog/AssessmentDialog'
+import AssessmentDialog from '@/components/pages/dialog/AssessmentDialog'
 import EmptyState from '@/components/common/EmptyState'
 import { PaginationControlled } from '@/components/common/PaginationControlled'
 import SuspenseArea from '@/components/common/SuspenseArea'

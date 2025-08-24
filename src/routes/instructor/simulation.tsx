@@ -1,5 +1,5 @@
-import QassSimulationTab from '@/components/common/tab/simulation/QassSimulationTab'
-import WebavaliaSimulationTab from '@/components/common/tab/simulation/WebavaliaSimulationTab'
+import QassSimulationTab from '@/components/pages/tab/simulation/QassSimulationTab'
+import WebavaliaSimulationTab from '@/components/pages/tab/simulation/WebavaliaSimulationTab'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/components/ui/tabs'

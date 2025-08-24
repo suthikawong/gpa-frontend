@@ -22,10 +22,10 @@ import { SettingsIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
-import AlertDialog from '../../AlertDialog'
+import AlertDialog from '../../../common/AlertDialog'
 import QuestionnaireDialog, { ResultModelParametersType } from '../../dialog/QuestionnaireDialog'
-import SuspenseArea from '../../SuspenseArea'
-import toast from '../../toast'
+import SuspenseArea from '../../../common/SuspenseArea'
+import toast from '../../../common/toast'
 
 const baseSchema = z.object({
   modelId: z.literal('0'),

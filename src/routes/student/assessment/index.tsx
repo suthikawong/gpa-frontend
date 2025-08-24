@@ -1,5 +1,5 @@
 import { api } from '@/api'
-import JoinAssessmentDialog from '@/components/common/dialog/JoinAssessmentDialog'
+import JoinAssessmentDialog from '@/components/pages/dialog/JoinAssessmentDialog'
 import EmptyState from '@/components/common/EmptyState'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'

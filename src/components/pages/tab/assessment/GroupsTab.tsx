@@ -7,12 +7,12 @@ import { useRouter } from '@tanstack/react-router'
 import { Assessment, Group } from 'gpa-backend/src/drizzle/schema'
 import { Plus } from 'lucide-react'
 import { useEffect } from 'react'
-import ActionCard from '../../ActionCard'
-import ConfirmDeleteDialog from '../../ConfirmDeleteDialog'
+import ActionCard from '../../../common/ActionCard'
+import ConfirmDeleteDialog from '../../../common/ConfirmDeleteDialog'
 import GroupDialog from '../../dialog/GroupDialog'
-import EmptyState from '../../EmptyState'
-import SuspenseArea from '../../SuspenseArea'
-import toast from '../../toast'
+import EmptyState from '../../../common/EmptyState'
+import SuspenseArea from '../../../common/SuspenseArea'
+import toast from '../../../common/toast'
 
 const GroupsTab = ({ assessmentId }: { assessmentId: Assessment['assessmentId'] }) => {
   const router = useRouter()
