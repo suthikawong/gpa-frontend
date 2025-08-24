@@ -74,7 +74,7 @@ function RouteComponent() {
     <DashboardLayout className="gap-8">
       <Breadcrumbs
         items={[
-          { label: 'Peer Assessments', href: `/instructor/assessment` },
+          { label: 'My Assessments', href: `/instructor/assessment` },
           {
             label: 'Assessment',
             href: `/instructor/assessment/${assessmentId}`,

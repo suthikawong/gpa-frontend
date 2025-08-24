@@ -84,7 +84,7 @@ function RouteComponent() {
             <div className="flex flex-col gap-6">
               <Breadcrumbs
                 items={[
-                  { label: 'Peer Assessments', href: `/instructor/assessment` },
+                  { label: 'My Assessments', href: `/instructor/assessment` },
                   {
                     label: 'Assessment',
                     href: `/instructor/assessment/${assessmentId}`,
