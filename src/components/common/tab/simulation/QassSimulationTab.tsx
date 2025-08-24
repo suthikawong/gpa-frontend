@@ -63,12 +63,10 @@ const formSchema = z
     scaleType: z.string({ required_error: 'Scale is required', invalid_type_error: 'Scale is required' }),
     lowerBound: z
       .number({ required_error: 'Lower bound is required', invalid_type_error: 'Lower bound is required' })
-      .finite()
-      .min(0, { message: 'Lower bound must be greater than or equal 0' }),
+      .finite(),
     upperBound: z
       .number({ required_error: 'Upper bound is required', invalid_type_error: 'Upper bound is required' })
-      .finite()
-      .max(100, { message: 'Upper bound must be lower than or equal 100' }),
+      .finite(),
     isTotalScoreConstrained: z.boolean(),
     scoreConstraint: z
       .number({ required_error: 'Constraint is required', invalid_type_error: 'Constraint is required' })
@@ -76,7 +74,7 @@ const formSchema = z
       .gt(0, { message: 'Constraint must be greater than 0' })
       .max(100, { message: 'Constraint must be lower than or equal 100' })
       .optional(),
-    peerMatrix: z.array(z.array(z.union([z.number().finite().min(0).max(100), z.nan()]))),
+    peerMatrix: z.array(z.array(z.union([z.number().finite(), z.nan()]))),
   })
   .refine((data) => validateBoundConflict(data.lowerBound, data.upperBound), {
     message: 'Lower bound must be less than upper bound',
@@ -175,7 +173,7 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
 
   const onSubmit = async (values: FormSchema) => {
     const payload = formSchema.parse(values)
-    const valid = validatePeerMatrix(payload.peerMatrix)
+    const valid = validateInputType(payload) && validatePeerMatrix(payload.peerMatrix)
     if (!valid) return
     setErrorMatrix(null)
     setLoading(true)
@@ -188,6 +186,35 @@ const QassSimulationTab = ({ scrollToBottom }: QassSimulationTabProps) => {
       groupProductScore: payload.groupScore,
       peerRatingWeights: payload.weights,
     })
+  }
+
+  const validateInputType = (payload: FormSchema) => {
+    let error = false
+    if (payload.scaleType === ScaleType.PercentageScale) {
+      if (payload.lowerBound < 0) {
+        form.setError('lowerBound', { message: 'Lower bound must be greater than or equal 0' })
+        error = true
+      }
+      if (payload.upperBound > 1) {
+        form.setError('upperBound', { message: 'Upper bound must be less than 1' })
+        error = true
+      }
+    } else {
+      if (!Number.isInteger(payload.lowerBound)) {
+        form.setError('lowerBound', { message: 'Lower bound must be integer' })
+        error = true
+      }
+      if (!Number.isInteger(payload.upperBound)) {
+        form.setError('upperBound', { message: 'Upper bound must be integer' })
+        error = true
+      }
+      if (!Number.isInteger(payload.scoreConstraint)) {
+        form.setError('scoreConstraint', { message: 'Constraint must be integer' })
+        error = true
+      }
+    }
+    if (error) return false
+    return true
   }
 
   const validatePeerMatrix = (values: number[][]) => {
@@ -561,12 +588,10 @@ const PeerMatrix = ({
       form.setValue('lowerBound', 0)
       form.setValue('upperBound', 1)
       form.setValue('scoreConstraint', 1)
-    } else if (selectedScaleType === ScaleType.FivePointScale) {
+    } else if (selectedScaleType === ScaleType.NPointScale) {
       form.setValue('lowerBound', 1)
       form.setValue('upperBound', 5)
-    } else if (selectedScaleType === ScaleType.FourPointScale) {
-      form.setValue('lowerBound', 1)
-      form.setValue('upperBound', 4)
+      form.setValue('scoreConstraint', 20)
     }
     form.setValue('isTotalScoreConstrained', false)
   }, [selectedScaleType])
@@ -590,6 +615,13 @@ const PeerMatrix = ({
       return randomUnconstraintPercentageScale()
     }
     return randomUnconstraintNPointScale()
+  }
+
+  const randomConstraintPeerMatrix = () => {
+    if (selectedScaleType === ScaleType.PercentageScale) {
+      return randomConstraint(0.01)
+    }
+    return randomConstraint(1)
   }
 
   const randomUnconstraintPercentageScale = () => {
@@ -635,11 +667,11 @@ const PeerMatrix = ({
     return peerMatrix
   }
 
-  const randomConstraintPeerMatrix = () => {
+  const randomConstraint = (steps: number) => {
     const peerMatrix: number[][] = []
     const temp: number[][] = []
     for (let i = 0; i < groupSize; i++) {
-      temp.push(generateRandomConstraintRating())
+      temp.push(generateRandomConstraintRating(steps))
     }
     for (let i = 0; i < groupSize; i++) {
       const newRow = []
@@ -651,8 +683,7 @@ const PeerMatrix = ({
     return peerMatrix
   }
 
-  const generateRandomConstraintRating = () => {
-    const steps = 0.01
+  const generateRandomConstraintRating = (steps: number) => {
     const parts = Array(groupSize).fill(lowerBound)
     let remaining = scoreConstraint! - lowerBound * groupSize
     const indexList = parts.map((_, j) => j)
@@ -756,9 +787,7 @@ const PeerMatrix = ({
               control={form.control}
               name="isTotalScoreConstrained"
               render={({ field }) => (
-                <FormItem
-                  className={cn('flex items-start gap-3', selectedScaleType !== ScaleType.PercentageScale && 'hidden')}
-                >
+                <FormItem className="flex items-start gap-3">
                   <FormControl>
                     <div className="flex items-start gap-3">
                       <Checkbox
@@ -781,7 +810,7 @@ const PeerMatrix = ({
               control={form.control}
               name="scoreConstraint"
               render={({ field }) => (
-                <FormItem className={cn('mb-4', selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                <FormItem className="mb-4">
                   <FormLabel>Constraint</FormLabel>
 
                   <FormControl>
@@ -794,7 +823,7 @@ const PeerMatrix = ({
                       disabled={!isTotalScoreConstrained}
                       type="number"
                       placeholder="Enter score constraint"
-                      step="0.1"
+                      step={selectedScaleType === ScaleType.PercentageScale ? '0.1' : '1'}
                     />
                   </FormControl>
                   <FormDescription>
@@ -808,7 +837,7 @@ const PeerMatrix = ({
               control={form.control}
               name="lowerBound"
               render={({ field }) => (
-                <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                <FormItem>
                   <FormLabel>Lower bound</FormLabel>
                   <FormControl>
                     <Input
@@ -820,7 +849,7 @@ const PeerMatrix = ({
                       }}
                       type="number"
                       placeholder="Enter lower bound"
-                      step="0.1"
+                      step={selectedScaleType === ScaleType.PercentageScale ? '0.1' : '1'}
                     />
                   </FormControl>
                   <FormMessage />
@@ -831,7 +860,7 @@ const PeerMatrix = ({
               control={form.control}
               name="upperBound"
               render={({ field }) => (
-                <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
+                <FormItem>
                   <FormLabel>Upper bound</FormLabel>
                   <FormControl>
                     <Input
@@ -844,7 +873,7 @@ const PeerMatrix = ({
                       }}
                       type="number"
                       placeholder="Enter upper bound"
-                      step="0.1"
+                      step={selectedScaleType === ScaleType.PercentageScale ? '0.1' : '1'}
                     />
                   </FormControl>
                   <FormMessage />

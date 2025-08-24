@@ -76,8 +76,7 @@ export const mode = {
 
 export const ScaleType = {
   PercentageScale: 'Percentage scale',
-  FourPointScale: '4-point scale',
-  FivePointScale: '5-point scale',
+  NPointScale: 'N-Point scale',
 }
 
 export const ScaleSteps = {
