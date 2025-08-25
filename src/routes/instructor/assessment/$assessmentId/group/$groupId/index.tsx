@@ -2,12 +2,12 @@ import { api } from '@/api'
 import { Breadcrumbs } from '@/components/common/Breadcrumbs'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
 import CopyButton from '@/components/common/CopyButton'
-import GroupDialog from '@/components/pages/dialog/GroupDialog'
 import SuspenseArea from '@/components/common/SuspenseArea'
-import PeerRatingsTab from '@/components/pages/tab/group/PeerRatingsTab'
-import ScoresTab from '@/components/pages/tab/group/ScoresTab'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
+import GroupDialog from '@/components/pages/dialog/GroupDialog'
+import PeerRatingsTab from '@/components/pages/tab/group/PeerRatingsTab'
+import ScoresTab from '@/components/pages/tab/group/ScoresTab'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsScrollBar, TabsTrigger } from '@/compo
 import { AssessmentTabs, GroupTabs, Roles } from '@/config/app'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import axios from 'axios'
 import { Assessment, Group } from 'gpa-backend/src/drizzle/schema'
 import { GetGroupByIdResponse } from 'gpa-backend/src/group/dto/group.response'
 import { Trash2, UsersRound } from 'lucide-react'
@@ -67,7 +68,8 @@ function RouteComponent() {
 
   useEffect(() => {
     if (error) {
-      toast.error('Something went wrong. Please try again.')
+      if (axios.isAxiosError(error) && error.status === 404) toast.error(error.response?.data?.message)
+      else toast.error('Something went wrong. Please try again.')
     }
   }, [error])
 

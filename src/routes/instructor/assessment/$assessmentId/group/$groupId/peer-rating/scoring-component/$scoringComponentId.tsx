@@ -1,10 +1,10 @@
 import { api } from '@/api'
 import { Breadcrumbs } from '@/components/common/Breadcrumbs'
-import PeerRatingDialog from '@/components/pages/dialog/PeerRatingDialog'
 import EmptyState from '@/components/common/EmptyState'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
+import PeerRatingDialog from '@/components/pages/dialog/PeerRatingDialog'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ import { AssessmentModel, Roles, ScaleType } from '@/config/app'
 import { cn } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import axios from 'axios'
 import { format } from 'date-fns'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
 import {
@@ -93,7 +94,9 @@ function RouteComponent() {
 
   useEffect(() => {
     if (errorScoringComp || errorPeerRating) {
-      toast.error('Something went wrong. Please try again.')
+      if (axios.isAxiosError(errorScoringComp) && errorScoringComp.status === 404)
+        toast.error(errorScoringComp.response?.data?.message)
+      else toast.error('Something went wrong. Please try again.')
     }
   }, [errorScoringComp, errorPeerRating])
 
@@ -220,7 +223,8 @@ const SummaryToggleGroup = ({
 
   useEffect(() => {
     if (error) {
-      toast.error('Something went wrong. Please try again.')
+      if (axios.isAxiosError(error) && error.status === 404) toast.error(error.response?.data?.message)
+      else toast.error('Something went wrong. Please try again.')
     }
   }, [error])
 
