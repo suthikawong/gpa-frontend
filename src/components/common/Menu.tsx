@@ -39,6 +39,10 @@ export default function Menu() {
     router.history.push('/signin')
   }
 
+  const onClickLogo = async () => {
+    router.history.push('/')
+  }
+
   const signOutMenuItem: MenuItem = {
     name: 'Sign Out',
     icon: 'LogOut',
@@ -49,7 +53,7 @@ export default function Menu() {
   return (
     <header className="w-full border-b shadow-sm px-6 flex items-center justify-between flex-grow bg-primary-foreground min-h-[52px] max-h-[52px] md:min-h-[68px] md:max-h-[68px]">
       <div className="flex items-center gap-2">
-        <AppLogo />
+        <AppLogo onClick={onClickLogo} />
       </div>
 
       {/* Desktop Menu */}
@@ -130,8 +134,18 @@ export default function Menu() {
   )
 }
 
-const AppLogo = ({ className }: { className?: string }) => {
-  return <div className={cn('text-xl font-bold text-primary', className)}>UT-GPA</div>
+const AppLogo = ({ className, onClick }: { className?: string; onClick?: () => void }) => {
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        'text-xl font-bold text-transparent font-roboto bg-linear-65 from-purple-500 to-pink-500 bg-clip-text cursor-pointer',
+        className
+      )}
+    >
+      UT-GPA
+    </div>
+  )
 }
 
 const MenuItem = ({
