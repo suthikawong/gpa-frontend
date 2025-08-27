@@ -23,7 +23,7 @@ const StudentsTab = ({ assessmentId, canEdit }: { assessmentId: Assessment['asse
   const [page, setPage] = useState(1)
   const [clickedStudentId, setClickedStudentId] = useState<User['userId'] | null>(null)
   const [oldData, setOldData] = useState<SearchStudentsInAssessmentResponse>([])
-  const pageSize = 4
+  const pageSize = 10
 
   const {
     data: res,

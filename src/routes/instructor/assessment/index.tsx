@@ -1,11 +1,11 @@
 import { api } from '@/api'
 import study from '@/assets/study.png'
-import AssessmentDialog from '@/components/pages/dialog/AssessmentDialog'
 import EmptyState from '@/components/common/EmptyState'
 import { PaginationControlled } from '@/components/common/PaginationControlled'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
+import AssessmentDialog from '@/components/pages/dialog/AssessmentDialog'
 import NoDocuments from '@/components/svg/NoDocuments'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -44,7 +44,7 @@ function RouteComponent() {
   const [keyword, setKeyword] = useState<string | undefined>(undefined)
   const [page, setPage] = useState(1)
   const [isSearch, setIsSearch] = useState(false)
-  const pageSize = 5
+  const pageSize = 10
 
   const {
     data: res,

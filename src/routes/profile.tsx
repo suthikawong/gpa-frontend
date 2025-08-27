@@ -1,5 +1,6 @@
 import { api } from '@/api'
 import toast from '@/components/common/toast'
+import Uploader, { FileTypes } from '@/components/common/Uploader'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -10,6 +11,7 @@ import { useAuth } from '@/hooks/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -35,6 +37,8 @@ const formSchema = z.object({
 
 function RouteComponent() {
   const { user, setUser } = useAuth()
+  const [files, setFiles] = useState<File[]>([])
+  const [preview, setPreview] = useState<string | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,7 +50,7 @@ function RouteComponent() {
   })
 
   const mutation = useMutation({
-    mutationFn: api.user.updateUser,
+    mutationFn: api.user.updateProfile,
     onSuccess: (res) => {
       const user = res.data ?? null
       setUser(user)
@@ -57,12 +61,38 @@ function RouteComponent() {
     },
   })
 
+  useEffect(() => {
+    if (user?.image) setPreview(user.image)
+  }, [])
+
+  useEffect(() => {
+    if (files.length > 0) {
+      if (preview) URL.revokeObjectURL(preview)
+      const url = URL.createObjectURL(files[0])
+      setPreview(url)
+    }
+    return () => {
+      if (preview) URL.revokeObjectURL(preview)
+    }
+  }, [files])
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    mutation.mutate({
-      userId: user?.userId!,
-      name: values.name,
-      userNumber: values?.userNumber === '' ? undefined : values.userNumber,
-    })
+    const formData = new FormData()
+    formData.append('userId', user?.userId.toString()!)
+    formData.append('name', values.name)
+    if (values.userNumber) {
+      formData.append('userNumber', values.userNumber)
+    }
+    if (files.length > 0) {
+      formData.append('file', files[0])
+    }
+    mutation.mutate(formData)
+  }
+
+  const onRemoveImage = () => {
+    setFiles([])
+    if (preview) URL.revokeObjectURL(preview)
+    setPreview(null)
   }
 
   return (
@@ -78,8 +108,40 @@ function RouteComponent() {
               className="space-y-4 h-full flex flex-col"
             >
               <div className="flex-grow">
-                <div className="bg-primary rounded-xl flex justify-center items-center text-white text-5xl w-30 h-30 m-auto mt-10 mb-16">
+                {/* <div className="bg-primary rounded-xl flex justify-center items-center text-white text-5xl w-30 h-30 m-auto mt-10 mb-16">
                   {user?.name?.[0] ?? ''}
+                </div> */}
+                <div className="flex flex-col items-center m-auto mt-4 mb-8 ">
+                  {preview ? (
+                    <div className="flex flex-col items-center">
+                      {/* <div className="bg-primary rounded-xl flex justify-center items-center text-white text-5xl w-[160px] h-[160px]">
+                        {user?.name?.[0] ?? ''}
+                      </div> */}
+                      <div className="w-[168px] h-[168px] rounded-xl">
+                        <img
+                          src={preview}
+                          alt="profile image"
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="link"
+                        className="text-destructive"
+                        onClick={onRemoveImage}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <Uploader
+                      files={files}
+                      setFiles={setFiles}
+                      allowFileTypes={[FileTypes.JPEG, FileTypes.PNG]}
+                      className="max-w-[200px] h-[200px]"
+                      showUploadedFiles={false}
+                    />
+                  )}
                 </div>
                 <div className="grid md:grid-cols-2 w-full items-center gap-8">
                   <FormField
