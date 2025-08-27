@@ -519,6 +519,10 @@ const RandomMultipleGroup = ({
             Automatically generate multiple groups by randomly assigning members. This is fast, fair, and effortless —
             perfect for large teams or classes.
           </DialogDescription>
+          <DialogDescription>
+            Groups will be created so that the number of members in each group differs by at most 1. This ensures that
+            all students are divided as evenly as possible.
+          </DialogDescription>
         </DialogHeader>
         <div className="grid w-full items-center gap-4">
           <FormField
