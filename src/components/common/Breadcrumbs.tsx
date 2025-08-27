@@ -26,20 +26,23 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
           const isLast = index === items.length - 1
           if (isLast) {
             return (
-              <BreadcrumbItem>
+              <BreadcrumbItem key={index}>
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
               </BreadcrumbItem>
             )
           } else {
             return (
-              <>
+              <div
+                key={index}
+                className="flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-2.5"
+              >
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
                     <Link to={item.href}>{item.label}</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
-              </>
+              </div>
             )
           }
         })}
