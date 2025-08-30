@@ -51,8 +51,10 @@ const AlertDialog = ({
     <Dialog
       open={open}
       onOpenChange={async (value) => {
-        const valid = await beforeOpen?.()
-        if (valid) setOpen(value)
+        if (beforeOpen) {
+          const valid = await beforeOpen?.()
+          if (valid) setOpen(value)
+        } else setOpen(true)
       }}
     >
       <DialogTrigger asChild>{triggerButton}</DialogTrigger>

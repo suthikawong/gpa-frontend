@@ -22,7 +22,7 @@ interface ConfirmDeleteDialogProps<T> {
   content?: React.ReactNode
   onSuccessMessage: string
   onErrorMessage: string
-  refetchKeys?: (string | number)[]
+  refetchKeys?: (string | number)[][]
   redirectTo?: string
   callback?: () => void
   className?: string
@@ -53,7 +53,7 @@ const ConfirmDeleteDialog = <T,>({
     onSuccess: () => {
       toast.success(onSuccessMessage)
       setOpen(false)
-      refetchKeys.forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }))
+      refetchKeys.forEach((key) => queryClient.invalidateQueries({ queryKey: key }))
       if (redirectTo) {
         router.history.push(redirectTo)
       }

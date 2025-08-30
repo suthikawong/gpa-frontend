@@ -261,7 +261,7 @@ const DeleteGroupDialog = ({
       title="Delete group"
       onSuccessMessage="Group deleted successfully."
       onErrorMessage="Failed to delete group."
-      refetchKeys={['getInstructorAssessments']}
+      refetchKeys={[['getInstructorAssessments']]}
       redirectTo={`/instructor/assessment/${assessmentId}?tab=${AssessmentTabs.Groups}`}
       content={
         <div className="space-y-4 text-sm text-muted-foreground">

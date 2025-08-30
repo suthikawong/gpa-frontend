@@ -110,7 +110,10 @@ const DeleteScoringComponentDialog = ({
       title="Confirm Delete"
       onSuccessMessage="Scoring Component removed successfully."
       onErrorMessage="Failed to remove student."
-      refetchKeys={['getScoringComponentsByAssessmentId', assessmentId]}
+      refetchKeys={[
+        ['getScoringComponentsByAssessmentId', assessmentId],
+        ['getAssessmentById', assessmentId],
+      ]}
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">

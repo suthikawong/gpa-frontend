@@ -203,4 +203,7 @@ body,
   input[type='number'].matrix-input::-webkit-outer-spin-button {
     @apply appearance-none;
   }
+  input[type='number'].matrix-input {
+    -moz-appearance: textfield;
+  }
 }

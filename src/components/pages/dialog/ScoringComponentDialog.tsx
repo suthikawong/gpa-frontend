@@ -69,6 +69,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
       setOpen(false)
       toast.success('Scoring component created successfully')
       queryClient.invalidateQueries({ queryKey: ['getScoringComponentsByAssessmentId', assessmentId] })
+      queryClient.invalidateQueries({ queryKey: ['getAssessmentById', assessmentId] })
       form.reset()
     },
     onError: (error: AxiosError) => {

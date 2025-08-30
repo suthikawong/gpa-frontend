@@ -2,10 +2,12 @@ import { api } from '@/api'
 import AlertDialog from '@/components/common/AlertDialog'
 import ConfirmDeleteDialog from '@/components/common/ConfirmDeleteDialog'
 import CopyButton from '@/components/common/CopyButton'
+import EmptyState from '@/components/common/EmptyState'
 import SuspenseArea from '@/components/common/SuspenseArea'
 import toast from '@/components/common/toast'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import JoinGroupDialog from '@/components/pages/dialog/JoinGroupDialog'
+import NoDocuments from '@/components/svg/NoDocuments'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -253,7 +255,7 @@ const MyScoreCard = ({ myScoreData, modelId }: { myScoreData: GetMyScoreResponse
   if (modelId.toString() === AssessmentModel.QASS) {
     score = myScoreData?.score ? `${(myScoreData.score * 100).toFixed(2)}/100` : '-'
   } else {
-    score = myScoreData?.score ? `${myScoreData.score.toFixed(2)}/20` : '-'
+    score = myScoreData?.score ? `${myScoreData.score}/20` : '-'
   }
   return (
     <Card className="w-full py-4!">
@@ -371,7 +373,7 @@ const LeaveGroupDialog = ({
       confirmButtonText="Leave"
       onSuccessMessage="Leave group successfully."
       onErrorMessage="Failed to leave group. Please try again."
-      refetchKeys={['getJoinedGroup', assessmentId]}
+      refetchKeys={[['getJoinedGroup', assessmentId]]}
     />
   )
 }
@@ -388,7 +390,16 @@ const PeerRatingPage = ({
   setPageState: React.Dispatch<React.SetStateAction<State>>
 }) => {
   if (!assessmentData?.modelId) {
-    return <div>No model selected</div>
+    return (
+      <div className="flex h-full items-center justify-center">
+        <EmptyState
+          title="No model selected"
+          description1="It looks like there is assessment model selected in this assessment."
+          description2="Please contact your instructor."
+          icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
+        />
+      </div>
+    )
   }
 
   const queryClient = useQueryClient()
@@ -446,10 +457,20 @@ const PeerRatingPage = ({
     name: 'studentScores',
   })
 
-  const remainScores =
-    (assessmentData?.modelId === model.WebAVALIA || config?.scaleType === ScaleType.PercentageScale
+  const isDisplayConstraint =
+    assessmentData?.modelId === model.WebAVALIA ||
+    (assessmentData?.modelId === model.QASS && config?.isTotalScoreConstrained)
+
+  const constraint =
+    assessmentData?.modelId === model.WebAVALIA
       ? 100
-      : (config?.scoreConstraint ?? 0)) - studentScores.reduce((prev, curr) => prev + curr.score, 0)
+      : config?.scaleType === ScaleType.PercentageScale
+        ? config?.scoreConstraint
+          ? config.scoreConstraint * 100
+          : 0
+        : (config?.scoreConstraint ?? 0)
+
+  const remainScores = constraint - studentScores.reduce((prev, curr) => prev + curr.score, 0)
 
   return (
     <>
@@ -462,6 +483,17 @@ const PeerRatingPage = ({
             <ChevronLeft />
             Back
           </Button>
+
+          <Card className="w-full flex">
+            <CardContent className="space-y-1 border-l-4 border-primary ml-6">
+              <CardTitle className="text-muted-foreground">Instruction</CardTitle>
+              <CardTitle className="text-xl">
+                {isDisplayConstraint
+                  ? `Distribute ${constraint} points among your group members based on their contribution and performance.`
+                  : 'Rate your group members based on their contribution and performance.'}
+              </CardTitle>
+            </CardContent>
+          </Card>
 
           <Form {...form}>
             <form className="space-y-6 flex flex-col">
@@ -478,8 +510,7 @@ const PeerRatingPage = ({
                 ))}
               </div>
 
-              {(assessmentData?.modelId === model.WebAVALIA ||
-                (assessmentData?.modelId === model.QASS && config?.isTotalScoreConstrained)) && (
+              {isDisplayConstraint && (
                 <Card className="w-full">
                   <CardContent className="flex justify-end gap-2">
                     <div className="font-semibold">Remaining scores :</div>

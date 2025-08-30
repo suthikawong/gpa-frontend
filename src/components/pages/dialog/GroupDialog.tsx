@@ -22,6 +22,8 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import toast from '../../common/toast'
 import Uploader, { FileTypes } from '../../common/Uploader'
+import { AxiosError } from 'axios'
+import { ErrorResponse } from 'gpa-backend/src/app.response'
 
 interface GroupDialogProps {
   triggerButton: React.ReactNode
@@ -205,8 +207,12 @@ const SingleGroupForm = ({
       queryClient.invalidateQueries({ queryKey: ['getGroupsByAssessmentId', assessmentId] })
       form.reset()
     },
-    onError: () => {
-      toast.error('Failed to create group.')
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (error.response?.status === 400) {
+        form.setError('groupName', {type: 'manual', message: 'Group name already exists.'})
+      } else {
+        toast.error('Failed to create group.')
+      }
     },
   })
 
@@ -218,8 +224,12 @@ const SingleGroupForm = ({
       queryClient.invalidateQueries({ queryKey: ['getGroupById', data?.groupId] })
       form.reset()
     },
-    onError: () => {
-      toast.error('Failed to update group.')
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (error.response?.status === 400) {
+        form.setError('groupName', {type: 'manual', message: 'Group name already exists.'})
+      } else {
+        toast.error('Failed to update group.')
+      }
     },
   })
 

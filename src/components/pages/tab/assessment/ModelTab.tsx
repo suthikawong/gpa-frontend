@@ -226,13 +226,13 @@ const ModelTab = ({
         } else {
           form.setValue('lowerBound', 1)
           form.setValue('upperBound', 5)
-          form.setValue('scoreConstraint', 20)
+          form.setValue('scoreConstraint', 10)
           form.setValue('isTotalScoreConstrained', false)
         }
       } else {
         form.setValue('lowerBound', 1)
         form.setValue('upperBound', 5)
-        form.setValue('scoreConstraint', 20)
+        form.setValue('scoreConstraint', 10)
         form.setValue('isTotalScoreConstrained', false)
       }
     }
@@ -505,7 +505,7 @@ const ModelTab = ({
                           name="polishingFactor"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
-                              <FormLabel>Polishing Factor</FormLabel>
+                              <FormLabel>Polishing factor</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -711,7 +711,7 @@ const ModelTab = ({
                           name="selfWeight"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.WebAVALIA && 'hidden')}>
-                              <FormLabel>Self Assessment Weight</FormLabel>
+                              <FormLabel>Self assessment weight</FormLabel>
                               <div className="space-y-2">
                                 <FormControl>
                                   <Input

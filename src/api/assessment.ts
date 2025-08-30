@@ -13,6 +13,7 @@ import {
   GetStudentJoinedGroupRequest,
   RemoveStudentFromAssessmentRequest,
   SearchAssessmentsByInstructorRequest,
+  SearchAssessmentsByStudentRequest,
   SearchStudentsInAssessmentRequest,
   StudentJoinAssessmentRequest,
   UpdateAssessmentRequest,
@@ -25,13 +26,13 @@ import {
   DeleteAllGroupsByAssessmentIdResponse,
   DeleteAssessmentResponse,
   GetAssessmentByIdResponse,
-  GetAssessmentsByStudentResponse,
   GetGroupsByAssessmentIdResponse,
   GetMyScoreResponse,
   GetScoringComponentsByAssessmentIdResponse,
   GetStudentJoinedGroupResponse,
   RemoveStudentFromAssessmentResponse,
   SearchAssessmentsByInstructorResponse,
+  SearchAssessmentsByStudentResponse,
   SearchStudentsInAssessmentResponse,
   StudentJoinAssessmentResponse,
   UpdateAssessmentResponse,
@@ -46,8 +47,10 @@ const searchAssessmentsByInstructor = async (
   return response.data
 }
 
-const getAssessmentsByStudent = async (): Promise<AppResponse<GetAssessmentsByStudentResponse>> => {
-  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/assessment/student`)
+const searchAssessmentsByStudent = async (
+  params: SearchAssessmentsByStudentRequest
+): Promise<AppResponse<SearchAssessmentsByStudentResponse>> => {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/assessment/student`, { params })
   return response.data
 }
 
@@ -162,7 +165,7 @@ const exportAssessmentScores = async ({ assessmentId }: ExportAssessmentScoresRe
 
 export const assessment = {
   searchAssessmentsByInstructor,
-  getAssessmentsByStudent,
+  searchAssessmentsByStudent,
   getAssessmentById,
   createAssessment,
   updateAssessment,

@@ -73,7 +73,6 @@ const StudentsTab = ({ assessmentId, canEdit }: { assessmentId: Assessment['asse
         if (oldData.length === 1 && page > 1) {
           setPage(page - 1)
         } else {
-          console.log({ data: newData, total: total - 1 })
           queryClient.setQueryData(['searchStudentsInAssessment', assessmentId, page], {
             data: newData,
             total: total - 1,
@@ -81,7 +80,7 @@ const StudentsTab = ({ assessmentId, canEdit }: { assessmentId: Assessment['asse
         }
       }
 
-      toast.success(`${req.isConfirmed ? 'Accept' : 'Reject'} student joined request successfully.`)
+      toast.success(`Student request ${req.isConfirmed ? 'accepted' : 'rejected'}.`)
       setClickedStudentId(null)
     },
     onError: (_, req) => {
@@ -136,88 +135,93 @@ const StudentsTab = ({ assessmentId, canEdit }: { assessmentId: Assessment['asse
           <SuspenseArea loading={isLoading}>
             {data?.length == 0 ? (
               <EmptyState
-                title="No Student Yet"
-                description1="It looks like there is no student joined the assessment yet."
+                title="No Student Found"
+                description1="It looks like there are no students in the assessment that match the keyword."
                 icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
               />
             ) : (
-              data?.map((student, index) => {
-                const actionButtons = []
-                if (student.group?.groupId && !canEdit) {
-                  actionButtons.push(
-                    <AlertDialog
-                      triggerButton={
-                        <Button
-                          size="sm"
-                          variant="destructiveOutline"
-                        >
-                          <Trash2 className="sm:hidden" />
-                          <span className="hidden sm:block">Remove</span>
-                        </Button>
-                      }
-                      title="Cannot remove student"
-                      content="Can't remove this student from assessment. Student who already joined group when peer rating started can't be deleted."
-                      confirmButtonText="Okay"
-                      showCancelButton={false}
-                    />
-                  )
-                } else if (student.isConfirmed) {
-                  actionButtons.push(
-                    <ConfirmDeleteDialog
-                      triggerButton={
-                        <Button
-                          size="sm"
-                          variant="destructiveOutline"
-                          disabled={isFetching}
-                        >
-                          <Trash2 className="sm:hidden" />
-                          <span className="hidden sm:block">Remove</span>
-                        </Button>
-                      }
-                      data={{ assessmentId, studentUserId: student.userId }}
-                      api={api.assessment.removeStudentFromAssessment}
-                      title="Confirm Delete"
-                      onSuccessMessage="Student removed successfully."
-                      onErrorMessage="Failed to remove student."
-                      refetchKeys={['searchStudentsInAssessment', assessmentId, 1]}
-                    />
-                  )
-                } else {
-                  actionButtons.push(
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onClickAcceptReject(student.userId, true)}
-                      loading={clickedStudentId === student.userId && mutation.isPending}
-                      disabled={isFetching}
-                    >
-                      <Trash2 className="sm:hidden" />
-                      <span className="hidden sm:block">Accept</span>
-                    </Button>
-                  )
-                  actionButtons.push(
-                    <Button
-                      size="sm"
-                      variant="destructiveOutline"
-                      onClick={() => onClickAcceptReject(student.userId, false)}
-                      loading={clickedStudentId === student.userId && mutation.isPending}
-                      disabled={isFetching}
-                    >
-                      <Trash2 className="sm:hidden" />
-                      <span className="hidden sm:block">Reject</span>
-                    </Button>
-                  )
-                }
+              <>
+                <div className="font-semibold text-lg mt-4 mb-2">
+                  We've found <span className="text-primary">{total}</span> students!
+                </div>
+                {data?.map((student, index) => {
+                  const actionButtons = []
+                  if (student.group?.groupId && !canEdit) {
+                    actionButtons.push(
+                      <AlertDialog
+                        triggerButton={
+                          <Button
+                            size="sm"
+                            variant="destructiveOutline"
+                          >
+                            <Trash2 className="sm:hidden" />
+                            <span className="hidden sm:block">Remove</span>
+                          </Button>
+                        }
+                        title="Cannot remove student"
+                        content="Can't remove this student from assessment. Student who already joined group when peer rating started can't be deleted."
+                        confirmButtonText="Okay"
+                        showCancelButton={false}
+                      />
+                    )
+                  } else if (student.isConfirmed) {
+                    actionButtons.push(
+                      <ConfirmDeleteDialog
+                        triggerButton={
+                          <Button
+                            size="sm"
+                            variant="destructiveOutline"
+                            disabled={isFetching}
+                          >
+                            <Trash2 className="sm:hidden" />
+                            <span className="hidden sm:block">Remove</span>
+                          </Button>
+                        }
+                        data={{ assessmentId, studentUserId: student.userId }}
+                        api={api.assessment.removeStudentFromAssessment}
+                        title="Confirm Delete"
+                        onSuccessMessage="Student removed successfully."
+                        onErrorMessage="Failed to remove student."
+                        refetchKeys={[['searchStudentsInAssessment', assessmentId, 1]]}
+                      />
+                    )
+                  } else {
+                    actionButtons.push(
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onClickAcceptReject(student.userId, true)}
+                        loading={clickedStudentId === student.userId && mutation.isPending}
+                        disabled={isFetching}
+                      >
+                        <Trash2 className="sm:hidden" />
+                        <span className="hidden sm:block">Accept</span>
+                      </Button>
+                    )
+                    actionButtons.push(
+                      <Button
+                        size="sm"
+                        variant="destructiveOutline"
+                        onClick={() => onClickAcceptReject(student.userId, false)}
+                        loading={clickedStudentId === student.userId && mutation.isPending}
+                        disabled={isFetching}
+                      >
+                        <Trash2 className="sm:hidden" />
+                        <span className="hidden sm:block">Reject</span>
+                      </Button>
+                    )
+                  }
 
-                return (
-                  <ActionCard
-                    key={index}
-                    title={student.name}
-                    description={student.email}
-                    actions={actionButtons}
-                  />
-                )
-              })
+                  return (
+                    <ActionCard
+                      key={index}
+                      title={student.name}
+                      description={student.email}
+                      actions={actionButtons}
+                    />
+                  )
+                })}
+              </>
             )}
           </SuspenseArea>
         </div>

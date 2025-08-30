@@ -111,7 +111,12 @@ const JoinAssessmentForm = ({
       form.reset()
     },
     onError: (error: AxiosError) => {
-      if (error.response?.status === 404) {
+      if (error.response?.status === 400) {
+        form.setError('assessmentCode', {
+          type: 'manual',
+          message: 'You already joined this assessment',
+        })
+      } else if (error.response?.status === 404) {
         form.setError('assessmentCode', {
           type: 'manual',
           message: 'Assessment not found with provided code',

@@ -331,7 +331,7 @@ export const webavaliaConfigurationSet: QuestionnaireModelConfigurationItem = [
     options: [
       {
         answer: 'Yes',
-        values: { selfWeight: 1 },
+        values: { selfWeight: 0.2 },
       },
       {
         answer: 'No',

@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { AxiosError } from 'axios'
+import { ErrorResponse } from 'gpa-backend/src/app.response'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -33,7 +35,7 @@ const formSchema = z
     password: z
       .string()
       .min(1, { message: 'Please enter your password.' })
-      .min(8, { message: 'Password must be at least 8 characters' }),
+      .min(8, { message: 'Password must be at least 8 characters long.' }),
     confirmPassword: z.string().min(1, { message: 'Please enter your password again.' }),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -148,8 +150,15 @@ const SignUpForm = ({ formType }: { formType: Roles }) => {
     onSuccess: () => {
       router.history.push(`/signin`)
     },
-    onError: () => {
-      toast.error('Failed to sign up. Please try again.')
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (error.response?.status === 400) {
+        form.setError('email', {
+          type: 'custom',
+          message: 'This email is already in use',
+        })
+      } else {
+        toast.error('Failed to sign up. Please try again.')
+      }
     },
   })
 

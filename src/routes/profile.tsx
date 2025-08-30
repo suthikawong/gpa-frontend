@@ -80,11 +80,14 @@ function RouteComponent() {
     const formData = new FormData()
     formData.append('userId', user?.userId.toString()!)
     formData.append('name', values.name)
+
     if (values.userNumber) {
       formData.append('userNumber', values.userNumber)
     }
     if (files.length > 0) {
       formData.append('file', files[0])
+    } else if (preview) {
+      formData.append('image', preview)
     }
     mutation.mutate(formData)
   }
@@ -108,15 +111,9 @@ function RouteComponent() {
               className="space-y-4 h-full flex flex-col"
             >
               <div className="flex-grow">
-                {/* <div className="bg-primary rounded-xl flex justify-center items-center text-white text-5xl w-30 h-30 m-auto mt-10 mb-16">
-                  {user?.name?.[0] ?? ''}
-                </div> */}
                 <div className="flex flex-col items-center m-auto mt-4 mb-8 ">
                   {preview ? (
                     <div className="flex flex-col items-center">
-                      {/* <div className="bg-primary rounded-xl flex justify-center items-center text-white text-5xl w-[160px] h-[160px]">
-                        {user?.name?.[0] ?? ''}
-                      </div> */}
                       <div className="w-[168px] h-[168px] rounded-xl">
                         <img
                           src={preview}

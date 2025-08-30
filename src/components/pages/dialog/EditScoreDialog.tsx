@@ -61,7 +61,12 @@ enum DialogState {
   ReviewConfiguration,
 }
 
-const scoresSchema = z.object({
+const qassFormSchema = z.object({
+  groupScore: z
+    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
+    .finite()
+    .gt(0, { message: 'Group score must be greater than 0' })
+    .lt(1, { message: 'Group score must be less than 1' }),
   studentScores: z.array(
     z.object({
       studentUserId: z.number(),
@@ -70,8 +75,8 @@ const scoresSchema = z.object({
           z
             .number()
             .finite()
-            .min(0, { message: 'Student score must be greater than or equal zero' })
-            .max(1, { message: 'Student score must be less than or equal one' }),
+            .min(0, { message: 'Student score must be greater than or equal to 0' })
+            .max(1, { message: 'Student score must be less than or equal to 1' }),
           z.nan(),
         ])
         .optional(),
@@ -80,20 +85,28 @@ const scoresSchema = z.object({
   ),
 })
 
-const qassFormSchema = scoresSchema.extend({
-  groupScore: z
-    .number({ required_error: 'Group score is required', invalid_type_error: 'Group score must be a number' })
-    .finite()
-    .gt(0, { message: 'Group score must be greater than 0' })
-    .lt(1, { message: 'Group score must be less than 1' }),
-})
-
-const webavaliaFormSchema = scoresSchema.extend({
+const webavaliaFormSchema = z.object({
   groupScore: z
     .number({ required_error: 'Group grade is required', invalid_type_error: 'Group grade must be an integer' })
     .int()
     .min(0, { message: 'Group grade must be greater than or equal to 0' })
     .max(20, { message: 'Group grade must be less than or equal to 20' }),
+  studentScores: z.array(
+    z.object({
+      studentUserId: z.number(),
+      score: z
+        .union([
+          z
+            .number()
+            .int('Student score must be an integer')
+            .min(0, { message: 'Student score must be greater than or equal to 0' })
+            .max(20, { message: 'Student score must be less than or equal to 20' }),
+          z.nan(),
+        ])
+        .optional(),
+      remark: z.string().optional(),
+    })
+  ),
 })
 
 const dynamicFormSchemas = {
@@ -229,6 +242,7 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
       return (
         <EditScoreForm
           data={data}
+          assessmentId={assessmentId}
           groupId={groupId}
           open={open}
           modelId={assessmentData.modelId}
@@ -289,6 +303,7 @@ export default EditScoreDialog
 
 const EditScoreForm = ({
   data,
+  assessmentId,
   groupId,
   open,
   modelId,
@@ -297,6 +312,7 @@ const EditScoreForm = ({
   setDialogState,
 }: {
   data: GetScoresResponse | undefined
+  assessmentId: number
   groupId: number
   open: boolean
   modelId: number
@@ -318,6 +334,17 @@ const EditScoreForm = ({
   const getSchemaByModelId = <T extends DynamicFormSchemaKeys>(modelId: number): DynamicFormSchemaMap[T] => {
     return dynamicFormSchemas[modelId]
   }
+
+  const {
+    data: res,
+    isLoading: isScoringComponentLoading,
+    error: errorScoringComponent,
+  } = useQuery({
+    queryKey: ['getScoringComponentsByAssessmentId', assessmentId],
+    queryFn: async () => await api.assessment.getScoringComponentsByAssessmentId({ assessmentId }),
+  })
+
+  const scoringComponentData = res?.data
 
   const formSchema = getSchemaByModelId(modelId)
 
@@ -357,6 +384,10 @@ const EditScoreForm = ({
       setError('At least 2 members required for auto calculating')
       return
     }
+    if (!scoringComponentData || scoringComponentData.length === 0) {
+      setError('At least 1 scoring component required for auto calculating')
+      return
+    }
     setError(null)
     setDialogState(DialogState.ReveiwPeerRatings)
   }
@@ -364,6 +395,12 @@ const EditScoreForm = ({
   useEffect(() => {
     if (open) form.reset(defaultValues)
   }, [open, form])
+
+  useEffect(() => {
+    if (errorScoringComponent) {
+      toast.error('Something went wrong. Please try again.')
+    }
+  }, [errorScoringComponent])
 
   return (
     <Form {...form}>
@@ -391,7 +428,7 @@ const EditScoreForm = ({
                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                     type="number"
                     placeholder="Enter group score"
-                    step="0.1"
+                    step={modelId === model.WebAVALIA ? '1' : '0.01'}
                   />
                 </FormControl>
                 <FormMessage />
@@ -406,9 +443,9 @@ const EditScoreForm = ({
                 type="button"
                 onClick={onClickAutoCalculate}
                 className="w-fit"
-                loading={isCheckPeerRatingLoad}
+                loading={isCheckPeerRatingLoad || isScoringComponentLoading}
               >
-                {!isCheckPeerRatingLoad && <Calculator />}
+                {!isCheckPeerRatingLoad && !isScoringComponentLoading && <Calculator />}
                 <div className="hidden sm:block">Auto Calculate</div>
               </Button>
               {error && <FormMessage>{error}</FormMessage>}
@@ -425,6 +462,7 @@ const EditScoreForm = ({
               {data?.studentScores?.map((studentScore, index) => (
                 <StudentScoreCollapsible
                   index={index}
+                  modelId={modelId}
                   form={form}
                   studentScore={studentScore}
                 />
@@ -1154,10 +1192,12 @@ const WebavaliaConfigurationForm = ({
 
 const StudentScoreCollapsible = ({
   index,
+  modelId,
   studentScore,
   form,
 }: {
   index: number
+  modelId: number
   studentScore: StudentScoreItem
   form: UseFormReturn<FormSchemaType, any, FormSchemaType>
 }) => {
@@ -1195,7 +1235,7 @@ const StudentScoreCollapsible = ({
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                   type="number"
-                  step="0.01"
+                  step={modelId === model.WebAVALIA ? '1' : '0.01'}
                   placeholder="Enter group score"
                 />
               </FormControl>
@@ -1259,7 +1299,7 @@ const StudentNoRatingCollapsible = ({ data }: { data: ScoringComponentWithStuden
             <Badge variant="destructive">Missing</Badge>
             <div>
               <span className="font-semibold">{student.name}</span>{' '}
-              <span className="text-muted-foreground">{`(Student ID: ${student.userNumber})`}</span>
+              <span className="text-muted-foreground">{`(Student ID: ${student.userNumber ?? '-'})`}</span>
             </div>
           </div>
         ))}

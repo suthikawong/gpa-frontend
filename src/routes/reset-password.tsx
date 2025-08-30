@@ -32,7 +32,7 @@ const resetPasswordFormSchema = z
     password: z
       .string()
       .min(1, 'Please enter your new password')
-      .min(8, { message: 'Password must be at least 8 characters' }),
+      .min(8, { message: 'Password must be at least 8 characters long.' }),
     confirmPassword: z.string().min(1, 'Please enter your new password again'),
   })
   .refine((data) => data.password === data.confirmPassword, {
