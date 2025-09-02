@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AssessmentModel, mode, QASSMode } from '@/config/app'
@@ -65,16 +65,12 @@ const QuestionnaireDialog = ({ triggerButton, isApplying, onClickApply }: Questi
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>
-        <div
-          className="flex justify-end"
-          onClick={() => setOpen(true)}
-        >
-          {triggerButton}
-        </div>
+        {triggerButton}
       </DialogTrigger>
       <DialogContent className="lg:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Questionnaire</DialogTitle>
+          <DialogDescription hidden>Questionnaire</DialogDescription>
         </DialogHeader>
         {selectedModel ? (
           <ModelConfigurationPageContainer
@@ -253,6 +249,8 @@ const ModelConfigurationPageContainer = ({
       }
       setResult(temp)
       setStep(step - 1)
+    } else if (step === 1) {
+      setStep(step - 1)
     }
   }
 
@@ -385,6 +383,7 @@ const QuestionPage = ({
       <div className="grid grid-cols-1 grid-rows-1 pb-8 sm:pb-10 md:pb-0 lg:grid-cols-2 lg:grid-rows-2 gap-4">
         {data.options.map((option, index) => (
           <div
+            key={index}
             onClick={() => onChoiceSelected(index)}
             className={cn(
               'cursor-pointer shadow rounded text-lg font-semibold transition-colors duration-300 ease-in-out hover:bg-primary/90 hover:text-primary-foreground p-4 lg:p-6',
@@ -485,7 +484,7 @@ const CompareModelPage = ({
     <>
       <div className="space-y-4 mt-4 mb-8">
         <h2 className="text-center text-2xl font-semibold">{data.title}</h2>
-        <div className="text-center">{isPerfectMatch ? description1 : description2}</div>
+        <div className="text-center text-sm text-muted-foreground">{isPerfectMatch ? description1 : description2}</div>
       </div>
       <div className="overflow-x-auto">
         <Table className="w-full">

@@ -786,7 +786,7 @@ const ModelTab = ({
               onClickApply={onApplyModelParameter}
               isApplying={!!parameters}
               triggerButton={
-                <Button className="w-full bg-linear-65 from-purple-500 to-pink-500 sm:max-w-50 md:max-w-full xl:max-w-50">
+                <Button disabled={!data.canEdit} className="w-full bg-linear-65 from-purple-500 to-pink-500 sm:max-w-50 md:max-w-full xl:max-w-50">
                   Start Questionnaire!
                 </Button>
               }

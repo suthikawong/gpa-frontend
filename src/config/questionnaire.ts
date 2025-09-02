@@ -85,7 +85,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       },
       {
         answer: 'yes',
-        values: [1, 1],
+        values: [0, 1],
         description: 'The sum of peer assessments is constant',
       },
     ],
