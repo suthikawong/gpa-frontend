@@ -81,12 +81,12 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'no',
         values: [1, 0],
-        description: `The sum of peer assessments isn't constant`,
+        description: `Sum of peer assessments isn't fixed`,
       },
       {
         answer: 'yes',
         values: [0, 1],
-        description: 'The sum of peer assessments is constant',
+        description: 'Sum of peer assessments is fixed',
       },
     ],
   },
@@ -150,7 +150,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'only rewards',
         values: [1, 0],
-        description: `Peer assessments are treated as rewards only`,
+        description: `Peer assessments treated as rewards only`,
       },
       {
         answer: 'only penalties',
@@ -160,7 +160,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'both rewards and penalties',
         values: [1, 0],
-        description: `Peer assessments are treated as both rewards and penalties`,
+        description: `Peer assessments treated as rewards and penalties`,
       },
     ],
   },
@@ -171,17 +171,17 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: 'less than 3',
         values: [1, 0],
-        description: `A complete peer assessment can be done in less than 3 times`,
+        description: `A complete peer assessment can be done less than 3 times`,
       },
       {
         answer: '3',
         values: [1, 1],
-        description: `A complete peer assessment can be done in exactly 3 times`,
+        description: `A complete peer assessment can be done exactly 3 times`,
       },
       {
         answer: 'more than 3',
         values: [1, 0],
-        description: `A complete peer assessment can be done in more than 3 times`,
+        description: `A complete peer assessment can be done more than 3 times`,
       },
     ],
   },
@@ -192,7 +192,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       {
         answer: '0%, 1%, ... , 99%, 100%',
         values: [1, 0],
-        description: 'Final student scores will be in a percentage scale',
+        description: 'Final student scores will be on a percentage scale',
       },
       {
         answer: '0, 1, ... , 19, 20',
