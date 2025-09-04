@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
@@ -29,7 +30,7 @@ import {
 } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { Assessment, Group, ScoringComponent } from 'gpa-backend/src/drizzle/schema'
 import { UserProtected } from 'gpa-backend/src/user/user.interface'
-import { ChevronLeft, Users } from 'lucide-react'
+import { ChevronLeft, Info, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
@@ -389,6 +390,8 @@ const PeerRatingPage = ({
   scoringComponentId: ScoringComponent['scoringComponentId']
   setPageState: React.Dispatch<React.SetStateAction<State>>
 }) => {
+  const [openInstruction, setOpenInstruction] = useState(true)
+
   if (!assessmentData?.modelId) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -488,9 +491,14 @@ const PeerRatingPage = ({
             <CardContent className="space-y-1 border-l-4 border-primary ml-6">
               <CardTitle className="text-muted-foreground">Instruction</CardTitle>
               <CardTitle className="text-xl">
-                {isDisplayConstraint
-                  ? `Distribute ${constraint} points among your group members based on their contribution and performance.`
-                  : 'Rate your group members based on their contribution and performance.'}
+                {isDisplayConstraint ? (
+                  <>
+                    <div>{`Distribute ${constraint} points among your group members based on their contribution and performance.`}</div>
+                    <div>You can submit once the remaining points reach 0.</div>
+                  </>
+                ) : (
+                  <div>Rate your group members based on their contribution and performance.</div>
+                )}
               </CardTitle>
             </CardContent>
           </Card>
@@ -519,7 +527,7 @@ const PeerRatingPage = ({
                     ) : remainScores === 0 ? (
                       <div className="text-success font-semibold">{remainScores}</div>
                     ) : (
-                      <div className="font-semibold">{remainScores}</div>
+                      <div className="text-destructive font-semibold">{remainScores}</div>
                     )}
                   </CardContent>
                 </Card>
@@ -550,6 +558,40 @@ const PeerRatingPage = ({
           </Form>
         </div>
       </div>
+      <Dialog
+        open={openInstruction}
+        onOpenChange={setOpenInstruction}
+      >
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className="[&>button]:hidden"
+        >
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Instruction</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col justify-center items-center gap-4 mb-6 mt-4">
+            <Info
+              size={80}
+              className="text-primary"
+            />
+            {isDisplayConstraint ? (
+              <div>
+                <h2 className="text-lg font-semibold text-center">{`Distribute ${constraint} points among your group members based on their contribution and performance.`}</h2>
+                <h2 className="text-lg font-semibold text-center">
+                  You can submit once thse remaining points reach 0.
+                </h2>
+              </div>
+            ) : (
+              <h2 className="text-lg font-semibold text-center">
+                Rate your group members based on their contribution and performance.
+              </h2>
+            )}
+          </div>
+          <DialogFooter className="m-auto">
+            <Button onClick={() => setOpenInstruction(false)}>I understand</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
