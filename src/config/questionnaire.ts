@@ -69,7 +69,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
       },
       {
         answer: '0, 5, ... , 95, 100',
-        values: [1, 1],
+        values: [0, 1],
         description: 'Use a 21-point scale',
       },
     ],
@@ -278,8 +278,14 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
     question: 'How do you want students to give their ratings?',
     options: [
       {
-        answer: 'Using a score slider',
-        values: { scaleType: ScaleType.PercentageScale, lowerBound: 0, upperBound: 1 },
+        answer: 'Using a percentage scale',
+        values: {
+          scaleType: ScaleType.PercentageScale,
+          lowerBound: 0,
+          upperBound: 1,
+          scoreConstraint: 1,
+          isTotalScoreConstrained: false,
+        },
       },
       {
         answer: 'Using a 4-point Likert scale questionnaire',
@@ -287,6 +293,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
           scaleType: ScaleType.NPointScale,
           lowerBound: 1,
           upperBound: 4,
+          scoreConstraint: 10,
           isTotalScoreConstrained: false,
         },
       },
@@ -296,6 +303,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
           scaleType: ScaleType.NPointScale,
           lowerBound: 1,
           upperBound: 5,
+          scoreConstraint: 10,
           isTotalScoreConstrained: false,
         },
       },
@@ -305,6 +313,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
           scaleType: ScaleType.NPointScale,
           lowerBound: 1,
           upperBound: 7,
+          scoreConstraint: 10,
           isTotalScoreConstrained: false,
         },
       },
