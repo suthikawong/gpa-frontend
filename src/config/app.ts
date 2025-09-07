@@ -8,6 +8,7 @@ export const appPaths = {
   instructor: {
     assessment: '/instructor/assessment',
     simulation: '/instructor/simulation',
+    tutorial: '/instructor/tutorial',
   },
   student: {
     assessment: '/student/assessment',
@@ -38,6 +39,11 @@ export const instructorMenuItems = [
     name: 'Simulation',
     icon: 'FlaskConical',
     href: appPaths.instructor.simulation,
+  },
+  {
+    name: 'Tutorial',
+    icon: 'BookOpenText',
+    href: appPaths.instructor.tutorial,
   },
   profileMenuItem,
 ]

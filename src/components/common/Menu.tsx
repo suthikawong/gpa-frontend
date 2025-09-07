@@ -5,7 +5,7 @@ import { appPaths, instructorMenuItems, profileMenuItem, Roles, studentMenuItems
 import { useAuth } from '@/hooks/auth'
 import { cn } from '@/lib/utils'
 import { Link, useRouter } from '@tanstack/react-router'
-import { FlaskConical, ListChecks, LogOut, Menu as LucideMenu, UserRound } from 'lucide-react'
+import { BookOpenText, FlaskConical, ListChecks, LogOut, Menu as LucideMenu, UserRound } from 'lucide-react'
 import React, { useState } from 'react'
 import { Avatar } from '../ui/avatar'
 import { Label } from '../ui/label'
@@ -23,6 +23,7 @@ interface MenuItem {
 const iconMap = {
   ListChecks: ListChecks,
   FlaskConical: FlaskConical,
+  BookOpenText: BookOpenText,
   UserRound: UserRound,
   LogOut: LogOut,
 }

@@ -1,6 +1,6 @@
 import { api } from '@/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -16,16 +16,17 @@ import {
 } from '@/utils/qass'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { GetAssessmentByIdResponse } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { Assessment } from 'gpa-backend/src/drizzle/schema'
-import { SettingsIcon } from 'lucide-react'
+import { CirclePlay, SettingsIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import AlertDialog from '../../../common/AlertDialog'
-import QuestionnaireDialog, { ResultModelParametersType } from '../../dialog/QuestionnaireDialog'
 import SuspenseArea from '../../../common/SuspenseArea'
 import toast from '../../../common/toast'
+import QuestionnaireDialog, { ResultModelParametersType } from '../../dialog/QuestionnaireDialog'
 
 const baseSchema = z.object({
   modelId: z.literal('0'),
@@ -430,7 +431,7 @@ const ModelTab = ({
 
   return (
     <>
-      <div className="flex flex-col-reverse md:grid md:grid-cols-2 lg:grid-cols-[3fr_2fr] gap-8 h-full">
+      <div className="flex flex-col-reverse lg:grid lg:grid-cols-[3fr_2fr] gap-4 lg:h-full">
         <Card className="flex gap-4">
           <CardHeader>
             <CardTitle className="text-xl flex gap-2 items-center">
@@ -776,22 +777,39 @@ const ModelTab = ({
             </SuspenseArea>
           </CardContent>
         </Card>
-        <div>
+        <div className="space-y-4">
           <div className="bg-white p-4 flex flex-col gap-4 rounded-xl border-primary/70 border-3">
-            <div className="flex gap-3">
-              <h4 className="font-semibold text-xl">Are you new to this?</h4>
+            <div className="flex flex-col gap-1">
+              <h4 className="font-semibold text-lg">Are you new to this?</h4>
+              <div className="text-sm text-muted-foreground">
+                Don't worry, this questionnarie will help you setup and find the right model for you!
+              </div>
             </div>
-            <div className="text-sm">Don't worry, this questionnarie will help you find the right model for you!</div>
             <QuestionnaireDialog
               onClickApply={onApplyModelParameter}
               isApplying={!!parameters}
               triggerButton={
-                <Button disabled={!data.canEdit} className="w-full bg-linear-65 from-purple-500 to-pink-500 sm:max-w-50 md:max-w-full xl:max-w-50">
+                <Button
+                  disabled={!data.canEdit}
+                  className="w-full bg-linear-65 from-purple-500 to-pink-500 sm:max-w-50 xl:max-w-50"
+                >
                   Start Questionnaire!
                 </Button>
               }
             />
           </div>
+          <Card className="flex flex-row justify-between items-center bg-primary py-3! px-4!">
+            <div>
+              <CardTitle className="text-base text-white">Don't know how to setup?</CardTitle>
+              <CardDescription className="text-white">Read Tutorial</CardDescription>
+            </div>
+            <Link
+              to="/instructor/tutorial"
+              hash="webavalia"
+            >
+              <CirclePlay className="text-white hover:cursor-pointer" />
+            </Link>
+          </Card>
         </div>
       </div>
     </>

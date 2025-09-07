@@ -13,6 +13,8 @@ const router = createRouter({
     user: undefined!,
   },
   defaultNotFoundComponent: () => <NotFound />,
+  scrollRestoration: true,
+  defaultHashScrollIntoView: { behavior: 'smooth' },
 })
 
 declare module '@tanstack/react-router' {

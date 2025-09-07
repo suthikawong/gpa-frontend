@@ -76,7 +76,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
   },
   {
     type: 'question',
-    question: 'Should the sum of peer assessments be constant?',
+    question: 'Should the sum of peer assessments be fixed?',
     options: [
       {
         answer: 'no',
@@ -288,7 +288,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
         },
       },
       {
-        answer: 'Using a 4-point Likert scale questionnaire',
+        answer: 'Using a 4-point scale questionnaire',
         values: {
           scaleType: ScaleType.NPointScale,
           lowerBound: 1,
@@ -298,7 +298,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
         },
       },
       {
-        answer: 'Using a 5-point Likert scale questionnaire',
+        answer: 'Using a 5-point scale questionnaire',
         values: {
           scaleType: ScaleType.NPointScale,
           lowerBound: 1,
@@ -308,7 +308,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
         },
       },
       {
-        answer: 'Using a 7-point Likert scale questionnaire',
+        answer: 'Using a 7-point scale questionnaire',
         values: {
           scaleType: ScaleType.NPointScale,
           lowerBound: 1,
