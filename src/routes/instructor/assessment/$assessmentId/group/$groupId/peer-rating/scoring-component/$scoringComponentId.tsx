@@ -169,7 +169,7 @@ const ScoringComponentCard = ({ data }: { data: GetScoringComponentByIdResponse 
   return (
     <Card className="w-full">
       <CardContent className="flex-col">
-        <CardTitle className="text-lg md:text-2xl md:mb-1">Scoring Component</CardTitle>
+        <CardTitle className="text-lg md:text-2xl md:mb-1">Component</CardTitle>
         <div className="flex justify-between items-end my-2 md:mb-0">
           <div className="flex flex-col gap-3">
             <div className="text-muted-foreground text-sm">{`${format(data.startDate, 'dd/MM/y')} - ${format(data.endDate, 'dd/MM/y')}`}</div>

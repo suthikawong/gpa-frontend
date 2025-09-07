@@ -126,7 +126,7 @@ function RouteComponent() {
                       value={AssessmentTabs.ScoringComponents}
                       onClick={() => onClickTab(AssessmentTabs.ScoringComponents)}
                     >
-                      Scoring Components
+                      Components
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -330,7 +330,7 @@ const DeleteAssessmentDialog = ({
           <div className="rounded-xl border border-gray-200 bg-muted p-5">
             <ul className="list-inside list-disc space-y-1 text-sm">
               <li>Model configuration</li>
-              <li>Scoring components</li>
+              <li>Components</li>
               <li>Groups</li>
               <li>Group scores</li>
               <li>Student scores</li>

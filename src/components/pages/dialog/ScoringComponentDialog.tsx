@@ -68,7 +68,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
     mutationFn: api.scoringComponent.createScoringComponent,
     onSuccess: () => {
       setOpen(false)
-      toast.success('Scoring component created successfully')
+      toast.success('Component created successfully')
       queryClient.invalidateQueries({ queryKey: ['getScoringComponentsByAssessmentId', assessmentId] })
       queryClient.invalidateQueries({ queryKey: ['getAssessmentById', assessmentId] })
       form.reset()
@@ -77,14 +77,14 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
       if (error.response?.status === 400) {
         form.setError('startDate', {
           type: 'manual',
-          message: 'The scoring component dates overlap with existing components',
+          message: 'The component dates overlap with existing components',
         })
         form.setError('endDate', {
           type: 'manual',
-          message: 'The scoring component dates overlap with existing components',
+          message: 'The component dates overlap with existing components',
         })
       } else {
-        toast.error('Failed to create scoring component.')
+        toast.error('Failed to create component.')
       }
     },
   })
@@ -93,7 +93,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
     mutationFn: api.scoringComponent.updateScoringComponent,
     onSuccess: () => {
       setOpen(false)
-      toast.success('Scoring component updated successfully')
+      toast.success('Component updated successfully')
       queryClient.invalidateQueries({ queryKey: ['getScoringComponentsByAssessmentId', assessmentId] })
       form.reset()
     },
@@ -101,14 +101,14 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
       if (error.response?.status === 400) {
         form.setError('startDate', {
           type: 'manual',
-          message: 'The scoring component dates overlap with existing components',
+          message: 'The component dates overlap with existing components',
         })
         form.setError('endDate', {
           type: 'manual',
-          message: 'The scoring component dates overlap with existing components',
+          message: 'The component dates overlap with existing components',
         })
       } else {
-        toast.error('Failed to update scoring component.')
+        toast.error('Failed to update component.')
       }
     },
   })
@@ -150,9 +150,9 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
             className="space-y-4"
           >
             <DialogHeader>
-              <DialogTitle className="text-2xl">{data ? 'Edit ' : 'Create '}scoring component</DialogTitle>
+              <DialogTitle className="text-2xl">{data ? 'Edit ' : 'Create '} component</DialogTitle>
               <DialogDescription>
-                Enter scoring component details. Click {data ? 'save' : 'create'} when you're done.
+                Enter component details. Click {data ? 'save' : 'create'} when you're done.
               </DialogDescription>
             </DialogHeader>
 
@@ -206,7 +206,7 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value))}
                         type="number"
-                        placeholder="Enter scoring component weight"
+                        placeholder="Enter component weight"
                       />
                     </FormControl>
                     <FormMessage />

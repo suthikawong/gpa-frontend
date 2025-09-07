@@ -51,16 +51,16 @@ const PeerRatingsTab = ({
   return (
     <div>
       <div className="flex justify-between mb-6">
-        <div className="text-2xl font-semibold">Scoring Components</div>
+        <div className="text-2xl font-semibold">Components</div>
       </div>
       <div className="flex flex-col gap-4 flex-grow">
         <SuspenseArea loading={isLoading}>
           {data.length == 0 ? (
             <EmptyState
-              title="No Scoring Component Yet"
-              description1="It looks like you haven't created any scoring components."
+              title="No Component Yet"
+              description1="It looks like you haven't created any components."
               icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
-              action={<Button onClick={backToScoringComponentTab}>Create Scoring Component</Button>}
+              action={<Button onClick={backToScoringComponentTab}>Create Component</Button>}
             />
           ) : (
             data.map((scoringComponent) => {

@@ -36,7 +36,7 @@ const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['asse
     <div>
       <div className="flex justify-between mb-6">
         <div className="text-2xl font-semibold">
-          Scoring Components <ComponentTooltip />
+          Components <ComponentTooltip />
         </div>
         <ScoringComponentDialog
           triggerButton={
@@ -51,8 +51,8 @@ const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['asse
         <SuspenseArea loading={isLoading}>
           {data.length == 0 ? (
             <EmptyState
-              title="No Scoring Component Yet"
-              description1="It looks like you haven't created any scoring components."
+              title="No Component Yet"
+              description1="It looks like you haven't created any components."
               icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
             />
           ) : (
@@ -111,7 +111,7 @@ const DeleteScoringComponentDialog = ({
       data={{ scoringComponentId }}
       api={api.scoringComponent.deleteScoringComponent}
       title="Confirm Delete"
-      onSuccessMessage="Scoring Component removed successfully."
+      onSuccessMessage="Component removed successfully."
       onErrorMessage="Failed to remove student."
       refetchKeys={[
         ['getScoringComponentsByAssessmentId', assessmentId],
@@ -120,7 +120,7 @@ const DeleteScoringComponentDialog = ({
       content={
         <div className="space-y-4 text-sm text-muted-foreground">
           <div className="mt-1 text-sm">
-            Deleting this scoring component will also remove all associated information, including:
+            Deleting this component will also remove all associated information, including:
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-muted p-5">

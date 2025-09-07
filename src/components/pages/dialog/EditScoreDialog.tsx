@@ -408,7 +408,7 @@ const EditScoreForm = ({
       return
     }
     if (!scoringComponentData || scoringComponentData.length === 0) {
-      setError('At least 1 scoring component required for auto calculating')
+      setError('At least 1 component required for auto calculating')
       return
     }
     setError(null)
@@ -543,7 +543,7 @@ const ReviewPeerRatings = ({
       <div className="rounded-xl border border-gray-200 bg-muted p-5 text-sm text-muted-foreground">
         <div>
           <span>You can allow students to submit their assessments by </span>
-          <span className="font-semibold text-black">extending the dates of that scoring component</span>
+          <span className="font-semibold text-black">extending the dates of that component</span>
           <span>
             .If the group size does not meet this condition, students in the group will not be able to perform peer
             assessment.
