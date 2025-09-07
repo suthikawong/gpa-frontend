@@ -45,7 +45,7 @@ const qassTerminologies = [
   },
   {
     term: 'Disjunction',
-    definition: `Disjunction mode refers to rating peers relative to the worst performance possible. A student’s score will always be greater than or equal to the group score.`,
+    definition: `Disjunction mode refers to rating peers relative to the worst performance possible. A student's score will always be greater than or equal to the group score.`,
   },
   {
     term: 'Polishing Factor',
@@ -55,6 +55,10 @@ const qassTerminologies = [
     term: 'Peer Rating Impact (Polarisation Factor)',
     definition:
       'A parameter used to adjust the influence of student ratings, which affects the calculation of the final score. A high factor pushes scores toward the upper bound, while a low factor pushes them toward the lower bound. It cannot alter the scale bounds.',
+  },
+  {
+    term: 'Group Spread',
+    definition: `The measure of how far apart students' scores are within a group. A small spread means students' scores are close to the group score, while a large spread means individual student scores may differ more from the group score.`,
   },
   {
     term: 'Group Score',

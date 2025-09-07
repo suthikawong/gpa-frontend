@@ -12,6 +12,7 @@ import ScoringComponentDialog from '../../dialog/ScoringComponentDialog'
 import EmptyState from '../../../common/EmptyState'
 import SuspenseArea from '../../../common/SuspenseArea'
 import toast from '../../../common/toast'
+import { ComponentTooltip } from '../../tooltip/ModelTooltips'
 
 const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['assessmentId'] }) => {
   const {
@@ -34,7 +35,9 @@ const ScoringComponentsTab = ({ assessmentId }: { assessmentId: Assessment['asse
   return (
     <div>
       <div className="flex justify-between mb-6">
-        <div className="text-2xl font-semibold">Scoring Components</div>
+        <div className="text-2xl font-semibold">
+          Scoring Components <ComponentTooltip />
+        </div>
         <ScoringComponentDialog
           triggerButton={
             <Button>

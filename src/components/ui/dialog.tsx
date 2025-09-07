@@ -66,6 +66,7 @@ function DialogContent({
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay>
         <DialogPrimitive.Content
+          onOpenAutoFocus={(event) => event.preventDefault()}
           data-slot="dialog-content"
           className={cn(
             'bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg md:max-w-xl overflow-y-auto max-h-[calc(100%-4rem)] relative',

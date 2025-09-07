@@ -27,6 +27,19 @@ import AlertDialog from '../../../common/AlertDialog'
 import SuspenseArea from '../../../common/SuspenseArea'
 import toast from '../../../common/toast'
 import QuestionnaireDialog, { ResultModelParametersType } from '../../dialog/QuestionnaireDialog'
+import {
+  ApplyConstraintTooltip,
+  ConstraintTooltip,
+  GroupSpreadTooltip,
+  LowerBoundTooltip,
+  ModelTooltip,
+  ModeTooltip,
+  PeerRatingImpactTooltip,
+  PolishingFactorTooltip,
+  ScaleTooltip,
+  SelfAssessmentWeight,
+  UpperBoundTooltip,
+} from '../../tooltip/ModelTooltips'
 
 const baseSchema = z.object({
   modelId: z.literal('0'),
@@ -37,21 +50,21 @@ const qassSchema = z.object({
   mode: z.enum([mode.Bijunction, mode.Conjunction, mode.Disjunction], { required_error: 'Mode is required' }),
   polishingFactor: z
     .number({
-      required_error: 'Polishing factor is required.',
-      invalid_type_error: 'Polishing factor must be a number.',
+      required_error: 'Polishing factor is required',
+      invalid_type_error: 'Polishing factor must be a number',
     })
     .finite()
-    .gt(0, { message: 'Polishing factor must be greater than 0.' })
-    .lt(0.5, { message: 'Polishing factor must be less than 0.5.' }),
+    .gt(0, { message: 'Polishing factor must be greater than 0' })
+    .lt(0.5, { message: 'Polishing factor must be less than 0.5' }),
   peerRatingImpact: z
     .number({
-      required_error: 'Peer rating impact is required.',
-      invalid_type_error: 'Peer rating impact must be a number.',
+      required_error: 'Peer rating impact is required',
+      invalid_type_error: 'Peer rating impact must be a number',
     })
     .finite()
-    .min(0, { message: 'Peer rating impact must be greater than or equal to 0.' }),
+    .min(0, { message: 'Peer rating impact must be greater than or equal to 0' }),
   groupSpread: z
-    .number({ required_error: 'Group spread is required.', invalid_type_error: 'Group spread must be a number.' })
+    .number({ required_error: 'Group spread is required', invalid_type_error: 'Group spread must be a number' })
     .finite()
     .gt(0, { message: 'Group spread must be greater than 0' })
     .lt(1, { message: 'Group spread must be less than 1' }),
@@ -453,7 +466,9 @@ const ModelTab = ({
                         name="modelId"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Model</FormLabel>
+                            <FormLabel>
+                              Model <ModelTooltip />
+                            </FormLabel>
                             <Select
                               value={field.value}
                               onValueChange={field.onChange}
@@ -481,7 +496,9 @@ const ModelTab = ({
                           name="mode"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
-                              <FormLabel>Mode</FormLabel>
+                              <FormLabel>
+                                Mode <ModeTooltip />
+                              </FormLabel>
                               <Select
                                 value={field.value}
                                 onValueChange={field.onChange}
@@ -506,7 +523,9 @@ const ModelTab = ({
                           name="polishingFactor"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
-                              <FormLabel>Polishing factor</FormLabel>
+                              <FormLabel>
+                                Polishing factor <PolishingFactorTooltip />
+                              </FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -525,7 +544,9 @@ const ModelTab = ({
                           name="peerRatingImpact"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
-                              <FormLabel>Peer rating impact</FormLabel>
+                              <FormLabel>
+                                Peer rating impact <PeerRatingImpactTooltip />
+                              </FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -544,7 +565,9 @@ const ModelTab = ({
                           name="groupSpread"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
-                              <FormLabel>Group spread</FormLabel>
+                              <FormLabel>
+                                Group spread <GroupSpreadTooltip />
+                              </FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -569,7 +592,9 @@ const ModelTab = ({
                           name="scaleType"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
-                              <FormLabel>Scale</FormLabel>
+                              <FormLabel>
+                                Scale <ScaleTooltip />
+                              </FormLabel>
                               <Select
                                 value={field.value}
                                 onValueChange={field.onChange}
@@ -614,7 +639,10 @@ const ModelTab = ({
                                     disabled={!data.canEdit}
                                   />
                                   <div className="grid gap-2">
-                                    <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
+                                    <FormLabel htmlFor="terms-2">
+                                      Apply total score constraint
+                                      <ApplyConstraintTooltip />
+                                    </FormLabel>
                                     <FormDescription>
                                       Students must follow the total score constraint when allocating peer assessment
                                       scores.
@@ -630,7 +658,9 @@ const ModelTab = ({
                           name="scoreConstraint"
                           render={({ field }) => (
                             <FormItem className={cn('mb-4', selectedModel !== AssessmentModel.QASS && 'hidden')}>
-                              <FormLabel>Constraint</FormLabel>
+                              <FormLabel>
+                                Constraint <ConstraintTooltip />
+                              </FormLabel>
 
                               <FormControl>
                                 <Input
@@ -658,7 +688,9 @@ const ModelTab = ({
                           name="lowerBound"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
-                              <FormLabel>Lower bound</FormLabel>
+                              <FormLabel>
+                                Lower bound <LowerBoundTooltip />
+                              </FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -682,7 +714,9 @@ const ModelTab = ({
                           name="upperBound"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.QASS && 'hidden')}>
-                              <FormLabel>Upper bound</FormLabel>
+                              <FormLabel>
+                                Upper bound <UpperBoundTooltip />
+                              </FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -712,7 +746,9 @@ const ModelTab = ({
                           name="selfWeight"
                           render={({ field }) => (
                             <FormItem className={cn(selectedModel !== AssessmentModel.WebAVALIA && 'hidden')}>
-                              <FormLabel>Self assessment weight</FormLabel>
+                              <FormLabel>
+                                Self assessment weight <SelfAssessmentWeight />
+                              </FormLabel>
                               <div className="space-y-2">
                                 <FormControl>
                                   <Input
@@ -758,7 +794,7 @@ const ModelTab = ({
                           </Button>
                         }
                         title="Can't change assessment model"
-                        content="You can't change assessment model since some scoring components already started. You have to delete them before you can change assessment model."
+                        content="You can't change assessment model since some components already started. You have to delete them before you can change assessment model."
                         confirmButtonText="Understand"
                         showCancelButton={false}
                       />

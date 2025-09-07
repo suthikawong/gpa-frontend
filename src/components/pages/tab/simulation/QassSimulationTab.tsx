@@ -28,6 +28,19 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { QASSMode } from '../../../../../gpa-backend/src/utils/qass.model'
+import {
+  ApplyConstraintTooltip,
+  ConstraintTooltip,
+  GroupScoreTooltip,
+  GroupSpreadTooltip,
+  LowerBoundTooltip,
+  ModeTooltip,
+  PeerRatingImpactTooltip,
+  PolishingFactorTooltip,
+  ScaleTooltip,
+  StudentWeightTooltip,
+  UpperBoundTooltip,
+} from '../../tooltip/ModelTooltips'
 
 const formSchema = z
   .object({
@@ -341,7 +354,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
             name="mode"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mode</FormLabel>
+                <FormLabel>
+                  Mode <ModeTooltip />
+                </FormLabel>
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
@@ -366,7 +381,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
             name="polishingFactor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Polishing factor</FormLabel>
+                <FormLabel>
+                  Polishing factor <PolishingFactorTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -388,7 +405,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
             name="peerRatingImpact"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Peer rating impact</FormLabel>
+                <FormLabel>
+                  Peer rating impact <PeerRatingImpactTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -419,7 +438,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
             name="groupScore"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Group score</FormLabel>
+                <FormLabel>
+                  Group score <GroupScoreTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -441,7 +462,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
             name="groupSpread"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Group spread</FormLabel>
+                <FormLabel>
+                  Group spread <GroupSpreadTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -473,7 +496,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
               name={`weights.${i}`}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{`Weight of student ${i + 1}`}</FormLabel>
+                  <FormLabel>
+                    {`Weight of student ${i + 1}`} <StudentWeightTooltip />
+                  </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -797,7 +822,9 @@ const PeerMatrix = ({
               name="scaleType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Scale</FormLabel>
+                  <FormLabel>
+                    Scale <ScaleTooltip />
+                  </FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
@@ -837,7 +864,9 @@ const PeerMatrix = ({
                         onCheckedChange={field.onChange}
                       />
                       <div className="grid gap-2">
-                        <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
+                        <FormLabel htmlFor="terms-2">
+                          Apply total score constraint <ApplyConstraintTooltip />
+                        </FormLabel>
                         <FormDescription>
                           Students must follow the total score constraint when allocating peer assessment scores.
                         </FormDescription>
@@ -852,7 +881,9 @@ const PeerMatrix = ({
               name="scoreConstraint"
               render={({ field }) => (
                 <FormItem className="mb-4">
-                  <FormLabel>Constraint</FormLabel>
+                  <FormLabel>
+                    Constraint <ConstraintTooltip />
+                  </FormLabel>
 
                   <FormControl>
                     <Input
@@ -879,7 +910,9 @@ const PeerMatrix = ({
               name="lowerBound"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Lower bound</FormLabel>
+                  <FormLabel>
+                    Lower bound <LowerBoundTooltip />
+                  </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -902,7 +935,9 @@ const PeerMatrix = ({
               name="upperBound"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Upper bound</FormLabel>
+                  <FormLabel>
+                    Upper bound <UpperBoundTooltip />
+                  </FormLabel>
                   <FormControl>
                     <Input
                       {...field}

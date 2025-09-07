@@ -31,7 +31,7 @@ export const profileMenuItem = {
 
 export const instructorMenuItems = [
   {
-    name: 'Peer Assessments',
+    name: 'My Assessments',
     icon: 'ListChecks',
     href: appPaths.instructor.assessment,
   },
@@ -50,7 +50,7 @@ export const instructorMenuItems = [
 
 export const studentMenuItems = [
   {
-    name: 'Peer Assessments',
+    name: 'My Assessments',
     icon: 'ListChecks',
     href: appPaths.student.assessment,
   },

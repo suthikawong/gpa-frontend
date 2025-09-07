@@ -48,6 +48,22 @@ import { GetAssessmentByIdResponse } from '../../../../gpa-backend/src/assessmen
 import { QASSMode } from '../../../../gpa-backend/src/utils/qass.model'
 import EmptyState from '../../common/EmptyState'
 import toast from '../../common/toast'
+import {
+  ApplyConstraintTooltip,
+  ConstraintTooltip,
+  GroupGradeTooltip,
+  GroupScoreTooltip,
+  GroupSpreadTooltip,
+  LowerBoundTooltip,
+  ModeTooltip,
+  PeerAssessmentWeight,
+  PeerRatingImpactTooltip,
+  PolishingFactorTooltip,
+  ScaleTooltip,
+  SelfAssessmentWeight,
+  StudentWeightTooltip,
+  UpperBoundTooltip,
+} from '../tooltip/ModelTooltips'
 
 interface EditScoreDialogProps {
   triggerButton: React.ReactNode
@@ -237,7 +253,14 @@ const EditScoreDialog = ({ triggerButton, data, groupId }: EditScoreDialogProps)
   }, [open])
 
   const renderPage = () => {
-    if (!assessmentData?.modelId) return <div>No model selected</div>
+    if (!assessmentData?.modelId)
+      return (
+        <EmptyState
+          title="No model selected"
+          description1="Please select a model before editing scores."
+          icon={<NoDocuments className="w-[140px] h-[112px] md:w-[200px] md:h-[160px]" />}
+        />
+      )
     if (dialogState === DialogState.Edit) {
       return (
         <EditScoreForm
@@ -419,9 +442,16 @@ const EditScoreForm = ({
             name="groupScore"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg mb-2">
-                  {modelId === model.WebAVALIA ? 'Group grade' : 'Group [product] score'}
-                </FormLabel>
+                {modelId === model.WebAVALIA ? (
+                  <FormLabel className="text-lg mb-2">
+                    Group grade
+                    <GroupGradeTooltip />
+                  </FormLabel>
+                ) : (
+                  <FormLabel className="text-lg mb-2">
+                    Group score <GroupScoreTooltip />
+                  </FormLabel>
+                )}
                 <FormControl>
                   <Input
                     {...field}
@@ -712,7 +742,9 @@ const QassConfigurationForm = ({
             name="mode"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mode</FormLabel>
+                <FormLabel>
+                  Mode <ModeTooltip />
+                </FormLabel>
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
@@ -737,7 +769,9 @@ const QassConfigurationForm = ({
             name="polishingFactor"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Polishing factor</FormLabel>
+                <FormLabel>
+                  Polishing factor <PolishingFactorTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -756,7 +790,9 @@ const QassConfigurationForm = ({
             name="peerRatingImpact"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Peer rating impact</FormLabel>
+                <FormLabel>
+                  Peer rating impact <PeerRatingImpactTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -776,7 +812,9 @@ const QassConfigurationForm = ({
             name="groupSpread"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Group spread</FormLabel>
+                <FormLabel>
+                  Group spread <GroupSpreadTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -795,7 +833,9 @@ const QassConfigurationForm = ({
             name="groupScore"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Group score</FormLabel>
+                <FormLabel>
+                  Group score <GroupScoreTooltip />
+                </FormLabel>
                 <div className="space-y-2">
                   <FormControl>
                     <Input
@@ -820,7 +860,9 @@ const QassConfigurationForm = ({
             name="scaleType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Scale</FormLabel>
+                <FormLabel>
+                  Scale <ScaleTooltip />
+                </FormLabel>
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
@@ -865,7 +907,9 @@ const QassConfigurationForm = ({
                       disabled
                     />
                     <div className="grid gap-2">
-                      <FormLabel htmlFor="terms-2">Apply total score constraint</FormLabel>
+                      <FormLabel htmlFor="terms-2">
+                        Apply total score constraint <ApplyConstraintTooltip />
+                      </FormLabel>
                       <FormDescription>
                         Students must follow the total score constraint when allocating peer assessment scores.
                       </FormDescription>
@@ -880,7 +924,9 @@ const QassConfigurationForm = ({
             name="scoreConstraint"
             render={({ field }) => (
               <FormItem className={cn('mb-4', selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
-                <FormLabel>Constraint</FormLabel>
+                <FormLabel>
+                  Constraint <ConstraintTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -906,7 +952,9 @@ const QassConfigurationForm = ({
             name="lowerBound"
             render={({ field }) => (
               <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
-                <FormLabel>Lower bound</FormLabel>
+                <FormLabel>
+                  Lower bound <LowerBoundTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -930,7 +978,9 @@ const QassConfigurationForm = ({
             name="upperBound"
             render={({ field }) => (
               <FormItem className={cn(selectedScaleType !== ScaleType.PercentageScale && 'hidden')}>
-                <FormLabel>Upper bound</FormLabel>
+                <FormLabel>
+                  Upper bound <UpperBoundTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -984,6 +1034,7 @@ const QassConfigurationForm = ({
                     <div className="flex gap-2 items-center">
                       <FormLabel>{student.name}</FormLabel>
                       <FormDescription>{`(${student.email})`}</FormDescription>
+                      <StudentWeightTooltip />
                     </div>
                     <FormControl>
                       <Input
@@ -1099,7 +1150,9 @@ const WebavaliaConfigurationForm = ({
             name="groupGrade"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Group grade</FormLabel>
+                <FormLabel>
+                  Group grade <GroupGradeTooltip />
+                </FormLabel>
                 <div className="space-y-2">
                   <FormControl>
                     <Input
@@ -1129,7 +1182,9 @@ const WebavaliaConfigurationForm = ({
             name="selfWeight"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Self Assessment Weight</FormLabel>
+                <FormLabel>
+                  Self Assessment Weight <SelfAssessmentWeight />
+                </FormLabel>
                 <div className="space-y-2">
                   <FormControl>
                     <Input
@@ -1153,7 +1208,9 @@ const WebavaliaConfigurationForm = ({
             name="peerWeight"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Peer Assessment Weight</FormLabel>
+                <FormLabel>
+                  Peer Assessment Weight <PeerAssessmentWeight />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}

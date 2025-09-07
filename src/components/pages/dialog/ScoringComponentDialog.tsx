@@ -22,6 +22,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import toast from '../../common/toast'
+import { ComponentWeightTooltip } from '../tooltip/ModelTooltips'
 
 interface ScoringComponentDialogProps {
   triggerButton: React.ReactNode
@@ -197,7 +198,9 @@ const ScoringComponentDialog = ({ triggerButton, data }: ScoringComponentDialogP
                 name="weight"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Weight</FormLabel>
+                    <FormLabel>
+                      Weight <ComponentWeightTooltip />
+                    </FormLabel>
                     <FormControl>
                       <Input
                         {...field}

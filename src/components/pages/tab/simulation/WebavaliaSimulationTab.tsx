@@ -22,6 +22,7 @@ import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { CalcualteScoresByWebavaliaResponse } from '../../../../../gpa-backend/src/simulation/dto/simulation.response'
+import { GroupGradeTooltip, PeerAssessmentWeight, SelfAssessmentWeight } from '../../tooltip/ModelTooltips'
 
 const formSchema = z.object({
   selfWeight: z
@@ -179,7 +180,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
             name="selfWeight"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Self Assessment Weight</FormLabel>
+                <FormLabel>
+                  Self Assessment Weight <SelfAssessmentWeight />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -201,7 +204,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
             name="peerWeight"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Peer Assessment Weight</FormLabel>
+                <FormLabel>
+                  Peer Assessment Weight <PeerAssessmentWeight />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -232,7 +237,9 @@ const ModelConfigurationForm = ({ form, groupSize }: { form: UseFormReturn<FormS
             name="groupGrade"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Group grade</FormLabel>
+                <FormLabel>
+                  Group grade <GroupGradeTooltip />
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
