@@ -79,86 +79,65 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
     question: 'Should the sum of peer assessments be fixed?',
     options: [
       {
-        answer: 'no',
-        values: [1, 0],
-        description: `Sum of peer assessments isn't fixed`,
-      },
-      {
-        answer: 'yes',
+        answer: 'Yes',
         values: [0, 1],
         description: 'Sum of peer assessments is fixed',
       },
-    ],
-  },
-  {
-    type: 'question',
-    question: 'Should the rater also rate himself (self-assessment)?',
-    options: [
       {
-        answer: 'no',
+        answer: 'No',
         values: [1, 0],
-        description: 'No self-assessments',
-      },
-      {
-        answer: 'yes, for calibration (column-wise)',
-        values: [1, 0],
-        description: 'Self-assessment is allowed for calibration (column-wise)',
-      },
-      {
-        answer: 'yes, for weighting (row-wise)',
-        values: [0, 1],
-        description: 'Self-assessment is allowed for weighting (row-wise)',
+        description: `Sum of peer assessments isn't fixed`,
       },
     ],
   },
   {
     type: 'question',
-    question: 'Do you want to specify the impact of peer assessments on the final student score?',
+    question: 'Do you want to set how peer assessments influence the final student score?',
     options: [
       {
-        answer: 'no',
-        values: [0, 1],
-        description: `The impact of peer assessments cannot be specified`,
-      },
-      {
-        answer: 'yes',
+        answer: 'Yes',
         values: [1, 0],
         description: `The impact of peer assessments can be specified`,
       },
+      {
+        answer: 'No',
+        values: [0, 1],
+        description: `The impact of peer assessments cannot be specified`,
+      },
     ],
   },
   {
     type: 'question',
-    question: 'Do you want to specify the spread of final scores around the group score?',
+    question: `Do you want to set how much individual final scores can vary from the group score?`,
     options: [
       {
-        answer: 'no',
-        values: [0, 1],
-        description: `The spread of peer assessments cannot be specified`,
-      },
-      {
-        answer: 'yes',
+        answer: 'Yes',
         values: [1, 0],
         description: `The spread of peer assessments can be specified`,
       },
+      {
+        answer: 'No',
+        values: [0, 1],
+        description: `The spread of peer assessments cannot be specified`,
+      },
     ],
   },
   {
     type: 'question',
-    question: 'Are peer assessments treated as rewards, as penalties, or rewards and penalties?',
+    question: 'How should peer assessment be applied?',
     options: [
       {
-        answer: 'only rewards',
+        answer: 'As a reward - All students get higher than the group score, except the lowest.',
         values: [1, 0],
         description: `Peer assessments treated as rewards only`,
       },
       {
-        answer: 'only penalties',
+        answer: 'As a punishment - All students get lower than the group score, except the highest.',
         values: [1, 1],
         description: `Peer assessments treated as penalties only`,
       },
       {
-        answer: 'both rewards and penalties',
+        answer: 'As both reward and punishment - Students may get either higher or lower than the group score.',
         values: [1, 0],
         description: `Peer assessments treated as rewards and penalties`,
       },
@@ -169,7 +148,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
     question: 'How many times do you want to run a complete peer assessment?',
     options: [
       {
-        answer: 'less than 3',
+        answer: 'Less than 3',
         values: [1, 0],
         description: `A complete peer assessment can be done less than 3 times`,
       },
@@ -179,7 +158,7 @@ export const modelSelectionSet: QuestionnaireModelSelectionItem = [
         description: `A complete peer assessment can be done exactly 3 times`,
       },
       {
-        answer: 'more than 3',
+        answer: 'More than 3',
         values: [1, 0],
         description: `A complete peer assessment can be done more than 3 times`,
       },
@@ -224,15 +203,15 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
     question: 'How do you want peer assessments to be applied?',
     options: [
       {
-        answer: 'As rewards (scores are added to the group score)',
+        answer: 'As a reward - All students get higher than the group score, except the lowest.',
         values: { mode: mode.Conjunction, polishingFactor: 0.001 },
       },
       {
-        answer: 'As penalties (scores are deducted from the group score)',
+        answer: 'As a punishment - All students get lower than the group score, except the highest.',
         values: { mode: mode.Disjunction, polishingFactor: 0.001 },
       },
       {
-        answer: 'As both rewards and penalties (scores may be higher or lower than the group score)',
+        answer: 'As both reward and punishment - Students may get either higher or lower than the group score.',
         values: { mode: mode.Bijunction, polishingFactor: 0.001 },
       },
     ],
@@ -278,7 +257,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
     question: 'How do you want students to give their ratings?',
     options: [
       {
-        answer: 'Using a percentage scale',
+        answer: '0%, 1%, ... , 99%, 100%',
         values: {
           scaleType: ScaleType.PercentageScale,
           lowerBound: 0,
@@ -288,7 +267,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
         },
       },
       {
-        answer: 'Using a 4-point scale questionnaire',
+        answer: '1, 2, 3, 4',
         values: {
           scaleType: ScaleType.NPointScale,
           lowerBound: 1,
@@ -298,7 +277,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
         },
       },
       {
-        answer: 'Using a 5-point scale questionnaire',
+        answer: '1, 2, 3, 4, 5',
         values: {
           scaleType: ScaleType.NPointScale,
           lowerBound: 1,
@@ -308,7 +287,7 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
         },
       },
       {
-        answer: 'Using a 7-point scale questionnaire',
+        answer: '1, 2, ... , 6, 7',
         values: {
           scaleType: ScaleType.NPointScale,
           lowerBound: 1,
@@ -348,24 +327,6 @@ export const webavaliaConfigurationSet: QuestionnaireModelConfigurationItem = [
       },
     ],
   },
-  // {
-  //   type: 'question',
-  //   question: 'How much should self-assessment affect the student scores compared to peer assessment?',
-  //   options: [
-  //     {
-  //       answer: 'Less impact',
-  //       values: {selfWeight: 0},
-  //     },
-  //     {
-  //       answer: 'Equal impact',
-  //       values: {selfWeight: 1},
-  //     },
-  //     {
-  //       answer: 'Greater impact',
-  //       values: {selfWeight: 0},
-  //     },
-  //   ],
-  // },
   {
     type: 'summary',
     title: 'All Set!',
