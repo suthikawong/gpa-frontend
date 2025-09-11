@@ -236,18 +236,18 @@ export const qassConfigurationSet: QuestionnaireModelConfigurationItem = [
   },
   {
     type: 'question',
-    question: 'How much should the scores be spread out?',
+    question: 'How much should the scores differ from each other?',
     options: [
       {
-        answer: 'Low',
+        answer: 'Little difference',
         values: { groupSpread: 0.2 },
       },
       {
-        answer: 'Medium',
+        answer: 'Moderate difference',
         values: { groupSpread: 0.5 },
       },
       {
-        answer: 'High',
+        answer: 'Large difference',
         values: { groupSpread: 0.8 },
       },
     ],
