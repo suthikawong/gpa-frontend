@@ -1,31 +1,43 @@
-import DashboardLayout from '@/components/layouts/DashboardLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Roles } from '@/config/app'
-import { createFileRoute, redirect } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/instructor/tutorial')({
-  component: RouteComponent,
-  beforeLoad: ({ context, location }) => {
-    if (!context.user?.userId) {
-      throw redirect({
-        to: '/signin',
-        search: {
-          redirect: location.href,
-        },
-      })
-    } else if (context.user?.roleId === Roles.Student) {
-      throw redirect({
-        to: '/student/assessment',
-        search: {
-          redirect: location.href,
-        },
-      })
-    }
+export const tutorialTopicList = [
+  {
+    title: 'How to Setup Assessment',
+    href: '/instructor/tutorial/how-to-setup-assessment',
   },
-})
+  {
+    title: 'How to Add Students',
+    href: '/instructor/tutorial/how-to-add-students',
+  },
+  {
+    title: 'How to Create a Group and Add Members',
+    href: '/instructor/tutorial/how-to-create-a-group-and-add-members',
+  },
+  {
+    title: 'How to Set the Assessment Dates',
+    href: '/instructor/tutorial/how-to-set-the-assessment-dates',
+  },
+  {
+    title: 'How to Edit Group Scores and Student Scores',
+    href: '/instructor/tutorial/how-to-edit-group-scores-and-student-scores',
+  },
+  {
+    title: 'How to Use Automatic Score Calculation',
+    href: '/instructor/tutorial/how-to-use-automatic-score-calculation',
+  },
+  {
+    title: 'How to View Peer Ratings',
+    href: '/instructor/tutorial/how-to-view-peer-ratings',
+  },
+  {
+    title: 'QASS Terminology',
+    href: '/instructor/tutorial/qass-terminology',
+  },
+  {
+    title: 'WebAVALIA Terminology',
+    href: '/instructor/tutorial/webavalia-terminology',
+  },
+]
 
-const qassTerminologies = [
+export const qassTerminology = [
   {
     term: 'QASS (Quasi-Arithmetic Scoring System)',
     definition:
@@ -112,7 +124,7 @@ const qassTerminologies = [
   },
 ]
 
-const webavaliaTerminologies = [
+export const webavaliaTerminology = [
   {
     term: 'WebAVALIA',
     definition: `A peer assessment tool developed at the University of Porto (Portugal) by Prof. Babo. A student's score will always be less than or equal to the Group Grade.`,
@@ -142,83 +154,3 @@ const webavaliaTerminologies = [
     definition: `An n × n matrix containing peer ratings (including self-ratings), constrained by the voting rules that require each student to allocate exactly 100 votes.`,
   },
 ]
-
-function RouteComponent() {
-  return (
-    <DashboardLayout className="gap-4">
-      <div className="flex justify-between items-center md:mb-4">
-        <div className="text-xl font-bold md:text-3xl">Tutorial</div>
-      </div>
-      <div className="space-y-8">
-        <QassTerminologiesCard />
-        <WebavaliaTerminologiesCard />
-      </div>
-    </DashboardLayout>
-  )
-}
-
-const QassTerminologiesCard = () => {
-  return (
-    <section id="qass">
-      <Card className="flex gap-4 w-full shadow-none border-0">
-        <CardHeader>
-          <CardTitle className="text-xl flex gap-2 items-center">QASS Terminologies</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col">
-          <Table className="w-full">
-            <TableHeader>
-              <TableRow className="bg-primary/90 hover:bg-primary/90">
-                <TableHead className="sm:min-w-[200px] text-primary-foreground">Term</TableHead>
-                <TableHead className="text-primary-foreground">Definition</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {qassTerminologies.map((item) => (
-                <TableRow
-                  key={item.term}
-                  className="even:bg-secondary/50 border-0"
-                >
-                  <TableCell className="font-medium whitespace-normal break-words">{item.term}</TableCell>
-                  <TableCell className="whitespace-normal break-words">{item.definition}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </section>
-  )
-}
-
-const WebavaliaTerminologiesCard = () => {
-  return (
-    <section id="webavalia">
-      <Card className="flex gap-4 w-full shadow-none border-0">
-        <CardHeader>
-          <CardTitle className="text-xl flex gap-2 items-center">WebAVALIA Terminologies</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col">
-          <Table className="w-full">
-            <TableHeader>
-              <TableRow className="bg-primary/90 hover:bg-primary/90">
-                <TableHead className="sm:min-w-[200px] text-primary-foreground">Term</TableHead>
-                <TableHead className="text-primary-foreground">Definition</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {webavaliaTerminologies.map((item) => (
-                <TableRow
-                  key={item.term}
-                  className="even:bg-secondary/50 border-0"
-                >
-                  <TableCell className="font-medium whitespace-normal break-words">{item.term}</TableCell>
-                  <TableCell className="whitespace-normal break-words">{item.definition}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </section>
-  )
-}

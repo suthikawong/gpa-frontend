@@ -30,7 +30,7 @@ import {
 } from 'gpa-backend/src/assessment/dto/assessment.response'
 import { Assessment, Group, ScoringComponent } from 'gpa-backend/src/drizzle/schema'
 import { UserProtected } from 'gpa-backend/src/user/user.interface'
-import { ChevronLeft, Info, Users } from 'lucide-react'
+import { ChevronLeft, PencilRuler, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm, UseFormReturn, useWatch } from 'react-hook-form'
 import { z } from 'zod'
@@ -570,7 +570,7 @@ const PeerRatingPage = ({
             <DialogTitle className="text-2xl">Instruction</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col justify-center items-center gap-4 mb-6 mt-4">
-            <Info
+            <PencilRuler
               size={80}
               className="text-primary"
             />

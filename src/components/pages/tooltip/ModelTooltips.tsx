@@ -2,10 +2,6 @@ import InfoTooltip from '@/components/common/InfoTooltip'
 import { Link } from '@tanstack/react-router'
 
 export const ModelTooltip = () => {
-  const props = {
-    to: '/instructor/tutorial',
-    className: 'text-destructive',
-  }
   return (
     <InfoTooltip
       content={
@@ -14,15 +10,15 @@ export const ModelTooltip = () => {
           <div>
             See&nbsp;
             <Link
-              {...props}
-              hash="qass"
+              className="text-destructive"
+              to="/instructor/tutorial/qass-terminology"
             >
               QASS&nbsp;
             </Link>
             and&nbsp;
             <Link
-              {...props}
-              hash="webavalia"
+              className="text-destructive"
+              to="/instructor/tutorial/webavalia-terminology"
             >
               WebAVALIA
             </Link>
@@ -35,8 +31,7 @@ export const ModelTooltip = () => {
 
 export const ModeTooltip = () => {
   const props = {
-    to: '/instructor/tutorial',
-    hash: 'qass',
+    to: '/instructor/tutorial/qass-terminology',
     className: 'text-destructive',
   }
   return (
@@ -115,8 +110,7 @@ export const GroupScoreTooltip = () => {
 
 export const ScaleTooltip = () => {
   const props = {
-    to: '/instructor/tutorial',
-    hash: 'qass',
+    to: '/instructor/tutorial/qass-terminology',
     className: 'text-destructive',
   }
   return (

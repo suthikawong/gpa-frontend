@@ -18,11 +18,20 @@ import { Route as ResetPasswordImport } from './routes/reset-password'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as IndexImport } from './routes/index'
-import { Route as InstructorTutorialImport } from './routes/instructor/tutorial'
 import { Route as InstructorSimulationImport } from './routes/instructor/simulation'
 import { Route as StudentAssessmentIndexImport } from './routes/student/assessment/index'
+import { Route as InstructorTutorialIndexImport } from './routes/instructor/tutorial/index'
 import { Route as InstructorAssessmentIndexImport } from './routes/instructor/assessment/index'
 import { Route as StudentAssessmentAssessmentIdImport } from './routes/student/assessment/$assessmentId'
+import { Route as InstructorTutorialWebavaliaTerminologyImport } from './routes/instructor/tutorial/webavalia-terminology'
+import { Route as InstructorTutorialQassTerminologyImport } from './routes/instructor/tutorial/qass-terminology'
+import { Route as InstructorTutorialHowToViewPeerRatingsImport } from './routes/instructor/tutorial/how-to-view-peer-ratings'
+import { Route as InstructorTutorialHowToUseAutomaticScoreCalculationImport } from './routes/instructor/tutorial/how-to-use-automatic-score-calculation'
+import { Route as InstructorTutorialHowToSetupAssessmentImport } from './routes/instructor/tutorial/how-to-setup-assessment'
+import { Route as InstructorTutorialHowToSetTheAssessmentDatesImport } from './routes/instructor/tutorial/how-to-set-the-assessment-dates'
+import { Route as InstructorTutorialHowToEditGroupScoresAndStudentScoresImport } from './routes/instructor/tutorial/how-to-edit-group-scores-and-student-scores'
+import { Route as InstructorTutorialHowToCreateAGroupAndAddMembersImport } from './routes/instructor/tutorial/how-to-create-a-group-and-add-members'
+import { Route as InstructorTutorialHowToAddStudentsImport } from './routes/instructor/tutorial/how-to-add-students'
 import { Route as InstructorAssessmentAssessmentIdIndexImport } from './routes/instructor/assessment/$assessmentId/index'
 import { Route as InstructorAssessmentAssessmentIdGroupGroupIdIndexImport } from './routes/instructor/assessment/$assessmentId/group/$groupId/index'
 import { Route as InstructorAssessmentAssessmentIdGroupGroupIdMemberImport } from './routes/instructor/assessment/$assessmentId/group/$groupId/member'
@@ -72,12 +81,6 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const InstructorTutorialRoute = InstructorTutorialImport.update({
-  id: '/instructor/tutorial',
-  path: '/instructor/tutorial',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const InstructorSimulationRoute = InstructorSimulationImport.update({
   id: '/instructor/simulation',
   path: '/instructor/simulation',
@@ -87,6 +90,12 @@ const InstructorSimulationRoute = InstructorSimulationImport.update({
 const StudentAssessmentIndexRoute = StudentAssessmentIndexImport.update({
   id: '/student/assessment/',
   path: '/student/assessment/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const InstructorTutorialIndexRoute = InstructorTutorialIndexImport.update({
+  id: '/instructor/tutorial/',
+  path: '/instructor/tutorial/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -100,6 +109,69 @@ const StudentAssessmentAssessmentIdRoute =
   StudentAssessmentAssessmentIdImport.update({
     id: '/student/assessment/$assessmentId',
     path: '/student/assessment/$assessmentId',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorTutorialWebavaliaTerminologyRoute =
+  InstructorTutorialWebavaliaTerminologyImport.update({
+    id: '/instructor/tutorial/webavalia-terminology',
+    path: '/instructor/tutorial/webavalia-terminology',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorTutorialQassTerminologyRoute =
+  InstructorTutorialQassTerminologyImport.update({
+    id: '/instructor/tutorial/qass-terminology',
+    path: '/instructor/tutorial/qass-terminology',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorTutorialHowToViewPeerRatingsRoute =
+  InstructorTutorialHowToViewPeerRatingsImport.update({
+    id: '/instructor/tutorial/how-to-view-peer-ratings',
+    path: '/instructor/tutorial/how-to-view-peer-ratings',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorTutorialHowToUseAutomaticScoreCalculationRoute =
+  InstructorTutorialHowToUseAutomaticScoreCalculationImport.update({
+    id: '/instructor/tutorial/how-to-use-automatic-score-calculation',
+    path: '/instructor/tutorial/how-to-use-automatic-score-calculation',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorTutorialHowToSetupAssessmentRoute =
+  InstructorTutorialHowToSetupAssessmentImport.update({
+    id: '/instructor/tutorial/how-to-setup-assessment',
+    path: '/instructor/tutorial/how-to-setup-assessment',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorTutorialHowToSetTheAssessmentDatesRoute =
+  InstructorTutorialHowToSetTheAssessmentDatesImport.update({
+    id: '/instructor/tutorial/how-to-set-the-assessment-dates',
+    path: '/instructor/tutorial/how-to-set-the-assessment-dates',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorTutorialHowToEditGroupScoresAndStudentScoresRoute =
+  InstructorTutorialHowToEditGroupScoresAndStudentScoresImport.update({
+    id: '/instructor/tutorial/how-to-edit-group-scores-and-student-scores',
+    path: '/instructor/tutorial/how-to-edit-group-scores-and-student-scores',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorTutorialHowToCreateAGroupAndAddMembersRoute =
+  InstructorTutorialHowToCreateAGroupAndAddMembersImport.update({
+    id: '/instructor/tutorial/how-to-create-a-group-and-add-members',
+    path: '/instructor/tutorial/how-to-create-a-group-and-add-members',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InstructorTutorialHowToAddStudentsRoute =
+  InstructorTutorialHowToAddStudentsImport.update({
+    id: '/instructor/tutorial/how-to-add-students',
+    path: '/instructor/tutorial/how-to-add-students',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -193,11 +265,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InstructorSimulationImport
       parentRoute: typeof rootRoute
     }
-    '/instructor/tutorial': {
-      id: '/instructor/tutorial'
-      path: '/instructor/tutorial'
-      fullPath: '/instructor/tutorial'
-      preLoaderRoute: typeof InstructorTutorialImport
+    '/instructor/tutorial/how-to-add-students': {
+      id: '/instructor/tutorial/how-to-add-students'
+      path: '/instructor/tutorial/how-to-add-students'
+      fullPath: '/instructor/tutorial/how-to-add-students'
+      preLoaderRoute: typeof InstructorTutorialHowToAddStudentsImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/tutorial/how-to-create-a-group-and-add-members': {
+      id: '/instructor/tutorial/how-to-create-a-group-and-add-members'
+      path: '/instructor/tutorial/how-to-create-a-group-and-add-members'
+      fullPath: '/instructor/tutorial/how-to-create-a-group-and-add-members'
+      preLoaderRoute: typeof InstructorTutorialHowToCreateAGroupAndAddMembersImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/tutorial/how-to-edit-group-scores-and-student-scores': {
+      id: '/instructor/tutorial/how-to-edit-group-scores-and-student-scores'
+      path: '/instructor/tutorial/how-to-edit-group-scores-and-student-scores'
+      fullPath: '/instructor/tutorial/how-to-edit-group-scores-and-student-scores'
+      preLoaderRoute: typeof InstructorTutorialHowToEditGroupScoresAndStudentScoresImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/tutorial/how-to-set-the-assessment-dates': {
+      id: '/instructor/tutorial/how-to-set-the-assessment-dates'
+      path: '/instructor/tutorial/how-to-set-the-assessment-dates'
+      fullPath: '/instructor/tutorial/how-to-set-the-assessment-dates'
+      preLoaderRoute: typeof InstructorTutorialHowToSetTheAssessmentDatesImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/tutorial/how-to-setup-assessment': {
+      id: '/instructor/tutorial/how-to-setup-assessment'
+      path: '/instructor/tutorial/how-to-setup-assessment'
+      fullPath: '/instructor/tutorial/how-to-setup-assessment'
+      preLoaderRoute: typeof InstructorTutorialHowToSetupAssessmentImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/tutorial/how-to-use-automatic-score-calculation': {
+      id: '/instructor/tutorial/how-to-use-automatic-score-calculation'
+      path: '/instructor/tutorial/how-to-use-automatic-score-calculation'
+      fullPath: '/instructor/tutorial/how-to-use-automatic-score-calculation'
+      preLoaderRoute: typeof InstructorTutorialHowToUseAutomaticScoreCalculationImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/tutorial/how-to-view-peer-ratings': {
+      id: '/instructor/tutorial/how-to-view-peer-ratings'
+      path: '/instructor/tutorial/how-to-view-peer-ratings'
+      fullPath: '/instructor/tutorial/how-to-view-peer-ratings'
+      preLoaderRoute: typeof InstructorTutorialHowToViewPeerRatingsImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/tutorial/qass-terminology': {
+      id: '/instructor/tutorial/qass-terminology'
+      path: '/instructor/tutorial/qass-terminology'
+      fullPath: '/instructor/tutorial/qass-terminology'
+      preLoaderRoute: typeof InstructorTutorialQassTerminologyImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/tutorial/webavalia-terminology': {
+      id: '/instructor/tutorial/webavalia-terminology'
+      path: '/instructor/tutorial/webavalia-terminology'
+      fullPath: '/instructor/tutorial/webavalia-terminology'
+      preLoaderRoute: typeof InstructorTutorialWebavaliaTerminologyImport
       parentRoute: typeof rootRoute
     }
     '/student/assessment/$assessmentId': {
@@ -212,6 +340,13 @@ declare module '@tanstack/react-router' {
       path: '/instructor/assessment'
       fullPath: '/instructor/assessment'
       preLoaderRoute: typeof InstructorAssessmentIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/instructor/tutorial/': {
+      id: '/instructor/tutorial/'
+      path: '/instructor/tutorial'
+      fullPath: '/instructor/tutorial'
+      preLoaderRoute: typeof InstructorTutorialIndexImport
       parentRoute: typeof rootRoute
     }
     '/student/assessment/': {
@@ -263,9 +398,18 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/instructor/simulation': typeof InstructorSimulationRoute
-  '/instructor/tutorial': typeof InstructorTutorialRoute
+  '/instructor/tutorial/how-to-add-students': typeof InstructorTutorialHowToAddStudentsRoute
+  '/instructor/tutorial/how-to-create-a-group-and-add-members': typeof InstructorTutorialHowToCreateAGroupAndAddMembersRoute
+  '/instructor/tutorial/how-to-edit-group-scores-and-student-scores': typeof InstructorTutorialHowToEditGroupScoresAndStudentScoresRoute
+  '/instructor/tutorial/how-to-set-the-assessment-dates': typeof InstructorTutorialHowToSetTheAssessmentDatesRoute
+  '/instructor/tutorial/how-to-setup-assessment': typeof InstructorTutorialHowToSetupAssessmentRoute
+  '/instructor/tutorial/how-to-use-automatic-score-calculation': typeof InstructorTutorialHowToUseAutomaticScoreCalculationRoute
+  '/instructor/tutorial/how-to-view-peer-ratings': typeof InstructorTutorialHowToViewPeerRatingsRoute
+  '/instructor/tutorial/qass-terminology': typeof InstructorTutorialQassTerminologyRoute
+  '/instructor/tutorial/webavalia-terminology': typeof InstructorTutorialWebavaliaTerminologyRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
   '/instructor/assessment': typeof InstructorAssessmentIndexRoute
+  '/instructor/tutorial': typeof InstructorTutorialIndexRoute
   '/student/assessment': typeof StudentAssessmentIndexRoute
   '/instructor/assessment/$assessmentId': typeof InstructorAssessmentAssessmentIdIndexRoute
   '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
@@ -282,9 +426,18 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/instructor/simulation': typeof InstructorSimulationRoute
-  '/instructor/tutorial': typeof InstructorTutorialRoute
+  '/instructor/tutorial/how-to-add-students': typeof InstructorTutorialHowToAddStudentsRoute
+  '/instructor/tutorial/how-to-create-a-group-and-add-members': typeof InstructorTutorialHowToCreateAGroupAndAddMembersRoute
+  '/instructor/tutorial/how-to-edit-group-scores-and-student-scores': typeof InstructorTutorialHowToEditGroupScoresAndStudentScoresRoute
+  '/instructor/tutorial/how-to-set-the-assessment-dates': typeof InstructorTutorialHowToSetTheAssessmentDatesRoute
+  '/instructor/tutorial/how-to-setup-assessment': typeof InstructorTutorialHowToSetupAssessmentRoute
+  '/instructor/tutorial/how-to-use-automatic-score-calculation': typeof InstructorTutorialHowToUseAutomaticScoreCalculationRoute
+  '/instructor/tutorial/how-to-view-peer-ratings': typeof InstructorTutorialHowToViewPeerRatingsRoute
+  '/instructor/tutorial/qass-terminology': typeof InstructorTutorialQassTerminologyRoute
+  '/instructor/tutorial/webavalia-terminology': typeof InstructorTutorialWebavaliaTerminologyRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
   '/instructor/assessment': typeof InstructorAssessmentIndexRoute
+  '/instructor/tutorial': typeof InstructorTutorialIndexRoute
   '/student/assessment': typeof StudentAssessmentIndexRoute
   '/instructor/assessment/$assessmentId': typeof InstructorAssessmentAssessmentIdIndexRoute
   '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
@@ -302,9 +455,18 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/instructor/simulation': typeof InstructorSimulationRoute
-  '/instructor/tutorial': typeof InstructorTutorialRoute
+  '/instructor/tutorial/how-to-add-students': typeof InstructorTutorialHowToAddStudentsRoute
+  '/instructor/tutorial/how-to-create-a-group-and-add-members': typeof InstructorTutorialHowToCreateAGroupAndAddMembersRoute
+  '/instructor/tutorial/how-to-edit-group-scores-and-student-scores': typeof InstructorTutorialHowToEditGroupScoresAndStudentScoresRoute
+  '/instructor/tutorial/how-to-set-the-assessment-dates': typeof InstructorTutorialHowToSetTheAssessmentDatesRoute
+  '/instructor/tutorial/how-to-setup-assessment': typeof InstructorTutorialHowToSetupAssessmentRoute
+  '/instructor/tutorial/how-to-use-automatic-score-calculation': typeof InstructorTutorialHowToUseAutomaticScoreCalculationRoute
+  '/instructor/tutorial/how-to-view-peer-ratings': typeof InstructorTutorialHowToViewPeerRatingsRoute
+  '/instructor/tutorial/qass-terminology': typeof InstructorTutorialQassTerminologyRoute
+  '/instructor/tutorial/webavalia-terminology': typeof InstructorTutorialWebavaliaTerminologyRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
   '/instructor/assessment/': typeof InstructorAssessmentIndexRoute
+  '/instructor/tutorial/': typeof InstructorTutorialIndexRoute
   '/student/assessment/': typeof StudentAssessmentIndexRoute
   '/instructor/assessment/$assessmentId/': typeof InstructorAssessmentAssessmentIdIndexRoute
   '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
@@ -323,9 +485,18 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify-email'
     | '/instructor/simulation'
-    | '/instructor/tutorial'
+    | '/instructor/tutorial/how-to-add-students'
+    | '/instructor/tutorial/how-to-create-a-group-and-add-members'
+    | '/instructor/tutorial/how-to-edit-group-scores-and-student-scores'
+    | '/instructor/tutorial/how-to-set-the-assessment-dates'
+    | '/instructor/tutorial/how-to-setup-assessment'
+    | '/instructor/tutorial/how-to-use-automatic-score-calculation'
+    | '/instructor/tutorial/how-to-view-peer-ratings'
+    | '/instructor/tutorial/qass-terminology'
+    | '/instructor/tutorial/webavalia-terminology'
     | '/student/assessment/$assessmentId'
     | '/instructor/assessment'
+    | '/instructor/tutorial'
     | '/student/assessment'
     | '/instructor/assessment/$assessmentId'
     | '/instructor/assessment/$assessmentId/group/$groupId/member'
@@ -341,9 +512,18 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify-email'
     | '/instructor/simulation'
-    | '/instructor/tutorial'
+    | '/instructor/tutorial/how-to-add-students'
+    | '/instructor/tutorial/how-to-create-a-group-and-add-members'
+    | '/instructor/tutorial/how-to-edit-group-scores-and-student-scores'
+    | '/instructor/tutorial/how-to-set-the-assessment-dates'
+    | '/instructor/tutorial/how-to-setup-assessment'
+    | '/instructor/tutorial/how-to-use-automatic-score-calculation'
+    | '/instructor/tutorial/how-to-view-peer-ratings'
+    | '/instructor/tutorial/qass-terminology'
+    | '/instructor/tutorial/webavalia-terminology'
     | '/student/assessment/$assessmentId'
     | '/instructor/assessment'
+    | '/instructor/tutorial'
     | '/student/assessment'
     | '/instructor/assessment/$assessmentId'
     | '/instructor/assessment/$assessmentId/group/$groupId/member'
@@ -359,9 +539,18 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify-email'
     | '/instructor/simulation'
-    | '/instructor/tutorial'
+    | '/instructor/tutorial/how-to-add-students'
+    | '/instructor/tutorial/how-to-create-a-group-and-add-members'
+    | '/instructor/tutorial/how-to-edit-group-scores-and-student-scores'
+    | '/instructor/tutorial/how-to-set-the-assessment-dates'
+    | '/instructor/tutorial/how-to-setup-assessment'
+    | '/instructor/tutorial/how-to-use-automatic-score-calculation'
+    | '/instructor/tutorial/how-to-view-peer-ratings'
+    | '/instructor/tutorial/qass-terminology'
+    | '/instructor/tutorial/webavalia-terminology'
     | '/student/assessment/$assessmentId'
     | '/instructor/assessment/'
+    | '/instructor/tutorial/'
     | '/student/assessment/'
     | '/instructor/assessment/$assessmentId/'
     | '/instructor/assessment/$assessmentId/group/$groupId/member'
@@ -379,9 +568,18 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   InstructorSimulationRoute: typeof InstructorSimulationRoute
-  InstructorTutorialRoute: typeof InstructorTutorialRoute
+  InstructorTutorialHowToAddStudentsRoute: typeof InstructorTutorialHowToAddStudentsRoute
+  InstructorTutorialHowToCreateAGroupAndAddMembersRoute: typeof InstructorTutorialHowToCreateAGroupAndAddMembersRoute
+  InstructorTutorialHowToEditGroupScoresAndStudentScoresRoute: typeof InstructorTutorialHowToEditGroupScoresAndStudentScoresRoute
+  InstructorTutorialHowToSetTheAssessmentDatesRoute: typeof InstructorTutorialHowToSetTheAssessmentDatesRoute
+  InstructorTutorialHowToSetupAssessmentRoute: typeof InstructorTutorialHowToSetupAssessmentRoute
+  InstructorTutorialHowToUseAutomaticScoreCalculationRoute: typeof InstructorTutorialHowToUseAutomaticScoreCalculationRoute
+  InstructorTutorialHowToViewPeerRatingsRoute: typeof InstructorTutorialHowToViewPeerRatingsRoute
+  InstructorTutorialQassTerminologyRoute: typeof InstructorTutorialQassTerminologyRoute
+  InstructorTutorialWebavaliaTerminologyRoute: typeof InstructorTutorialWebavaliaTerminologyRoute
   StudentAssessmentAssessmentIdRoute: typeof StudentAssessmentAssessmentIdRoute
   InstructorAssessmentIndexRoute: typeof InstructorAssessmentIndexRoute
+  InstructorTutorialIndexRoute: typeof InstructorTutorialIndexRoute
   StudentAssessmentIndexRoute: typeof StudentAssessmentIndexRoute
   InstructorAssessmentAssessmentIdIndexRoute: typeof InstructorAssessmentAssessmentIdIndexRoute
   InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
@@ -398,9 +596,27 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   InstructorSimulationRoute: InstructorSimulationRoute,
-  InstructorTutorialRoute: InstructorTutorialRoute,
+  InstructorTutorialHowToAddStudentsRoute:
+    InstructorTutorialHowToAddStudentsRoute,
+  InstructorTutorialHowToCreateAGroupAndAddMembersRoute:
+    InstructorTutorialHowToCreateAGroupAndAddMembersRoute,
+  InstructorTutorialHowToEditGroupScoresAndStudentScoresRoute:
+    InstructorTutorialHowToEditGroupScoresAndStudentScoresRoute,
+  InstructorTutorialHowToSetTheAssessmentDatesRoute:
+    InstructorTutorialHowToSetTheAssessmentDatesRoute,
+  InstructorTutorialHowToSetupAssessmentRoute:
+    InstructorTutorialHowToSetupAssessmentRoute,
+  InstructorTutorialHowToUseAutomaticScoreCalculationRoute:
+    InstructorTutorialHowToUseAutomaticScoreCalculationRoute,
+  InstructorTutorialHowToViewPeerRatingsRoute:
+    InstructorTutorialHowToViewPeerRatingsRoute,
+  InstructorTutorialQassTerminologyRoute:
+    InstructorTutorialQassTerminologyRoute,
+  InstructorTutorialWebavaliaTerminologyRoute:
+    InstructorTutorialWebavaliaTerminologyRoute,
   StudentAssessmentAssessmentIdRoute: StudentAssessmentAssessmentIdRoute,
   InstructorAssessmentIndexRoute: InstructorAssessmentIndexRoute,
+  InstructorTutorialIndexRoute: InstructorTutorialIndexRoute,
   StudentAssessmentIndexRoute: StudentAssessmentIndexRoute,
   InstructorAssessmentAssessmentIdIndexRoute:
     InstructorAssessmentAssessmentIdIndexRoute,
@@ -430,9 +646,18 @@ export const routeTree = rootRoute
         "/signup",
         "/verify-email",
         "/instructor/simulation",
-        "/instructor/tutorial",
+        "/instructor/tutorial/how-to-add-students",
+        "/instructor/tutorial/how-to-create-a-group-and-add-members",
+        "/instructor/tutorial/how-to-edit-group-scores-and-student-scores",
+        "/instructor/tutorial/how-to-set-the-assessment-dates",
+        "/instructor/tutorial/how-to-setup-assessment",
+        "/instructor/tutorial/how-to-use-automatic-score-calculation",
+        "/instructor/tutorial/how-to-view-peer-ratings",
+        "/instructor/tutorial/qass-terminology",
+        "/instructor/tutorial/webavalia-terminology",
         "/student/assessment/$assessmentId",
         "/instructor/assessment/",
+        "/instructor/tutorial/",
         "/student/assessment/",
         "/instructor/assessment/$assessmentId/",
         "/instructor/assessment/$assessmentId/group/$groupId/member",
@@ -464,14 +689,41 @@ export const routeTree = rootRoute
     "/instructor/simulation": {
       "filePath": "instructor/simulation.tsx"
     },
-    "/instructor/tutorial": {
-      "filePath": "instructor/tutorial.tsx"
+    "/instructor/tutorial/how-to-add-students": {
+      "filePath": "instructor/tutorial/how-to-add-students.tsx"
+    },
+    "/instructor/tutorial/how-to-create-a-group-and-add-members": {
+      "filePath": "instructor/tutorial/how-to-create-a-group-and-add-members.tsx"
+    },
+    "/instructor/tutorial/how-to-edit-group-scores-and-student-scores": {
+      "filePath": "instructor/tutorial/how-to-edit-group-scores-and-student-scores.tsx"
+    },
+    "/instructor/tutorial/how-to-set-the-assessment-dates": {
+      "filePath": "instructor/tutorial/how-to-set-the-assessment-dates.tsx"
+    },
+    "/instructor/tutorial/how-to-setup-assessment": {
+      "filePath": "instructor/tutorial/how-to-setup-assessment.tsx"
+    },
+    "/instructor/tutorial/how-to-use-automatic-score-calculation": {
+      "filePath": "instructor/tutorial/how-to-use-automatic-score-calculation.tsx"
+    },
+    "/instructor/tutorial/how-to-view-peer-ratings": {
+      "filePath": "instructor/tutorial/how-to-view-peer-ratings.tsx"
+    },
+    "/instructor/tutorial/qass-terminology": {
+      "filePath": "instructor/tutorial/qass-terminology.tsx"
+    },
+    "/instructor/tutorial/webavalia-terminology": {
+      "filePath": "instructor/tutorial/webavalia-terminology.tsx"
     },
     "/student/assessment/$assessmentId": {
       "filePath": "student/assessment/$assessmentId.tsx"
     },
     "/instructor/assessment/": {
       "filePath": "instructor/assessment/index.tsx"
+    },
+    "/instructor/tutorial/": {
+      "filePath": "instructor/tutorial/index.tsx"
     },
     "/student/assessment/": {
       "filePath": "student/assessment/index.tsx"

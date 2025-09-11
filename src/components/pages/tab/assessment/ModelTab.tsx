@@ -839,10 +839,7 @@ const ModelTab = ({
               <CardTitle className="text-base text-white">Don't know how to setup?</CardTitle>
               <CardDescription className="text-white">Read Tutorial</CardDescription>
             </div>
-            <Link
-              to="/instructor/tutorial"
-              hash="webavalia"
-            >
+            <Link to="/instructor/tutorial/how-to-setup-assessment">
               <CirclePlay className="text-white hover:cursor-pointer" />
             </Link>
           </Card>
