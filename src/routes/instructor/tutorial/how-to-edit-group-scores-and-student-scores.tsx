@@ -2,9 +2,11 @@ import step1Image from '@/assets/tutorial/instructor/how-to-edit-group-scores-an
 import step2Image from '@/assets/tutorial/instructor/how-to-edit-group-scores-and-student-scores/step2.png'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import StepCard from '@/components/pages/tutorial/StepCard'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Roles } from '@/config/app'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import { ChevronLeft } from 'lucide-react'
 
 export const Route = createFileRoute('/instructor/tutorial/how-to-edit-group-scores-and-student-scores')({
   component: RouteComponent,
@@ -28,11 +30,16 @@ export const Route = createFileRoute('/instructor/tutorial/how-to-edit-group-sco
 })
 
 function RouteComponent() {
+  const router = useRouter()
   return (
     <DashboardLayout className="gap-4">
-      {/* <div className="flex justify-between items-center md:mb-4">
-        <div className="text-xl font-bold md:text-3xl">Tutorial</div>
-      </div> */}
+      <Button
+        className="w-fit"
+        onClick={() => router.history.push('/instructor/tutorial')}
+      >
+        <ChevronLeft />
+        Back
+      </Button>
       <div className="space-y-8">
         <Card className="flex gap-4 w-full shadow-none border-0 py-6 px-2 md:py-8 md:px-4">
           <CardHeader>
