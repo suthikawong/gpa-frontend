@@ -19,9 +19,13 @@ import { Route as ProfileImport } from './routes/profile'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as IndexImport } from './routes/index'
 import { Route as InstructorSimulationImport } from './routes/instructor/simulation'
+import { Route as StudentTutorialIndexImport } from './routes/student/tutorial/index'
 import { Route as StudentAssessmentIndexImport } from './routes/student/assessment/index'
 import { Route as InstructorTutorialIndexImport } from './routes/instructor/tutorial/index'
 import { Route as InstructorAssessmentIndexImport } from './routes/instructor/assessment/index'
+import { Route as StudentTutorialHowToRateGroupMembersImport } from './routes/student/tutorial/how-to-rate-group-members'
+import { Route as StudentTutorialHowToJoinAnAssessmentImport } from './routes/student/tutorial/how-to-join-an-assessment'
+import { Route as StudentTutorialHowToJoinAGroupImport } from './routes/student/tutorial/how-to-join-a-group'
 import { Route as StudentAssessmentAssessmentIdImport } from './routes/student/assessment/$assessmentId'
 import { Route as InstructorTutorialWebavaliaTerminologyImport } from './routes/instructor/tutorial/webavalia-terminology'
 import { Route as InstructorTutorialQassTerminologyImport } from './routes/instructor/tutorial/qass-terminology'
@@ -87,6 +91,12 @@ const InstructorSimulationRoute = InstructorSimulationImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const StudentTutorialIndexRoute = StudentTutorialIndexImport.update({
+  id: '/student/tutorial/',
+  path: '/student/tutorial/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const StudentAssessmentIndexRoute = StudentAssessmentIndexImport.update({
   id: '/student/assessment/',
   path: '/student/assessment/',
@@ -104,6 +114,27 @@ const InstructorAssessmentIndexRoute = InstructorAssessmentIndexImport.update({
   path: '/instructor/assessment/',
   getParentRoute: () => rootRoute,
 } as any)
+
+const StudentTutorialHowToRateGroupMembersRoute =
+  StudentTutorialHowToRateGroupMembersImport.update({
+    id: '/student/tutorial/how-to-rate-group-members',
+    path: '/student/tutorial/how-to-rate-group-members',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const StudentTutorialHowToJoinAnAssessmentRoute =
+  StudentTutorialHowToJoinAnAssessmentImport.update({
+    id: '/student/tutorial/how-to-join-an-assessment',
+    path: '/student/tutorial/how-to-join-an-assessment',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const StudentTutorialHowToJoinAGroupRoute =
+  StudentTutorialHowToJoinAGroupImport.update({
+    id: '/student/tutorial/how-to-join-a-group',
+    path: '/student/tutorial/how-to-join-a-group',
+    getParentRoute: () => rootRoute,
+  } as any)
 
 const StudentAssessmentAssessmentIdRoute =
   StudentAssessmentAssessmentIdImport.update({
@@ -335,6 +366,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentAssessmentAssessmentIdImport
       parentRoute: typeof rootRoute
     }
+    '/student/tutorial/how-to-join-a-group': {
+      id: '/student/tutorial/how-to-join-a-group'
+      path: '/student/tutorial/how-to-join-a-group'
+      fullPath: '/student/tutorial/how-to-join-a-group'
+      preLoaderRoute: typeof StudentTutorialHowToJoinAGroupImport
+      parentRoute: typeof rootRoute
+    }
+    '/student/tutorial/how-to-join-an-assessment': {
+      id: '/student/tutorial/how-to-join-an-assessment'
+      path: '/student/tutorial/how-to-join-an-assessment'
+      fullPath: '/student/tutorial/how-to-join-an-assessment'
+      preLoaderRoute: typeof StudentTutorialHowToJoinAnAssessmentImport
+      parentRoute: typeof rootRoute
+    }
+    '/student/tutorial/how-to-rate-group-members': {
+      id: '/student/tutorial/how-to-rate-group-members'
+      path: '/student/tutorial/how-to-rate-group-members'
+      fullPath: '/student/tutorial/how-to-rate-group-members'
+      preLoaderRoute: typeof StudentTutorialHowToRateGroupMembersImport
+      parentRoute: typeof rootRoute
+    }
     '/instructor/assessment/': {
       id: '/instructor/assessment/'
       path: '/instructor/assessment'
@@ -354,6 +406,13 @@ declare module '@tanstack/react-router' {
       path: '/student/assessment'
       fullPath: '/student/assessment'
       preLoaderRoute: typeof StudentAssessmentIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/student/tutorial/': {
+      id: '/student/tutorial/'
+      path: '/student/tutorial'
+      fullPath: '/student/tutorial'
+      preLoaderRoute: typeof StudentTutorialIndexImport
       parentRoute: typeof rootRoute
     }
     '/instructor/assessment/$assessmentId/': {
@@ -408,9 +467,13 @@ export interface FileRoutesByFullPath {
   '/instructor/tutorial/qass-terminology': typeof InstructorTutorialQassTerminologyRoute
   '/instructor/tutorial/webavalia-terminology': typeof InstructorTutorialWebavaliaTerminologyRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
+  '/student/tutorial/how-to-join-a-group': typeof StudentTutorialHowToJoinAGroupRoute
+  '/student/tutorial/how-to-join-an-assessment': typeof StudentTutorialHowToJoinAnAssessmentRoute
+  '/student/tutorial/how-to-rate-group-members': typeof StudentTutorialHowToRateGroupMembersRoute
   '/instructor/assessment': typeof InstructorAssessmentIndexRoute
   '/instructor/tutorial': typeof InstructorTutorialIndexRoute
   '/student/assessment': typeof StudentAssessmentIndexRoute
+  '/student/tutorial': typeof StudentTutorialIndexRoute
   '/instructor/assessment/$assessmentId': typeof InstructorAssessmentAssessmentIdIndexRoute
   '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
   '/instructor/assessment/$assessmentId/group/$groupId': typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
@@ -436,9 +499,13 @@ export interface FileRoutesByTo {
   '/instructor/tutorial/qass-terminology': typeof InstructorTutorialQassTerminologyRoute
   '/instructor/tutorial/webavalia-terminology': typeof InstructorTutorialWebavaliaTerminologyRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
+  '/student/tutorial/how-to-join-a-group': typeof StudentTutorialHowToJoinAGroupRoute
+  '/student/tutorial/how-to-join-an-assessment': typeof StudentTutorialHowToJoinAnAssessmentRoute
+  '/student/tutorial/how-to-rate-group-members': typeof StudentTutorialHowToRateGroupMembersRoute
   '/instructor/assessment': typeof InstructorAssessmentIndexRoute
   '/instructor/tutorial': typeof InstructorTutorialIndexRoute
   '/student/assessment': typeof StudentAssessmentIndexRoute
+  '/student/tutorial': typeof StudentTutorialIndexRoute
   '/instructor/assessment/$assessmentId': typeof InstructorAssessmentAssessmentIdIndexRoute
   '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
   '/instructor/assessment/$assessmentId/group/$groupId': typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
@@ -465,9 +532,13 @@ export interface FileRoutesById {
   '/instructor/tutorial/qass-terminology': typeof InstructorTutorialQassTerminologyRoute
   '/instructor/tutorial/webavalia-terminology': typeof InstructorTutorialWebavaliaTerminologyRoute
   '/student/assessment/$assessmentId': typeof StudentAssessmentAssessmentIdRoute
+  '/student/tutorial/how-to-join-a-group': typeof StudentTutorialHowToJoinAGroupRoute
+  '/student/tutorial/how-to-join-an-assessment': typeof StudentTutorialHowToJoinAnAssessmentRoute
+  '/student/tutorial/how-to-rate-group-members': typeof StudentTutorialHowToRateGroupMembersRoute
   '/instructor/assessment/': typeof InstructorAssessmentIndexRoute
   '/instructor/tutorial/': typeof InstructorTutorialIndexRoute
   '/student/assessment/': typeof StudentAssessmentIndexRoute
+  '/student/tutorial/': typeof StudentTutorialIndexRoute
   '/instructor/assessment/$assessmentId/': typeof InstructorAssessmentAssessmentIdIndexRoute
   '/instructor/assessment/$assessmentId/group/$groupId/member': typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
   '/instructor/assessment/$assessmentId/group/$groupId/': typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
@@ -495,9 +566,13 @@ export interface FileRouteTypes {
     | '/instructor/tutorial/qass-terminology'
     | '/instructor/tutorial/webavalia-terminology'
     | '/student/assessment/$assessmentId'
+    | '/student/tutorial/how-to-join-a-group'
+    | '/student/tutorial/how-to-join-an-assessment'
+    | '/student/tutorial/how-to-rate-group-members'
     | '/instructor/assessment'
     | '/instructor/tutorial'
     | '/student/assessment'
+    | '/student/tutorial'
     | '/instructor/assessment/$assessmentId'
     | '/instructor/assessment/$assessmentId/group/$groupId/member'
     | '/instructor/assessment/$assessmentId/group/$groupId'
@@ -522,9 +597,13 @@ export interface FileRouteTypes {
     | '/instructor/tutorial/qass-terminology'
     | '/instructor/tutorial/webavalia-terminology'
     | '/student/assessment/$assessmentId'
+    | '/student/tutorial/how-to-join-a-group'
+    | '/student/tutorial/how-to-join-an-assessment'
+    | '/student/tutorial/how-to-rate-group-members'
     | '/instructor/assessment'
     | '/instructor/tutorial'
     | '/student/assessment'
+    | '/student/tutorial'
     | '/instructor/assessment/$assessmentId'
     | '/instructor/assessment/$assessmentId/group/$groupId/member'
     | '/instructor/assessment/$assessmentId/group/$groupId'
@@ -549,9 +628,13 @@ export interface FileRouteTypes {
     | '/instructor/tutorial/qass-terminology'
     | '/instructor/tutorial/webavalia-terminology'
     | '/student/assessment/$assessmentId'
+    | '/student/tutorial/how-to-join-a-group'
+    | '/student/tutorial/how-to-join-an-assessment'
+    | '/student/tutorial/how-to-rate-group-members'
     | '/instructor/assessment/'
     | '/instructor/tutorial/'
     | '/student/assessment/'
+    | '/student/tutorial/'
     | '/instructor/assessment/$assessmentId/'
     | '/instructor/assessment/$assessmentId/group/$groupId/member'
     | '/instructor/assessment/$assessmentId/group/$groupId/'
@@ -578,9 +661,13 @@ export interface RootRouteChildren {
   InstructorTutorialQassTerminologyRoute: typeof InstructorTutorialQassTerminologyRoute
   InstructorTutorialWebavaliaTerminologyRoute: typeof InstructorTutorialWebavaliaTerminologyRoute
   StudentAssessmentAssessmentIdRoute: typeof StudentAssessmentAssessmentIdRoute
+  StudentTutorialHowToJoinAGroupRoute: typeof StudentTutorialHowToJoinAGroupRoute
+  StudentTutorialHowToJoinAnAssessmentRoute: typeof StudentTutorialHowToJoinAnAssessmentRoute
+  StudentTutorialHowToRateGroupMembersRoute: typeof StudentTutorialHowToRateGroupMembersRoute
   InstructorAssessmentIndexRoute: typeof InstructorAssessmentIndexRoute
   InstructorTutorialIndexRoute: typeof InstructorTutorialIndexRoute
   StudentAssessmentIndexRoute: typeof StudentAssessmentIndexRoute
+  StudentTutorialIndexRoute: typeof StudentTutorialIndexRoute
   InstructorAssessmentAssessmentIdIndexRoute: typeof InstructorAssessmentAssessmentIdIndexRoute
   InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute
   InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute: typeof InstructorAssessmentAssessmentIdGroupGroupIdIndexRoute
@@ -615,9 +702,15 @@ const rootRouteChildren: RootRouteChildren = {
   InstructorTutorialWebavaliaTerminologyRoute:
     InstructorTutorialWebavaliaTerminologyRoute,
   StudentAssessmentAssessmentIdRoute: StudentAssessmentAssessmentIdRoute,
+  StudentTutorialHowToJoinAGroupRoute: StudentTutorialHowToJoinAGroupRoute,
+  StudentTutorialHowToJoinAnAssessmentRoute:
+    StudentTutorialHowToJoinAnAssessmentRoute,
+  StudentTutorialHowToRateGroupMembersRoute:
+    StudentTutorialHowToRateGroupMembersRoute,
   InstructorAssessmentIndexRoute: InstructorAssessmentIndexRoute,
   InstructorTutorialIndexRoute: InstructorTutorialIndexRoute,
   StudentAssessmentIndexRoute: StudentAssessmentIndexRoute,
+  StudentTutorialIndexRoute: StudentTutorialIndexRoute,
   InstructorAssessmentAssessmentIdIndexRoute:
     InstructorAssessmentAssessmentIdIndexRoute,
   InstructorAssessmentAssessmentIdGroupGroupIdMemberRoute:
@@ -656,9 +749,13 @@ export const routeTree = rootRoute
         "/instructor/tutorial/qass-terminology",
         "/instructor/tutorial/webavalia-terminology",
         "/student/assessment/$assessmentId",
+        "/student/tutorial/how-to-join-a-group",
+        "/student/tutorial/how-to-join-an-assessment",
+        "/student/tutorial/how-to-rate-group-members",
         "/instructor/assessment/",
         "/instructor/tutorial/",
         "/student/assessment/",
+        "/student/tutorial/",
         "/instructor/assessment/$assessmentId/",
         "/instructor/assessment/$assessmentId/group/$groupId/member",
         "/instructor/assessment/$assessmentId/group/$groupId/",
@@ -719,6 +816,15 @@ export const routeTree = rootRoute
     "/student/assessment/$assessmentId": {
       "filePath": "student/assessment/$assessmentId.tsx"
     },
+    "/student/tutorial/how-to-join-a-group": {
+      "filePath": "student/tutorial/how-to-join-a-group.tsx"
+    },
+    "/student/tutorial/how-to-join-an-assessment": {
+      "filePath": "student/tutorial/how-to-join-an-assessment.tsx"
+    },
+    "/student/tutorial/how-to-rate-group-members": {
+      "filePath": "student/tutorial/how-to-rate-group-members.tsx"
+    },
     "/instructor/assessment/": {
       "filePath": "instructor/assessment/index.tsx"
     },
@@ -727,6 +833,9 @@ export const routeTree = rootRoute
     },
     "/student/assessment/": {
       "filePath": "student/assessment/index.tsx"
+    },
+    "/student/tutorial/": {
+      "filePath": "student/tutorial/index.tsx"
     },
     "/instructor/assessment/$assessmentId/": {
       "filePath": "instructor/assessment/$assessmentId/index.tsx"

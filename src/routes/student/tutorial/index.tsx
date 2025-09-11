@@ -1,10 +1,10 @@
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 import TopicCard from '@/components/pages/tutorial/TopicCard'
 import { Roles } from '@/config/app'
-import { instructorTutorialTopicList } from '@/config/tutorial'
+import { studentTutorialTopicList } from '@/config/tutorial'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/instructor/tutorial/')({
+export const Route = createFileRoute('/student/tutorial/')({
   component: RouteComponent,
   beforeLoad: ({ context, location }) => {
     if (!context.user?.userId) {
@@ -14,9 +14,9 @@ export const Route = createFileRoute('/instructor/tutorial/')({
           redirect: location.href,
         },
       })
-    } else if (context.user?.roleId === Roles.Student) {
+    } else if (context.user?.roleId === Roles.Instructor) {
       throw redirect({
-        to: '/student/assessment',
+        to: '/instructor/assessment',
         search: {
           redirect: location.href,
         },
@@ -32,7 +32,7 @@ function RouteComponent() {
         <div className="text-xl font-bold md:text-3xl">Tutorial</div>
       </div>
       <div className="grid md:grid-cols-2 gap-8">
-        {instructorTutorialTopicList.map((item, index) => (
+        {studentTutorialTopicList.map((item, index) => (
           <TopicCard
             number={index + 1}
             title={item.title}

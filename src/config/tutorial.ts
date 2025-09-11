@@ -1,4 +1,4 @@
-export const tutorialTopicList = [
+export const instructorTutorialTopicList = [
   {
     title: 'How to Setup Assessment',
     href: '/instructor/tutorial/how-to-setup-assessment',
@@ -34,6 +34,21 @@ export const tutorialTopicList = [
   {
     title: 'WebAVALIA Terminology',
     href: '/instructor/tutorial/webavalia-terminology',
+  },
+]
+
+export const studentTutorialTopicList = [
+  {
+    title: 'How to Join an Assessment',
+    href: '/student/tutorial/how-to-join-an-assessment',
+  },
+  {
+    title: 'How to Join a Group',
+    href: '/student/tutorial/how-to-join-a-group',
+  },
+  {
+    title: 'How to Rate Group Members',
+    href: '/student/tutorial/how-to-rate-group-members',
   },
 ]
 

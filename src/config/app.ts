@@ -12,6 +12,7 @@ export const appPaths = {
   },
   student: {
     assessment: '/student/assessment',
+    tutorial: '/student/tutorial',
   },
 }
 
@@ -53,6 +54,11 @@ export const studentMenuItems = [
     name: 'My Assessments',
     icon: 'ListChecks',
     href: appPaths.student.assessment,
+  },
+  {
+    name: 'Tutorial',
+    icon: 'BookOpenText',
+    href: appPaths.student.tutorial,
   },
   profileMenuItem,
 ]
