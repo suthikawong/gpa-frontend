@@ -1,6 +1,13 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AssessmentModel, mode, QASSMode } from '@/config/app'
@@ -64,9 +71,7 @@ const QuestionnaireDialog = ({ triggerButton, isApplying, onClickApply }: Questi
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        {triggerButton}
-      </DialogTrigger>
+      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
       <DialogContent className="lg:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Questionnaire</DialogTitle>
@@ -420,7 +425,7 @@ const CompareModelPage = ({
       setSelectedModel(AssessmentModel.WebAVALIA)
       setInitModel(AssessmentModel.WebAVALIA)
     }
-    if (result[0] === 8 || result[1] === 8) {
+    if (result[0] === 7 || result[1] === 7) {
       setIsPerfectMatch(true)
     }
   }, [options])
