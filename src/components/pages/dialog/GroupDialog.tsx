@@ -50,7 +50,7 @@ const randomFormSchema = z.object({
   groupSize: z
     .number({ required_error: 'Group size is required', invalid_type_error: 'Group size must be a number' })
     .int()
-    .gt(0, { message: 'Group size must be greater than 0' }),
+    .gt(1, { message: 'Group size must be greater than 1' }),
 })
 
 const createGroupOptions = [
@@ -209,7 +209,7 @@ const SingleGroupForm = ({
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       if (error.response?.status === 400) {
-        form.setError('groupName', {type: 'manual', message: 'Group name already exists.'})
+        form.setError('groupName', { type: 'manual', message: 'Group name already exists.' })
       } else {
         toast.error('Failed to create group.')
       }
@@ -226,7 +226,7 @@ const SingleGroupForm = ({
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       if (error.response?.status === 400) {
-        form.setError('groupName', {type: 'manual', message: 'Group name already exists.'})
+        form.setError('groupName', { type: 'manual', message: 'Group name already exists.' })
       } else {
         toast.error('Failed to update group.')
       }

@@ -577,9 +577,7 @@ const PeerRatingPage = ({
             {isDisplayConstraint ? (
               <div>
                 <h2 className="text-lg font-semibold text-center">{`Distribute ${constraint} points among your group members based on their contribution and performance.`}</h2>
-                <h2 className="text-lg font-semibold text-center">
-                  You can submit once thse remaining points reach 0.
-                </h2>
+                <h2 className="text-lg font-semibold text-center">You can submit once the remaining points reach 0.</h2>
               </div>
             ) : (
               <h2 className="text-lg font-semibold text-center">
