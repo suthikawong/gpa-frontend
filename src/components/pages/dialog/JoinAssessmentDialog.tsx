@@ -70,7 +70,7 @@ const PendingConfimed = ({ setOpen }: { setOpen: React.Dispatch<React.SetStateAc
         <div className="flex flex-col gap-2 items-center justify-center">
           <h4 className="text-2xl font-semibold">Waiting for confirmation</h4>
           <div className="text-muted-foreground text-center">
-            Your request has been sent to the teacher. Please waiting for your request to be accepted.
+            Your request has been sent to the teacher. Please wait for your request to be accepted.
           </div>
         </div>
       </div>

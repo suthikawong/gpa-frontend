@@ -12,6 +12,7 @@ export const ModelTooltip = () => {
             <Link
               className="text-destructive"
               to="/instructor/tutorial/qass-terminology"
+              target="_blank"
             >
               QASS&nbsp;
             </Link>
@@ -19,6 +20,7 @@ export const ModelTooltip = () => {
             <Link
               className="text-destructive"
               to="/instructor/tutorial/webavalia-terminology"
+              target="_blank"
             >
               WebAVALIA
             </Link>
@@ -33,6 +35,7 @@ export const ModeTooltip = () => {
   const props = {
     to: '/instructor/tutorial/qass-terminology',
     className: 'text-destructive',
+    target: '_blank',
   }
   return (
     <InfoTooltip
@@ -112,6 +115,7 @@ export const ScaleTooltip = () => {
   const props = {
     to: '/instructor/tutorial/qass-terminology',
     className: 'text-destructive',
+    target: '_blank',
   }
   return (
     <InfoTooltip
